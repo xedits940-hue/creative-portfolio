@@ -3,7 +3,7 @@ import { MetadataRoute } from 'next'
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: 'VISHAL - Portfolio & Services',
-    short_name: 'Your Name',
+    short_name: 'VISHAL',
     description: 'Professional portfolio and services. Web development, design, and digital solutions.',
     start_url: '/',
     display: 'standalone',
