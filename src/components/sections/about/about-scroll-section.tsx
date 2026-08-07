@@ -85,18 +85,12 @@ const AboutScrollSection = () => {
     const img = imagesRef.current[index];
     if (!img) return;
 
-    // Only touch canvas.width/height when the viewport actually changed.
-    // Assigning them resets + reallocates the entire backing store, so doing it
-    // on every scrubbed frame (as before) was the main source of scroll jank on
-    // phones. Reading them first and comparing keeps 99% of frames allocation-free.
     if (canvas.width !== window.innerWidth) canvas.width = window.innerWidth;
     if (canvas.height !== window.innerHeight)
       canvas.height = window.innerHeight;
 
-    // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Calculate dimensions to cover the canvas (like object-fit: cover)
     const imgRatio = img.width / img.height;
     const canvasRatio = canvas.width / canvas.height;
 
@@ -117,7 +111,6 @@ const AboutScrollSection = () => {
     ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
   };
 
-  // GSAP ScrollTrigger animation
   useGSAP(
     () => {
       if (
@@ -129,11 +122,8 @@ const AboutScrollSection = () => {
       )
         return;
 
-      // Render the first frame immediately
       renderFrame(0);
 
-      // Single timeline: pin the whole wrapper (canvas + text overlay) for the
-      // entire section. Phase 1 → image frames, Phase 2 → text reveal.
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: sectionRef.current,
@@ -144,7 +134,6 @@ const AboutScrollSection = () => {
         },
       });
 
-      // Phase 1 — animate through all image frames
       tl.to(
         frameIndexRef.current,
         {
@@ -158,8 +147,6 @@ const AboutScrollSection = () => {
         0,
       );
 
-      // Scroll hint — stays visible until ~frame 15, then fades out over the
-      // next few frames so it never overlaps the rest of the sequence.
       const scrollHint =
         pinWrapperRef.current.querySelector<HTMLElement>("[data-scroll-hint]");
 
@@ -177,7 +164,6 @@ const AboutScrollSection = () => {
         );
       }
 
-      // Phase 2 — progressively reveal the about card once last frame is held
       const overlay = textRef.current.querySelector<HTMLElement>(
         "[data-reveal-overlay]",
       );
@@ -206,10 +192,9 @@ const AboutScrollSection = () => {
             ? TEXT_DURATION / (textLines.length * 2)
             : 0,
         },
-        IMAGE_DURATION, // starts right after image phase ends
+        IMAGE_DURATION,
       );
 
-      // Handle window resize
       const handleResize = () => {
         renderFrame(Math.round(frameIndexRef.current.value));
         ScrollTrigger.refresh();
@@ -225,10 +210,7 @@ const AboutScrollSection = () => {
   );
 
   return (
-    // 700vh = 500vh image scroll + 200vh text reveal
     <div ref={sectionRef} className="relative h-[800vh]">
-      {/* Loading State — scoped to this section (absolute, not fixed) so the
-          47-frame preload never covers the hero/above-the-fold content */}
       {!imagesLoaded && (
         <div className="absolute inset-x-0 top-0 z-40 flex h-screen items-center justify-center bg-black">
           <div className="flex flex-col items-center gap-4">
@@ -238,15 +220,12 @@ const AboutScrollSection = () => {
         </div>
       )}
 
-      {/* Pinned container — holds both canvas and text overlay */}
       <div
         ref={pinWrapperRef}
         className="relative h-screen w-full overflow-hidden"
       >
-        {/* Canvas for rendering frames */}
         <canvas ref={canvasRef} className="h-full w-full" />
 
-        {/* Scroll hint — nudges the user to keep scrolling to play the reel */}
         <div
           data-scroll-hint
           className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 md:inset-y-auto md:bottom-10 md:justify-start"
@@ -268,9 +247,7 @@ const AboutScrollSection = () => {
           </span>
         </div>
 
-        {/* Creative about card — revealed once the last frame is held */}
         <div ref={textRef} className="pointer-events-none absolute inset-0">
-          {/* Readability gradient over the frame */}
           <div
             data-reveal-overlay
             className="absolute inset-0 bg-linear-to-r from-black/80 via-black/35 to-transparent opacity-0"
@@ -278,7 +255,6 @@ const AboutScrollSection = () => {
 
           <div className="absolute inset-y-0 left-0 flex w-full flex-col justify-center px-6 sm:w-[55%] sm:px-14 lg:px-20">
             <div className="relative max-w-xl p-8 sm:p-10">
-              {/* Corner brackets */}
               <div
                 data-reveal-line
                 className="absolute left-0 top-0 h-8 w-8 border-l border-t opacity-0"
@@ -315,7 +291,7 @@ const AboutScrollSection = () => {
                 data-reveal-line
                 className="mb-5 text-3xl font-bold leading-[1.08] text-white opacity-0 sm:text-4xl lg:text-5xl"
               >
-                I&apos;d rather let the{" "}
+                My{" "}
                 <span
                   className="font-normal italic"
                   style={{
@@ -323,21 +299,21 @@ const AboutScrollSection = () => {
                     color: redColor,
                   }}
                 >
-                  work
+                  code
                 </span>{" "}
-                do the talking.
+                does the heavy lifting — commanding performance where others
+                compromise.
               </h2>
 
               <p
                 data-reveal-line
                 className="mb-6 max-w-md text-sm leading-relaxed text-white/60 opacity-0 sm:text-base"
               >
-                7 years of turning design into motion — across brands, creators,
-                and culture-led stories. Built on one simple rule: quality over
-                quantity, always.
+                1.5+ years of turning ideas into working products — through
+                prompts, code, and countless AI-assisted iterations. Built on
+                one simple rule: keep shipping, keep learning.
               </p>
 
-              {/* Accent divider */}
               <div
                 data-reveal-line
                 className="mb-6 h-px w-24 opacity-0"
@@ -346,12 +322,11 @@ const AboutScrollSection = () => {
                 }}
               />
 
-              {/* Discipline chips */}
               <div
                 data-reveal-line
                 className="mb-8 flex flex-wrap items-center gap-3 opacity-0"
               >
-                {["CREATIVE DIRECTION", "MOTION", "ANIMATION", "EDIT"].map(
+                {["VIBE CODING", "PROMPT ENGINEERING", "AI PROTOTYPING", "WEB DEV"].map(
                   (discipline, i) => (
                     <span
                       key={discipline}
@@ -375,7 +350,7 @@ const AboutScrollSection = () => {
                   className="text-xs uppercase tracking-[0.25em] text-white"
                   style={{ fontFamily: "'DM Mono', monospace" }}
                 >
-                  Happy to collaborate
+                  Now accepting high-stakes alliances
                 </span>{" "}
                 <span style={{ color: redColor }}>✦</span>
               </p>
