@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useRef, useEffect } from "react";
+import { useRef } from "react";
 import {
   FaBehance,
   FaInstagram,
@@ -11,7 +11,6 @@ import {
   FaDiscord,
 } from "react-icons/fa6";
 import { motion, useMotionValue, useSpring } from "framer-motion";
-import { getCalApi } from "@calcom/embed-react";
 
 const SocialLink = ({
   href,
@@ -45,7 +44,6 @@ const MagneticButton = ({ children }: { children: React.ReactNode }) => {
   const x = useMotionValue(0);
   const y = useMotionValue(0);
 
-  // Smooth spring animation for the movement
   const xSpring = useSpring(x, { stiffness: 150, damping: 15, mass: 0.1 });
   const ySpring = useSpring(y, { stiffness: 150, damping: 15, mass: 0.1 });
 
@@ -54,7 +52,7 @@ const MagneticButton = ({ children }: { children: React.ReactNode }) => {
     const { left, top, width, height } = ref.current.getBoundingClientRect();
     const centerX = left + width / 2;
     const centerY = top + height / 2;
-    x.set((e.clientX - centerX) * 0.2); // Move 20% of distance
+    x.set((e.clientX - centerX) * 0.2);
     y.set((e.clientY - centerY) * 0.2);
   };
 
@@ -78,29 +76,16 @@ const MagneticButton = ({ children }: { children: React.ReactNode }) => {
 export default function CreativeFooter() {
   const currentYear = new Date().getFullYear();
 
-  useEffect(() => {
-    (async function () {
-      const cal = await getCalApi({ namespace: "30min" });
-      cal("ui", { hideEventTypeDetails: false, layout: "month_view" });
-    })();
-  }, []);
-
-  const handleLetsTalkClick = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    const cal = await getCalApi({ namespace: "30min" });
-    cal("modal", {
-      calLink: "your-username/30min",
-    });
+  const handleLetsTalkClick = () => {
+    window.location.href = "mailto:vishal.builds09@gmail.com";
   };
 
   return (
     <footer className="relative w-full overflow-hidden border-t pt-20 md:pt-32 pb-10">
       {/* --- BACKGROUND EFFECTS --- */}
       <div className="pointer-events-none absolute inset-0 -z-10">
-        {/* Noise Texture Overlay for that 'premium' feel */}
         <div className="absolute inset-0 opacity-[0.03] mix-blend-hard-light"></div>
 
-        {/* Animated Blobs (x.ai style) */}
         <motion.div
           animate={{
             scale: [1, 1.2, 1],
@@ -119,7 +104,6 @@ export default function CreativeFooter() {
         />
       </div>
 
-      {/* --- CONTENT CONTAINER --- */}
       <div className="container mx-auto px-6">
         {/* 1. CTA SECTION */}
         <div className="mb-24 flex flex-col items-start justify-between gap-10 md:flex-row md:items-end">
@@ -170,12 +154,12 @@ export default function CreativeFooter() {
                 />
               </div>
               <span className="text-xl font-bold tracking-tight">
-                Your Name
+                VISHAL SHARMA PORTFOLIO
               </span>
             </Link>
             <p className="max-w-xs text-muted-foreground text-sm leading-relaxed">
-              A creative agency crafting digital experiences that merge art with
-              functionality.
+              Turning ideas into working products through vibe coding — fast,
+              self-taught, and always shipping.
             </p>
           </motion.div>
 
@@ -260,7 +244,10 @@ export default function CreativeFooter() {
           transition={{ delay: 0.2 }}
           className="mt-16 flex flex-col items-center justify-between gap-4 border-t border-border/40 py-6 text-xs text-muted-foreground md:flex-row"
         >
-          <p>© {currentYear} Your Name. All rights reserved.</p>
+          <p>
+            © {currentYear}–{currentYear + 1} VISHAL SHARMA — VIBE-CODED
+            HEURISTIC ARCHITECTURE. ALL RIGHTS RESERVED.
+          </p>
           {/* <div className="flex gap-6">
             <Link href="#" className="hover:text-foreground transition-colors">
               Privacy Policy
