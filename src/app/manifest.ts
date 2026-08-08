@@ -1,20 +1,174 @@
-import { MetadataRoute } from 'next'
- 
-export default function manifest(): MetadataRoute.Manifest {
-  return {
-    name: 'VISHAL - Portfolio & Services',
-    short_name: 'VISHAL',
-    description: 'Professional portfolio and services. Web development, design, and digital solutions.',
-    start_url: '/',
-    display: 'standalone',
-    background_color: '#ffffff',
-    theme_color: '#000000',
-    icons: [
+import type { Metadata } from "next";
+import { Poppins, Cormorant_Garamond } from "next/font/google";
+import "./globals.css";
+import { BASE_URL, OG_IMAGE } from "@/lib/constants";
+import LenisWrapper from "@/providers/lenis-provider";
+import { ThemeProvider } from "@/providers/theme-provider";
+import FooterSection from "@/components/layout/footer";
+import Navbar from "@/components/layout/navbar";
+import StructuredData from "@/components/common/structured-data";
+import Analytics from "@/components/common/analytics";
+import ConsoleLog from "@/components/common/console-log";
+import CustomCursor from "@/components/ui/custom-cursor";
+
+const poppins = Poppins({
+  variable: "--font-poppins",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+});
+
+const cormorantGaramond = Cormorant_Garamond({
+  variable: "--font-accent",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  style: ["normal", "italic"],
+  display: "swap",
+});
+
+export const metadata: Metadata = {
+  metadataBase: new URL(BASE_URL),
+  title: {
+    default: "Vishal Sharma - Vibe Coder & Portfolio",
+    template: "%s | Vishal Sharma",
+  },
+  description:
+    "Portfolio of Vishal Sharma, a self-taught vibe coder from Chandigarh, India, turning ideas into working digital products through AI-assisted development.",
+  keywords: [
+    "Vibe Coding",
+    "Prompt Engineering",
+    "AI Prototyping",
+    "Web Development",
+    "Portfolio",
+    "Digital Services",
+    "Next.js",
+    "React",
+    "TypeScript",
+  ],
+  authors: [{ name: "Vishal Sharma" }],
+  creator: "Vishal Sharma",
+  publisher: "Vishal Sharma",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: BASE_URL,
+    title: "Vishal Sharma - Vibe Coder & Portfolio",
+    description:
+      "Explore a portfolio built through vibe coding — AI-assisted projects, prototypes, and digital experiments by Vishal Sharma.",
+    siteName: "Vishal Sharma Portfolio",
+    images: [
       {
-        src: '/md-red-logo.svg',
-        sizes: 'any',
-        type: 'image/svg+xml',
+        url: OG_IMAGE,
+        width: 1200,
+        height: 630,
+        alt: "Portfolio preview",
+        type: "image/jpeg",
       },
     ],
-  }
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Vishal Sharma - Vibe Coder & Portfolio",
+    description:
+      "Explore a portfolio built through vibe coding — AI-assisted projects, prototypes, and digital experiments by Vishal Sharma.",
+    creator: "@yourhandle",
+    images: [
+      {
+        url: OG_IMAGE,
+        width: 1200,
+        height: 630,
+        alt: "Portfolio preview",
+      },
+    ],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  icons: {
+    icon: [
+      { url: "/icon" },
+      { url: "/md-red-logo.svg", type: "image/svg+xml" },
+    ],
+    shortcut: "/md-red-logo.svg",
+    apple: "/md-red-logo.svg",
+  },
+  manifest: "/manifest.webmanifest",
+  verification: {
+    google: "your-google-verification-code",
+    // yandex: "your-yandex-verification-code",
+    // bing: "your-bing-verification-code",
+  },
+  alternates: {
+    canonical: BASE_URL,
+  },
+  category: "technology",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  // suppressHydrationWarning: next-themes adds the `class="dark"` +
+  // `color-scheme` style to <html> on the client, which the server can't know
+  // about — this tells React to ignore that expected attribute mismatch.
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        {/*
+          The hero video (/hv.webm) is eagerly buffered by its own
+          <video preload="auto" fetchpriority="high"> in AboutMe. We intentionally
+          do NOT use <link rel="preload" as="video"> — browsers reject "video" as
+          an unsupported `as` value, which is what triggered the console warning.
+        */}
+
+        {/* Warm up Vimeo connections early so ShowReel iframes load faster */}
+        <link rel="preconnect" href="https://player.vimeo.com" />
+        <link rel="preconnect" href="https://i.vimeocdn.com" />
+        <link rel="preconnect" href="https://f.vimeocdn.com" />
+
+        {/* ImageKit serves the 47 AboutScrollSection frames (crossOrigin) */}
+        <link
+          rel="preconnect"
+          href="https://ik.imagekit.io"
+          crossOrigin="anonymous"
+        />
+        <link rel="dns-prefetch" href="https://ik.imagekit.io" />
+
+        <StructuredData />
+        <Analytics />
+      </head>
+      <body
+        className={`${poppins.variable} ${cormorantGaramond.variable} antialiased  mx-auto `}
+      >
+        <CustomCursor />
+        <ConsoleLog />
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <LenisWrapper>
+            <Navbar />
+            {children}
+            <FooterSection />
+            {/* <FloatingDockDemo /> */}
+          </LenisWrapper>
+        </ThemeProvider>
+      </body>
+    </html>
+  );
 }
