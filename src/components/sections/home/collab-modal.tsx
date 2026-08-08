@@ -17,42 +17,42 @@ type FormData = z.infer<typeof schema>;
 const PROJECT_TYPES = [
   {
     title: "BESPOKE PERSONAL PORTFOLIO WEBSITE",
-    budget: "₹2,000 – ₹15,000 / $25 – $180",
+    tiers: ["₹2,000 – 6,000", "₹6,000 – 10,000", "₹10,000 – 15,000"],
     duration: "10–12 Days [Student-Builder Adaptive Timeline]",
     description:
       "Engineering hyper-scalable, immersive digital resumes and interactive personal profiles. Featuring fluid layout animations, minimal architectural aesthetics, and seamless social cross-integration designed to command authority in your niche.",
   },
   {
     title: "CORPORATE ENTERPRISE ARCHITECTURE (5–6 PAGES)",
-    budget: "₹15,000 – ₹40,000 / $180 – $480",
+    tiers: ["₹15,000 – 25,000", "₹25,000 – 40,000"],
     duration: "10–12 Days [Student-Builder Adaptive Timeline]",
     description:
       "Architecting robust multi-page business infrastructures. Engineered with state-of-the-art lead-capturing nodes, optimized content arrays, performance-driven service showcases, and custom secure communication pipelines.",
   },
   {
     title: 'CUSTOM "BUILD YOUR DREAM PLATFORM" (UNRESTRICTED IDEATION)',
-    budget: "₹25,000 – ₹80,000 / $300 – $960",
+    tiers: ["₹25,000 – 45,000", "₹45,000 – 80,000"],
     duration: "10–12 Days [Student-Builder Adaptive Timeline]",
     description:
       "Transforming avant-garde abstract concepts into deployment-ready digital reality. Completely unconstrained execution leveraging elite AI prompt workflows to model complex, proprietary logic and tailor-made user experiences.",
   },
   {
     title: "CASUAL BROWSER ARCADE INFRASTRUCTURE (2D WEB CLONES)",
-    budget: "₹5,000 – ₹20,000 / $60 – $240",
+    tiers: ["₹5,000 – 12,000", "₹12,000 – 20,000"],
     duration: "10–12 Days [Student-Builder Adaptive Timeline]",
     description:
       "Deploying ultra-responsive 2D mini-game frameworks operating natively within HTML5 environments. Features micro-mechanics engineering, real-time physics calculations, and fluid asset rendering for timeless retro game models.",
   },
   {
     title: 'CUSTOM "NEXT-GEN GAME INTERACTIVE" (PROPRIETARY CONCEPT)',
-    budget: "₹20,000 – ₹75,000 / $240 – $900",
+    tiers: ["₹20,000 – 40,000", "₹40,000 – 75,000"],
     duration: "10–12 Days [Student-Builder Adaptive Timeline]",
     description:
       "Forging custom interactive environments based entirely on your unique gaming philosophy. Implementing specialized behavioral mechanics, bespoke procedural level logic, and custom win-state conditions engineered precisely to your blueprint.",
   },
   {
     title: "NEXT-GEN UTILITY APPLICATION MICRO-SUITE",
-    budget: "₹15,000 – ₹50,000 / $180 – $600",
+    tiers: ["₹15,000 – 30,000", "₹30,000 – 50,000"],
     duration: "10–12 Days [Student-Builder Adaptive Timeline]",
     description:
       "Constructing sophisticated web and mobile management utilities. Employs advanced state management, local data-caching vectors, intuitive habit/finance monitoring mechanics, and highly analytical workflow orchestration.",
@@ -89,6 +89,7 @@ interface Props {
 
 export default function CollabModal({ isOpen, onClose }: Props) {
   const [selectedType, setSelectedType] = useState("");
+  const [selectedTier, setSelectedTier] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
@@ -124,6 +125,7 @@ export default function CollabModal({ isOpen, onClose }: Props) {
         setSubmitError(false);
         reset();
         setSelectedType("");
+        setSelectedTier("");
         setIsSubmitting(false);
       }, 900);
       return () => clearTimeout(t);
@@ -134,15 +136,18 @@ export default function CollabModal({ isOpen, onClose }: Props) {
     setIsSubmitting(true);
     setSubmitError(false);
     try {
-      const subject = encodeURIComponent(
-        `New Collaboration Request — ${data.name}`,
-      );
-      const body = encodeURIComponent(
-        `Name: ${data.name}\nEmail: ${data.email}\nProject Type: ${
-          selectedType || "Not specified"
-        }\n\nMessage:\n${data.message}`,
-      );
-      window.location.href = `mailto:vishal.builds09@gmail.com?subject=${subject}&body=${body}`;
+      const subject = `New Project Inquiry — ${data.name}`;
+      const body = `Name: ${data.name}\nEmail: ${data.email}\nProject Type: ${
+        selectedType || "Not specified"
+      }\nBudget Tier: ${
+        selectedTier || "Not specified"
+      }\n\nMessage:\n${data.message}`;
+
+      const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(
+        "vishal.builds09@gmail.com",
+      )}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+      window.open(gmailUrl, "_blank", "noopener,noreferrer");
       setIsSuccess(true);
     } catch {
       setSubmitError(true);
@@ -332,7 +337,7 @@ export default function CollabModal({ isOpen, onClose }: Props) {
                 aria-hidden="true"
               />
 
-              <div className="flex-1 flex flex-col lg:flex-row px-8 md:px-16 py-10 lg:py-0 gap-10 lg:gap-0 min-h-0">
+              <div className="flex-1 flex flex-col lg:flex-row px-5 sm:px-8 md:px-16 py-6 lg:py-0 gap-6 lg:gap-0 min-h-0">
                 <div className="lg:w-[40%] flex flex-col justify-center lg:py-16 lg:pr-14">
                   <motion.p
                     initial={{ opacity: 0, y: 8 }}
@@ -363,7 +368,7 @@ export default function CollabModal({ isOpen, onClose }: Props) {
                           }}
                           style={{
                             fontFamily: "var(--font-poppins)",
-                            fontSize: "clamp(50px, 7.5vw, 104px)",
+                            fontSize: "clamp(32px, 7.5vw, 104px)",
                             lineHeight: 0.87,
                             color: accent ? RED : "white",
                             fontWeight: "normal",
@@ -441,7 +446,7 @@ export default function CollabModal({ isOpen, onClose }: Props) {
                         noValidate
                       >
                         <motion.div
-                          className="mb-7"
+                          className="mb-5 sm:mb-7"
                           initial={{ opacity: 0, y: 18 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{
@@ -474,7 +479,7 @@ export default function CollabModal({ isOpen, onClose }: Props) {
                         </motion.div>
 
                         <motion.div
-                          className="mb-7"
+                          className="mb-5 sm:mb-7"
                           initial={{ opacity: 0, y: 18 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{
@@ -508,7 +513,7 @@ export default function CollabModal({ isOpen, onClose }: Props) {
                         </motion.div>
 
                         <motion.div
-                          className="mb-7"
+                          className="mb-5 sm:mb-7"
                           initial={{ opacity: 0, y: 18 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{
@@ -519,11 +524,7 @@ export default function CollabModal({ isOpen, onClose }: Props) {
                         >
                           <label style={labelStyle}>PROJECT TYPE</label>
                           <div
-                            style={{
-                              display: "flex",
-                              flexWrap: "wrap",
-                              gap: "8px",
-                            }}
+                            className="grid grid-cols-1 sm:grid-cols-2 gap-2"
                             role="group"
                             aria-label="Select project type"
                           >
@@ -533,17 +534,18 @@ export default function CollabModal({ isOpen, onClose }: Props) {
                                 <motion.button
                                   key={type.title}
                                   type="button"
-                                  onClick={() =>
-                                    setSelectedType(active ? "" : type.title)
-                                  }
-                                  whileTap={{ scale: 0.94 }}
+                                  onClick={() => {
+                                    setSelectedType(active ? "" : type.title);
+                                    setSelectedTier("");
+                                  }}
+                                  whileTap={{ scale: 0.96 }}
                                   aria-pressed={active}
                                   style={{
                                     fontFamily: "var(--font-poppins)",
                                     fontSize: "9px",
-                                    letterSpacing: "0.14em",
+                                    letterSpacing: "0.1em",
                                     textTransform: "uppercase",
-                                    padding: "9px 14px",
+                                    padding: "10px 12px",
                                     border: `1px solid ${active ? RED : "rgba(255,255,255,0.16)"}`,
                                     background: active
                                       ? `oklch(59.71% 0.23 23.86 / 0.12)`
@@ -554,8 +556,7 @@ export default function CollabModal({ isOpen, onClose }: Props) {
                                     cursor: "pointer",
                                     transition: "all 0.22s ease",
                                     textAlign: "left",
-                                    maxWidth: "260px",
-                                    lineHeight: "1.5",
+                                    lineHeight: "1.45",
                                   }}
                                 >
                                   {type.title}
@@ -573,8 +574,8 @@ export default function CollabModal({ isOpen, onClose }: Props) {
                                 transition={{ duration: 0.3 }}
                                 style={{
                                   overflow: "hidden",
-                                  marginTop: "14px",
-                                  padding: "14px 16px",
+                                  marginTop: "12px",
+                                  padding: "12px 14px",
                                   border: "1px solid rgba(255,255,255,0.1)",
                                   background: "rgba(255,255,255,0.02)",
                                 }}
@@ -589,24 +590,82 @@ export default function CollabModal({ isOpen, onClose }: Props) {
                                       <p
                                         style={{
                                           fontFamily: "var(--font-poppins)",
-                                          fontSize: "10px",
+                                          fontSize: "9px",
                                           letterSpacing: "0.08em",
-                                          color: RED,
-                                          marginBottom: "6px",
+                                          textTransform: "uppercase",
+                                          color: "rgba(255,255,255,0.35)",
+                                          marginBottom: "8px",
                                         }}
                                       >
-                                        {selected.budget} · {selected.duration}
+                                        {selected.duration}
                                       </p>
                                       <p
                                         style={{
                                           fontFamily: "var(--font-poppins)",
                                           fontSize: "11px",
-                                          lineHeight: "1.7",
+                                          lineHeight: "1.65",
                                           color: "rgba(255,255,255,0.45)",
+                                          marginBottom: "12px",
                                         }}
                                       >
                                         {selected.description}
                                       </p>
+
+                                      <p
+                                        style={{
+                                          ...labelStyle,
+                                          marginBottom: "8px",
+                                        }}
+                                      >
+                                        BUDGET TIER
+                                      </p>
+                                      <div
+                                        style={{
+                                          display: "flex",
+                                          flexWrap: "wrap",
+                                          gap: "6px",
+                                        }}
+                                        role="group"
+                                        aria-label="Select budget tier"
+                                      >
+                                        {selected.tiers.map((tier) => {
+                                          const tierActive =
+                                            selectedTier === tier;
+                                          return (
+                                            <button
+                                              key={tier}
+                                              type="button"
+                                              onClick={() =>
+                                                setSelectedTier(
+                                                  tierActive ? "" : tier,
+                                                )
+                                              }
+                                              aria-pressed={tierActive}
+                                              style={{
+                                                fontFamily:
+                                                  "var(--font-poppins)",
+                                                fontSize: "10px",
+                                                padding: "7px 12px",
+                                                border: `1px solid ${
+                                                  tierActive
+                                                    ? RED
+                                                    : "rgba(255,255,255,0.16)"
+                                                }`,
+                                                background: tierActive
+                                                  ? "oklch(59.71% 0.23 23.86 / 0.12)"
+                                                  : "transparent",
+                                                color: tierActive
+                                                  ? RED
+                                                  : "rgba(255,255,255,0.5)",
+                                                cursor: "pointer",
+                                                transition: "all 0.2s ease",
+                                              }}
+                                            >
+                                              {tier}
+                                            </button>
+                                          );
+                                        })}
+                                      </div>
                                     </>
                                   );
                                 })()}
@@ -616,7 +675,7 @@ export default function CollabModal({ isOpen, onClose }: Props) {
                         </motion.div>
 
                         <motion.div
-                          className="mb-9"
+                          className="mb-6 sm:mb-9"
                           initial={{ opacity: 0, y: 18 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{
@@ -788,7 +847,7 @@ export default function CollabModal({ isOpen, onClose }: Props) {
                               }}
                               style={{
                                 fontFamily: "var(--font-poppins)",
-                                fontSize: "clamp(42px, 5.5vw, 76px)",
+                                fontSize: "clamp(30px, 5.5vw, 76px)",
                                 lineHeight: 0.88,
                                 color: accent ? RED : "white",
                                 fontWeight: "normal",
