@@ -17,42 +17,79 @@ type FormData = z.infer<typeof schema>;
 const PROJECT_TYPES = [
   {
     title: "BESPOKE PERSONAL PORTFOLIO WEBSITE",
-    tiers: ["₹2,000 – 6,000", "₹6,000 – 10,000", "₹10,000 – 15,000"],
+    tiers: [
+      "₹2,000 – 6,000",
+      "₹6,000 – 10,000",
+      "₹10,000 – 15,000",
+      "₹15,000 – 40,000",
+      "₹40,000 – 80,000",
+      "₹80,000 – 1,00,000",
+    ],
     duration: "10–12 Days [Student-Builder Adaptive Timeline]",
     description:
       "Engineering hyper-scalable, immersive digital resumes and interactive personal profiles. Featuring fluid layout animations, minimal architectural aesthetics, and seamless social cross-integration designed to command authority in your niche.",
   },
   {
     title: "CORPORATE ENTERPRISE ARCHITECTURE (5–6 PAGES)",
-    tiers: ["₹15,000 – 25,000", "₹25,000 – 40,000"],
+    tiers: [
+      "₹8,000 – 15,000",
+      "₹15,000 – 25,000",
+      "₹25,000 – 40,000",
+      "₹40,000 – 70,000",
+      "₹70,000 – 1,00,000",
+    ],
     duration: "10–12 Days [Student-Builder Adaptive Timeline]",
     description:
       "Architecting robust multi-page business infrastructures. Engineered with state-of-the-art lead-capturing nodes, optimized content arrays, performance-driven service showcases, and custom secure communication pipelines.",
   },
   {
     title: 'CUSTOM "BUILD YOUR DREAM PLATFORM" (UNRESTRICTED IDEATION)',
-    tiers: ["₹25,000 – 45,000", "₹45,000 – 80,000"],
+    tiers: [
+      "₹15,000 – 25,000",
+      "₹25,000 – 40,000",
+      "₹40,000 – 60,000",
+      "₹60,000 – 80,000",
+      "₹80,000 – 1,00,000",
+    ],
     duration: "10–12 Days [Student-Builder Adaptive Timeline]",
     description:
       "Transforming avant-garde abstract concepts into deployment-ready digital reality. Completely unconstrained execution leveraging elite AI prompt workflows to model complex, proprietary logic and tailor-made user experiences.",
   },
   {
     title: "CASUAL BROWSER ARCADE INFRASTRUCTURE (2D WEB CLONES)",
-    tiers: ["₹5,000 – 12,000", "₹12,000 – 20,000"],
+    tiers: [
+      "₹2,000 – 8,000",
+      "₹8,000 – 15,000",
+      "₹15,000 – 30,000",
+      "₹30,000 – 60,000",
+      "₹60,000 – 1,00,000",
+    ],
     duration: "10–12 Days [Student-Builder Adaptive Timeline]",
     description:
       "Deploying ultra-responsive 2D mini-game frameworks operating natively within HTML5 environments. Features micro-mechanics engineering, real-time physics calculations, and fluid asset rendering for timeless retro game models.",
   },
   {
     title: 'CUSTOM "NEXT-GEN GAME INTERACTIVE" (PROPRIETARY CONCEPT)',
-    tiers: ["₹20,000 – 40,000", "₹40,000 – 75,000"],
+    tiers: [
+      "₹2,000 – 10,000",
+      "₹10,000 – 25,000",
+      "₹25,000 – 45,000",
+      "₹45,000 – 70,000",
+      "₹70,000 – 1,00,000",
+    ],
     duration: "10–12 Days [Student-Builder Adaptive Timeline]",
     description:
       "Forging custom interactive environments based entirely on your unique gaming philosophy. Implementing specialized behavioral mechanics, bespoke procedural level logic, and custom win-state conditions engineered precisely to your blueprint.",
   },
   {
     title: "NEXT-GEN UTILITY APPLICATION MICRO-SUITE",
-    tiers: ["₹15,000 – 30,000", "₹30,000 – 50,000"],
+    tiers: [
+      "₹15,000 – 25,000",
+      "₹25,000 – 40,000",
+      "₹40,000 – 60,000",
+      "₹60,000 – 80,000",
+      "₹80,000 – 1,00,000",
+    ],
     duration: "10–12 Days [Student-Builder Adaptive Timeline]",
     description:
       "Constructing sophisticated web and mobile management utilities. Employs advanced state management, local data-caching vectors, intuitive habit/finance monitoring mechanics, and highly analytical workflow orchestration.",
@@ -212,7 +249,7 @@ export default function CollabModal({ isOpen, onClose }: Props) {
             animate={{ clipPath: "circle(150% at 50% 50%)" }}
             exit={{ clipPath: "circle(0% at 50% 50%)" }}
             transition={{ duration: 0.88, ease: [0.76, 0, 0.24, 1] }}
-            className="fixed inset-0 z-200"
+            className="fixed inset-0 z-[200]"
             style={{ background: "#080808" }}
             aria-modal="true"
             role="dialog"
