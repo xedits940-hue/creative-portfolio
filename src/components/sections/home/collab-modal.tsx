@@ -14,7 +14,50 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>;
 
-const PROJECT_TYPES = ["BRAND", "WEB", "MOTION", "ALL OF THE ABOVE"] as const;
+const PROJECT_TYPES = [
+  {
+    title: "BESPOKE PERSONAL PORTFOLIO WEBSITE",
+    budget: "₹2,000 – ₹15,000 / $25 – $180",
+    duration: "10–12 Days [Student-Builder Adaptive Timeline]",
+    description:
+      "Engineering hyper-scalable, immersive digital resumes and interactive personal profiles. Featuring fluid layout animations, minimal architectural aesthetics, and seamless social cross-integration designed to command authority in your niche.",
+  },
+  {
+    title: "CORPORATE ENTERPRISE ARCHITECTURE (5–6 PAGES)",
+    budget: "₹15,000 – ₹40,000 / $180 – $480",
+    duration: "10–12 Days [Student-Builder Adaptive Timeline]",
+    description:
+      "Architecting robust multi-page business infrastructures. Engineered with state-of-the-art lead-capturing nodes, optimized content arrays, performance-driven service showcases, and custom secure communication pipelines.",
+  },
+  {
+    title: 'CUSTOM "BUILD YOUR DREAM PLATFORM" (UNRESTRICTED IDEATION)',
+    budget: "₹25,000 – ₹80,000 / $300 – $960",
+    duration: "10–12 Days [Student-Builder Adaptive Timeline]",
+    description:
+      "Transforming avant-garde abstract concepts into deployment-ready digital reality. Completely unconstrained execution leveraging elite AI prompt workflows to model complex, proprietary logic and tailor-made user experiences.",
+  },
+  {
+    title: "CASUAL BROWSER ARCADE INFRASTRUCTURE (2D WEB CLONES)",
+    budget: "₹5,000 – ₹20,000 / $60 – $240",
+    duration: "10–12 Days [Student-Builder Adaptive Timeline]",
+    description:
+      "Deploying ultra-responsive 2D mini-game frameworks operating natively within HTML5 environments. Features micro-mechanics engineering, real-time physics calculations, and fluid asset rendering for timeless retro game models.",
+  },
+  {
+    title: 'CUSTOM "NEXT-GEN GAME INTERACTIVE" (PROPRIETARY CONCEPT)',
+    budget: "₹20,000 – ₹75,000 / $240 – $900",
+    duration: "10–12 Days [Student-Builder Adaptive Timeline]",
+    description:
+      "Forging custom interactive environments based entirely on your unique gaming philosophy. Implementing specialized behavioral mechanics, bespoke procedural level logic, and custom win-state conditions engineered precisely to your blueprint.",
+  },
+  {
+    title: "NEXT-GEN UTILITY APPLICATION MICRO-SUITE",
+    budget: "₹15,000 – ₹50,000 / $180 – $600",
+    duration: "10–12 Days [Student-Builder Adaptive Timeline]",
+    description:
+      "Constructing sophisticated web and mobile management utilities. Employs advanced state management, local data-caching vectors, intuitive habit/finance monitoring mechanics, and highly analytical workflow orchestration.",
+  },
+] as const;
 
 const RED = "oklch(59.71% 0.23 23.86)";
 const RED_RGBA = "rgba(201, 58, 42,";
@@ -58,7 +101,6 @@ export default function CollabModal({ isOpen, onClose }: Props) {
     reset,
   } = useForm<FormData>({ resolver: zodResolver(schema) });
 
-  // Escape key + body scroll lock
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -75,7 +117,6 @@ export default function CollabModal({ isOpen, onClose }: Props) {
     };
   }, [isOpen, onClose]);
 
-  // Reset state after close animation
   useEffect(() => {
     if (!isOpen) {
       const t = setTimeout(() => {
@@ -89,20 +130,20 @@ export default function CollabModal({ isOpen, onClose }: Props) {
     }
   }, [isOpen, reset]);
 
-  const onSubmit = async (data: FormData) => {
+  const onSubmit = (data: FormData) => {
     setIsSubmitting(true);
     setSubmitError(false);
     try {
-      const res = await fetch("/api/collab", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...data, projectType: selectedType }),
-      });
-      if (res.ok) {
-        setIsSuccess(true);
-      } else {
-        setSubmitError(true);
-      }
+      const subject = encodeURIComponent(
+        `New Collaboration Request — ${data.name}`,
+      );
+      const body = encodeURIComponent(
+        `Name: ${data.name}\nEmail: ${data.email}\nProject Type: ${
+          selectedType || "Not specified"
+        }\n\nMessage:\n${data.message}`,
+      );
+      window.location.href = `mailto:vishal.builds09@gmail.com?subject=${subject}&body=${body}`;
+      setIsSuccess(true);
     } catch {
       setSubmitError(true);
     } finally {
@@ -149,7 +190,6 @@ export default function CollabModal({ isOpen, onClose }: Props) {
 
   return (
     <>
-      {/* Scoped styles for placeholder + scrollbar */}
       <style>{`
         .collab-input::placeholder {
           color: rgba(255,255,255,0.16);
@@ -173,7 +213,6 @@ export default function CollabModal({ isOpen, onClose }: Props) {
             role="dialog"
             aria-label="Collaboration form"
           >
-            {/* Grain */}
             <div
               aria-hidden="true"
               className="pointer-events-none absolute inset-0 z-0 opacity-[0.04]"
@@ -183,7 +222,6 @@ export default function CollabModal({ isOpen, onClose }: Props) {
               }}
             />
 
-            {/* Corner brackets */}
             {CORNERS.map((c, i) => (
               <motion.div
                 key={c.id}
@@ -223,9 +261,7 @@ export default function CollabModal({ isOpen, onClose }: Props) {
               />
             ))}
 
-            {/* Scrollable wrapper */}
             <div className="relative z-10 h-full overflow-y-auto flex flex-col">
-              {/* ── HEADER ── */}
               <motion.header
                 className="flex items-center justify-between px-8 md:px-16 pt-8 pb-5 shrink-0"
                 initial={{ opacity: 0, y: -10 }}
@@ -241,7 +277,7 @@ export default function CollabModal({ isOpen, onClose }: Props) {
                     textTransform: "uppercase",
                   }}
                 >
-                  ✦ YOUR NAME
+                  ✦ VISHAL SHARMA
                 </span>
 
                 <motion.button
@@ -279,7 +315,6 @@ export default function CollabModal({ isOpen, onClose }: Props) {
                 </motion.button>
               </motion.header>
 
-              {/* Thin top rule */}
               <motion.div
                 className="mx-8 md:mx-16 shrink-0"
                 style={{
@@ -297,9 +332,7 @@ export default function CollabModal({ isOpen, onClose }: Props) {
                 aria-hidden="true"
               />
 
-              {/* ── BODY ── */}
               <div className="flex-1 flex flex-col lg:flex-row px-8 md:px-16 py-10 lg:py-0 gap-10 lg:gap-0 min-h-0">
-                {/* ── LEFT — Typography ── */}
                 <div className="lg:w-[40%] flex flex-col justify-center lg:py-16 lg:pr-14">
                   <motion.p
                     initial={{ opacity: 0, y: 8 }}
@@ -317,7 +350,6 @@ export default function CollabModal({ isOpen, onClose }: Props) {
                     ✦ INITIATE COLLABORATION
                   </motion.p>
 
-                  {/* Stacked giant words */}
                   <div aria-hidden="true">
                     {WORDS.map(({ text, accent }, i) => (
                       <div key={text} style={{ overflow: "hidden" }}>
@@ -344,7 +376,6 @@ export default function CollabModal({ isOpen, onClose }: Props) {
                     ))}
                   </div>
 
-                  {/* Subtext */}
                   <motion.p
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -358,11 +389,10 @@ export default function CollabModal({ isOpen, onClose }: Props) {
                       maxWidth: "260px",
                     }}
                   >
-                    We craft digital experiences that demand attention.
-                    Let&apos;s build something worth remembering.
+                    I build digital products that demand attention — powered
+                    by vibe coding, one prompt at a time.
                   </motion.p>
 
-                  {/* Red gradient line */}
                   <motion.div
                     aria-hidden="true"
                     style={{
@@ -382,7 +412,6 @@ export default function CollabModal({ isOpen, onClose }: Props) {
                   />
                 </div>
 
-                {/* Vertical divider — desktop */}
                 <motion.div
                   aria-hidden="true"
                   className="hidden lg:block w-px self-stretch shrink-0"
@@ -399,10 +428,8 @@ export default function CollabModal({ isOpen, onClose }: Props) {
                   }}
                 />
 
-                {/* ── RIGHT — Form / Success ── */}
                 <div className="lg:w-[60%] flex flex-col justify-center lg:py-16 lg:pl-14">
                   <AnimatePresence mode="wait">
-                    {/* ── FORM ── */}
                     {!isSuccess && (
                       <motion.form
                         key="form"
@@ -413,7 +440,6 @@ export default function CollabModal({ isOpen, onClose }: Props) {
                         transition={{ duration: 0.35 }}
                         noValidate
                       >
-                        {/* ── NAME ── */}
                         <motion.div
                           className="mb-7"
                           initial={{ opacity: 0, y: 18 }}
@@ -447,7 +473,6 @@ export default function CollabModal({ isOpen, onClose }: Props) {
                           )}
                         </motion.div>
 
-                        {/* ── EMAIL ── */}
                         <motion.div
                           className="mb-7"
                           initial={{ opacity: 0, y: 18 }}
@@ -482,7 +507,6 @@ export default function CollabModal({ isOpen, onClose }: Props) {
                           )}
                         </motion.div>
 
-                        {/* ── PROJECT TYPE ── */}
                         <motion.div
                           className="mb-7"
                           initial={{ opacity: 0, y: 18 }}
@@ -504,22 +528,22 @@ export default function CollabModal({ isOpen, onClose }: Props) {
                             aria-label="Select project type"
                           >
                             {PROJECT_TYPES.map((type) => {
-                              const active = selectedType === type;
+                              const active = selectedType === type.title;
                               return (
                                 <motion.button
-                                  key={type}
+                                  key={type.title}
                                   type="button"
                                   onClick={() =>
-                                    setSelectedType(active ? "" : type)
+                                    setSelectedType(active ? "" : type.title)
                                   }
                                   whileTap={{ scale: 0.94 }}
                                   aria-pressed={active}
                                   style={{
                                     fontFamily: "var(--font-poppins)",
                                     fontSize: "9px",
-                                    letterSpacing: "0.2em",
+                                    letterSpacing: "0.14em",
                                     textTransform: "uppercase",
-                                    padding: "9px 15px",
+                                    padding: "9px 14px",
                                     border: `1px solid ${active ? RED : "rgba(255,255,255,0.16)"}`,
                                     background: active
                                       ? `oklch(59.71% 0.23 23.86 / 0.12)`
@@ -529,16 +553,68 @@ export default function CollabModal({ isOpen, onClose }: Props) {
                                       : "rgba(255,255,255,0.4)",
                                     cursor: "pointer",
                                     transition: "all 0.22s ease",
+                                    textAlign: "left",
+                                    maxWidth: "260px",
+                                    lineHeight: "1.5",
                                   }}
                                 >
-                                  {type}
+                                  {type.title}
                                 </motion.button>
                               );
                             })}
                           </div>
+
+                          <AnimatePresence>
+                            {selectedType && (
+                              <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: "auto" }}
+                                exit={{ opacity: 0, height: 0 }}
+                                transition={{ duration: 0.3 }}
+                                style={{
+                                  overflow: "hidden",
+                                  marginTop: "14px",
+                                  padding: "14px 16px",
+                                  border: "1px solid rgba(255,255,255,0.1)",
+                                  background: "rgba(255,255,255,0.02)",
+                                }}
+                              >
+                                {(() => {
+                                  const selected = PROJECT_TYPES.find(
+                                    (t) => t.title === selectedType,
+                                  );
+                                  if (!selected) return null;
+                                  return (
+                                    <>
+                                      <p
+                                        style={{
+                                          fontFamily: "var(--font-poppins)",
+                                          fontSize: "10px",
+                                          letterSpacing: "0.08em",
+                                          color: RED,
+                                          marginBottom: "6px",
+                                        }}
+                                      >
+                                        {selected.budget} · {selected.duration}
+                                      </p>
+                                      <p
+                                        style={{
+                                          fontFamily: "var(--font-poppins)",
+                                          fontSize: "11px",
+                                          lineHeight: "1.7",
+                                          color: "rgba(255,255,255,0.45)",
+                                        }}
+                                      >
+                                        {selected.description}
+                                      </p>
+                                    </>
+                                  );
+                                })()}
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
                         </motion.div>
 
-                        {/* ── MESSAGE ── */}
                         <motion.div
                           className="mb-9"
                           initial={{ opacity: 0, y: 18 }}
@@ -575,7 +651,6 @@ export default function CollabModal({ isOpen, onClose }: Props) {
                           )}
                         </motion.div>
 
-                        {/* Submit error */}
                         {submitError && (
                           <motion.p
                             initial={{ opacity: 0 }}
@@ -587,7 +662,6 @@ export default function CollabModal({ isOpen, onClose }: Props) {
                           </motion.p>
                         )}
 
-                        {/* ── TRANSMIT BUTTON ── */}
                         <motion.div
                           initial={{ opacity: 0, y: 18 }}
                           animate={{ opacity: 1, y: 0 }}
@@ -610,7 +684,6 @@ export default function CollabModal({ isOpen, onClose }: Props) {
                             initial="rest"
                             whileHover={!isSubmitting ? "hov" : undefined}
                           >
-                            {/* Red fill sweep */}
                             <motion.div
                               aria-hidden="true"
                               variants={{
@@ -630,7 +703,6 @@ export default function CollabModal({ isOpen, onClose }: Props) {
                                 transformOrigin: "left",
                               }}
                             />
-                            {/* Shine line at top */}
                             <motion.div
                               aria-hidden="true"
                               variants={{
@@ -695,7 +767,6 @@ export default function CollabModal({ isOpen, onClose }: Props) {
                       </motion.form>
                     )}
 
-                    {/* ── SUCCESS STATE ── */}
                     {isSuccess && (
                       <motion.div
                         key="success"
@@ -729,7 +800,6 @@ export default function CollabModal({ isOpen, onClose }: Props) {
                           </div>
                         ))}
 
-                        {/* Animated red rule */}
                         <motion.div
                           aria-hidden="true"
                           style={{
