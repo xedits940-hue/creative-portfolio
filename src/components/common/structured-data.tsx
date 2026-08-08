@@ -1,15 +1,14 @@
 import { BASE_URL, OG_IMAGE } from "@/lib/constants";
-
 export default function StructuredData() {
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "Person",
-    name: "Your Name",
+    name: "Vishal Sharma",
     url: BASE_URL,
     image: OG_IMAGE,
     description:
-      "Professional web developer and designer specializing in modern web technologies and creative digital solutions.",
-    jobTitle: "Web Developer & Designer",
+      "Self-taught vibe coder from Chandigarh, India, turning ideas into working digital products through AI-assisted development.",
+    jobTitle: "Vibe Coder",
     sameAs: [
       // Add your social media profiles
       "https://github.com/yourusername",
@@ -17,26 +16,23 @@ export default function StructuredData() {
       "https://twitter.com/yourhandle",
     ],
     knowsAbout: [
+      "Vibe Coding",
+      "Prompt Engineering",
+      "AI Prototyping",
+      "Product Logic",
       "Web Development",
-      "Frontend Development",
-      "Next.js",
-      "React",
-      "TypeScript",
-      "UI/UX Design",
-      "Full Stack Development",
     ],
   };
-
   const websiteStructuredData = {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    name: "Your Name Portfolio",
+    name: "Vishal Sharma Portfolio",
     url: BASE_URL,
     description:
-      "Professional portfolio showcasing web development, design, and digital solutions.",
+      "Portfolio of Vishal Sharma — a self-taught vibe coder building digital products through AI-assisted development.",
     author: {
       "@type": "Person",
-      name: "Your Name",
+      name: "Vishal Sharma",
     },
     potentialAction: {
       "@type": "SearchAction",
@@ -47,11 +43,10 @@ export default function StructuredData() {
       "query-input": "required name=search_term_string",
     },
   };
-
   const organizationStructuredData = {
     "@context": "https://schema.org",
     "@type": "ProfessionalService",
-    name: "Your Name",
+    name: "Vishal Sharma",
     image: `${BASE_URL}/md-red-logo.svg`,
     "@id": BASE_URL,
     url: BASE_URL,
@@ -71,7 +66,6 @@ export default function StructuredData() {
       closes: "18:00",
     },
   };
-
   return (
     <>
       <script
