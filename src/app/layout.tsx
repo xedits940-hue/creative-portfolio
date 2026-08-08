@@ -28,27 +28,25 @@ const cormorantGaramond = Cormorant_Garamond({
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
   title: {
-    default: "Your Name - Professional Portfolio & Digital Services",
-    template: "%s | Your Name",
+    default: "Vishal Sharma - Vibe Coder & Portfolio",
+    template: "%s | Vishal Sharma",
   },
   description:
-    "Professional portfolio showcasing web development, design, and digital solutions. Expert in modern web technologies, creative design, and innovative digital experiences.",
+    "Portfolio of Vishal Sharma, a self-taught vibe coder from Chandigarh, India, turning ideas into working digital products through AI-assisted development.",
   keywords: [
+    "Vibe Coding",
+    "Prompt Engineering",
+    "AI Prototyping",
     "Web Development",
     "Portfolio",
     "Digital Services",
-    "Web Design",
-    "UI/UX Design",
-    "Frontend Development",
     "Next.js",
     "React",
     "TypeScript",
-    "Full Stack Developer",
-    "Creative Solutions",
   ],
-  authors: [{ name: "Your Name" }],
-  creator: "Your Name",
-  publisher: "Your Name",
+  authors: [{ name: "Vishal Sharma" }],
+  creator: "Vishal Sharma",
+  publisher: "Vishal Sharma",
   formatDetection: {
     email: false,
     address: false,
@@ -58,10 +56,10 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: BASE_URL,
-    title: "Your Name - Professional Portfolio & Digital Services",
+    title: "Vishal Sharma - Vibe Coder & Portfolio",
     description:
-      "Explore a portfolio featuring cutting-edge web development projects, creative designs, and innovative digital solutions.",
-    siteName: "Your Name",
+      "Explore a portfolio built through vibe coding — AI-assisted projects, prototypes, and digital experiments by Vishal Sharma.",
+    siteName: "Vishal Sharma Portfolio",
     images: [
       {
         url: OG_IMAGE,
@@ -74,9 +72,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Your Name - Professional Portfolio & Digital Services",
+    title: "Vishal Sharma - Vibe Coder & Portfolio",
     description:
-      "Explore a portfolio featuring cutting-edge web development projects, creative designs, and innovative digital solutions.",
+      "Explore a portfolio built through vibe coding — AI-assisted projects, prototypes, and digital experiments by Vishal Sharma.",
     creator: "@yourhandle",
     images: [
       {
