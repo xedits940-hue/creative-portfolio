@@ -28,8 +28,8 @@ const cormorantGaramond = Cormorant_Garamond({
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
   title: {
-    default: "Vishal Sharma - Vibe Coder & Portfolio",
-    template: "%s | Vishal Sharma",
+    default: "VISHAL SHARMA | NEXT-GEN VIBE CODER",
+    template: "%s | VISHAL SHARMA",
   },
   description:
     "Portfolio of Vishal Sharma, a self-taught vibe coder from Chandigarh, India, turning ideas into working digital products through AI-assisted development.",
