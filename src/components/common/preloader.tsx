@@ -181,16 +181,28 @@ const Preloader: React.FC<PreloaderProps> = ({
             </span>
           </div>
 
-          {/* Bottom-right: the big live counter */}
-          <div className="absolute bottom-4 right-6 z-[2] flex items-end tabular-nums md:right-10">
+          {/* Bottom-right: the big live counter - MOBILE OPTIMIZED */}
+          <div className={`absolute z-[2] flex items-end tabular-nums ${
+            isMobile 
+              ? "bottom-1/4 left-1/2 -translate-x-1/2" 
+              : "bottom-4 right-6 md:right-10"
+          }`}>
             <span
-              className="font-[var(--font-accent)] text-[13vw] leading-none tracking-tighter md:text-[6vw]"
+              className={`font-[var(--font-accent)] leading-none tracking-tighter ${
+                isMobile 
+                  ? "text-[20vw]" 
+                  : "text-[13vw] md:text-[6vw]"
+              }`}
               style={{ color: textColor }}
             >
               {String(Math.round(clamped)).padStart(2, "0")}
             </span>
             <span
-              className="mb-[1.5vw] ml-1 text-[3vw] font-light md:mb-[0.8vw] md:text-[1.3vw]"
+              className={`ml-1 font-light ${
+                isMobile 
+                  ? "mb-[2vw] text-[4vw]" 
+                  : "mb-[1.5vw] text-[3vw] md:mb-[0.8vw] md:text-[1.3vw]"
+              }`}
               style={{ color: accentColor }}
             >
               %
