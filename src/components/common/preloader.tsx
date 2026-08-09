@@ -141,25 +141,22 @@ const Preloader: React.FC<PreloaderProps> = ({
           <div className="absolute inset-0 z-[2] flex items-center justify-center">
             <div className="flex items-center overflow-hidden">
               <span
-                className="mr-3 block h-2.5 w-2.5 rounded-full"
+                className="mr-3 block h-2.5 w-2.5 shrink-0 rounded-full"
                 style={{ backgroundColor: accentColor }}
               />
               <div className="relative overflow-hidden">
-                {/* invisible sizer keeps layout stable across languages.
-                    leading-[1.6] gives the box extra vertical room so the tall
-                    Devanagari matras (ि ी ै) aren't clipped by the mask. */}
-                <span className="invisible block text-5xl font-light leading-[1.6] md:text-6xl">
-                  {words.reduce((a, b) => (a.length > b.length ? a : b), "")}
-                </span>
                 {/* Keyed by index: each greeting is fully opaque the moment it
                     appears (only a small slide), so nothing flashes invisible
-                    even when words change quickly. */}
+                    even when words change quickly. Natural width (no fixed
+                    sizer box) keeps the dot sitting right next to the word
+                    for every language, instead of floating far from short
+                    words like "やあ". */}
                 <motion.span
                   key={index}
                   initial={{ y: "35%" }}
                   animate={{ y: "0%" }}
                   transition={{ duration: 0.4, ease: [0.33, 1, 0.68, 1] }}
-                  className="absolute inset-0 flex items-center justify-center whitespace-nowrap text-5xl font-light leading-[1.6] md:text-6xl"
+                  className="block whitespace-nowrap text-4xl font-light leading-[1.6] md:text-5xl"
                   style={{ color: textColor }}
                 >
                   {words[index]}
@@ -187,13 +184,13 @@ const Preloader: React.FC<PreloaderProps> = ({
           {/* Bottom-right: the big live counter */}
           <div className="absolute bottom-4 right-6 z-[2] flex items-end tabular-nums md:right-10">
             <span
-              className="font-[var(--font-accent)] text-[18vw] leading-none tracking-tighter md:text-[12vw]"
+              className="font-[var(--font-accent)] text-[13vw] leading-none tracking-tighter md:text-[6vw]"
               style={{ color: textColor }}
             >
               {String(Math.round(clamped)).padStart(2, "0")}
             </span>
             <span
-              className="mb-[2vw] ml-1 text-[4vw] font-light md:mb-[1.5vw] md:text-[2.5vw]"
+              className="mb-[1.5vw] ml-1 text-[3vw] font-light md:mb-[0.8vw] md:text-[1.3vw]"
               style={{ color: accentColor }}
             >
               %
