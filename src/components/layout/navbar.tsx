@@ -45,7 +45,7 @@ const Navbar: React.FC = () => {
 
         await animate(
           scope.current,
-          { height: "2.75rem", borderRadius: "8px" },
+          { height: "3rem", borderRadius: "8px" },
           { duration: 0.5, ease: EASE_CLOSE },
         );
 
@@ -86,16 +86,16 @@ const Navbar: React.FC = () => {
 
       await animate(
         scope.current,
-        { width: "90vw", borderRadius: "8px" },
-        { duration: 0.5, ease: EASE_OPEN },
+        { width: "92vw", borderRadius: "8px" },
+        { duration: 0.55, ease: EASE_OPEN },
       );
 
       setShowContent(true);
 
       await animate(
         scope.current,
-        { height: "auto", maxHeight: "50vh", borderRadius: "8px" },
-        { duration: 0.5, ease: EASE_OPEN },
+        { height: "auto", maxHeight: "55vh", borderRadius: "8px" },
+        { duration: 0.55, ease: EASE_OPEN },
       );
     } else {
       setShowContent(false);
@@ -103,7 +103,7 @@ const Navbar: React.FC = () => {
 
       await animate(
         scope.current,
-        { height: "2.75rem", borderRadius: "8px" },
+        { height: "3rem", borderRadius: "8px" },
         { duration: 0.5, ease: EASE_CLOSE },
       );
 
@@ -126,13 +126,13 @@ const Navbar: React.FC = () => {
     <nav className="fixed top-5 left-0 right-0 z-50 flex justify-center items-center px-4 sm:px-0">
       <div
         ref={scope}
-        className="w-fit sm:w-fit md:w-fit border h-11 sm:h-11 rounded bg-background/80 dark:bg-background/60 backdrop-blur-md flex flex-col overflow-hidden"
+        className="w-fit border h-12 sm:h-14 rounded bg-background/80 dark:bg-background/60 backdrop-blur-md flex flex-col overflow-hidden"
       >
         {/* Top bar */}
-        <div className="flex justify-between items-center h-11 shrink-0 px-3 sm:px-4 gap-3 sm:gap-4">
+        <div className="flex justify-between items-center h-12 sm:h-14 shrink-0 px-4 sm:px-5 gap-3 sm:gap-4">
           <motion.button
             onClick={handleToggle}
-            className="cursor-pointer relative h-4 w-4 sm:h-5 sm:w-5"
+            className="cursor-pointer relative h-5 w-5 sm:h-6 sm:w-6"
             aria-label={isOpen ? "Close menu" : "Open menu"}
             whileTap={{ scale: 0.85 }}
             whileHover={{ scale: 1.1 }}
@@ -146,7 +146,7 @@ const Navbar: React.FC = () => {
                   exit={{ opacity: 0, rotate: 90 }}
                   transition={{ duration: 0.2, ease: "easeInOut" }}
                 >
-                  <X className="h-4 w-4 sm:h-5 sm:w-5" />
+                  <X className="h-5 w-5 sm:h-6 sm:w-6" />
                 </motion.div>
               ) : (
                 <motion.div
@@ -156,7 +156,7 @@ const Navbar: React.FC = () => {
                   exit={{ opacity: 0, rotate: -90 }}
                   transition={{ duration: 0.2, ease: "easeInOut" }}
                 >
-                  <Menu className="h-4 w-4 sm:h-5 sm:w-5" />
+                  <Menu className="h-5 w-5 sm:h-6 sm:w-6" />
                 </motion.div>
               )}
             </AnimatePresence>
@@ -173,7 +173,7 @@ const Navbar: React.FC = () => {
             <Image
               src="/md-red-logo.svg"
               alt="Md Logo"
-              className="h-6 w-6 sm:h-7 sm:w-7 cursor-pointer"
+              className="h-7 w-7 sm:h-8 sm:w-8 cursor-pointer"
               width={10}
               height={10}
             />
@@ -182,7 +182,7 @@ const Navbar: React.FC = () => {
           <ThemeToggleButton
             start="left-right"
             variant="rectangle"
-            className="bg-background-foreground border h-4 w-4 sm:h-5 sm:w-5"
+            className="bg-background-foreground border h-5 w-5 sm:h-6 sm:w-6"
           />
         </div>
 
@@ -194,7 +194,7 @@ const Navbar: React.FC = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3, ease: "easeOut" }}
-              className="flex flex-col flex-1 px-3 sm:px-4 pt-2 sm:pt-3 pb-3 overflow-y-auto max-h-[calc(50vh-2.75rem)]"
+              className="flex flex-col flex-1 px-4 sm:px-5 pt-3 sm:pt-4 pb-4 sm:pb-5 overflow-y-auto max-h-[calc(55vh-3rem)]"
             >
               {/* Navigation links */}
               <div className="flex-1 flex flex-col justify-start md:justify-center">
@@ -203,7 +203,7 @@ const Navbar: React.FC = () => {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                  className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-2 sm:mb-3"
+                  className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-3 sm:mb-4"
                 >
                   Navigation
                 </motion.span>
@@ -211,11 +211,11 @@ const Navbar: React.FC = () => {
                 {navLinks.map((link, i) => (
                   <motion.div
                     key={link.name}
-                    initial={{ opacity: 0, y: 20, filter: "blur(4px)" }}
+                    initial={{ opacity: 0, y: 25, filter: "blur(4px)" }}
                     animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                     exit={{
                       opacity: 0,
-                      y: -10,
+                      y: -12,
                       filter: "blur(3px)",
                       transition: {
                         duration: 0.15,
@@ -233,11 +233,11 @@ const Navbar: React.FC = () => {
                     <Link
                       href={link.href}
                       onClick={handleToggle}
-                      className="group relative pr-2 sm:pr-3 flex items-center gap-2 sm:gap-3 py-1.5 sm:py-2 border-b border-border/20 last:border-b-0"
+                      className="group relative pr-3 sm:pr-4 flex items-center gap-2 sm:gap-3 py-2 sm:py-2.5 border-b border-border/20 last:border-b-0"
                     >
                       {/* Number */}
                       <motion.span
-                        className="text-[9px] font-mono text-muted-foreground/60 w-4 shrink-0"
+                        className="text-xs font-mono text-muted-foreground/60 w-5 sm:w-6 shrink-0"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{
@@ -251,7 +251,7 @@ const Navbar: React.FC = () => {
                       {/* Link text */}
                       <div className="flex-1 overflow-hidden">
                         <motion.div
-                          className="flex items-baseline gap-1 sm:gap-2"
+                          className="flex items-baseline gap-2 sm:gap-2"
                           animate={{
                             x: hoveredIndex === i ? 8 : 0,
                           }}
@@ -260,12 +260,12 @@ const Navbar: React.FC = () => {
                             ease: [0.22, 1, 0.36, 1],
                           }}
                         >
-                          <span className="text-sm sm:text-base md:text-lg font-bold tracking-tighter leading-none">
+                          <span className="text-base sm:text-lg md:text-2xl font-bold tracking-tighter leading-none">
                             {link.name}
                           </span>
 
                           <motion.span
-                            className="text-[8px] text-muted-foreground hidden md:inline-block"
+                            className="text-xs text-muted-foreground hidden md:inline-block"
                             initial={{ opacity: 0, x: -10 }}
                             animate={{
                               opacity: hoveredIndex === i ? 1 : 0,
@@ -294,12 +294,12 @@ const Navbar: React.FC = () => {
                           ease: [0.22, 1, 0.36, 1],
                         }}
                       >
-                        <ArrowUpRight className="h-3 w-3 sm:h-4 sm:w-4" />
+                        <ArrowUpRight className="h-4 w-4 sm:h-5 sm:w-5" />
                       </motion.div>
 
                       {/* Hover bar */}
                       <motion.div
-                        className="absolute -left-2 top-0 bottom-0 w-[2px] bg-primary rounded-full origin-top"
+                        className="absolute -left-3 sm:-left-4 top-0 bottom-0 w-[2px] bg-primary rounded-full origin-top"
                         initial={{ scaleY: 0 }}
                         animate={{
                           scaleY: hoveredIndex === i ? 1 : 0,
@@ -324,11 +324,11 @@ const Navbar: React.FC = () => {
                   delay: navLinks.length * 0.06 + 0.08,
                   ease: [0.22, 1, 0.36, 1],
                 }}
-                className="flex flex-col justify-between items-start gap-1.5 pt-2 mt-auto border-t border-border/20"
+                className="flex flex-col justify-between items-start gap-2 pt-2 sm:pt-3 mt-auto border-t border-border/20"
               >
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-2">
                   <motion.div
-                    className="h-1.5 w-1.5 rounded-full bg-green-500"
+                    className="h-2 w-2 rounded-full bg-green-500"
                     animate={{ scale: [1, 1.3, 1] }}
                     transition={{
                       duration: 2,
@@ -336,13 +336,13 @@ const Navbar: React.FC = () => {
                       ease: "easeInOut",
                     }}
                   />
-                  <span className="text-[9px] text-muted-foreground">
-                    Available
+                  <span className="text-xs text-muted-foreground">
+                    Available for projects
                   </span>
                 </div>
 
                 {/* Mobile social links */}
-                <div className="flex gap-2 md:hidden text-[8px]">
+                <div className="flex gap-2 md:hidden text-xs">
                   {socialLinks.slice(0, 3).map((social) => (
                     <a
                       key={social.name}
