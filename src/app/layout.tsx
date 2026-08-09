@@ -122,9 +122,40 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Warm up Vimeo connections early so ShowReel iframes load faster */}
         <link rel="preconnect" href="https://player.vimeo.com" />
         <link rel="preconnect" href="https://i.vimeocdn.com" />
         <link rel="preconnect" href="https://f.vimeocdn.com" />
+
+        {/* ImageKit serves the 47 AboutScrollSection frames (crossOrigin) */}
         <link
           rel="preconnect"
           href="https://ik.imagekit.io"
+          crossOrigin="anonymous"
+        />
+        <link rel="dns-prefetch" href="https://ik.imagekit.io" />
+
+        <StructuredData />
+        <Analytics />
+      </head>
+      <body
+        className={`${poppins.variable} ${cormorantGaramond.variable} antialiased mx-auto`}
+      >
+        <CustomCursor />
+        <ConsoleLog />
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <LenisWrapper>
+            <Navbar />
+            {children}
+            <FooterSection />
+          </LenisWrapper>
+        </ThemeProvider>
+      </body>
+    </html>
+  );
+}
