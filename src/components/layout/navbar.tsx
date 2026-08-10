@@ -9,7 +9,6 @@ import { motion, useAnimate, AnimatePresence } from "framer-motion";
 
 const navLinks = [
   { name: "Projects", href: "#projects", label: "Our Work" },
-  // { name: "Services", href: "#services", label: "What We Do" },
   { name: "Contact", href: "#contact", label: "Get In Touch" },
   { name: "About", href: "#about", label: "Who We Are" },
 ];
@@ -29,83 +28,105 @@ const Navbar: React.FC = () => {
   const [showContent, setShowContent] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
   const [scope, animate] = useAnimate();
   const closedWidthRef = useRef<number>(0);
 
-  // Close navbar when clicking outside
   useEffect(() => {
     const handleClickOutside = async (event: MouseEvent) => {
       if (
-        isOpen &&
-        scope.current &&
-        !scope.current.contains(event.target as Node)
+        !isOpen ||
+        isAnimating ||
+        !scope.current ||
+        scope.current.contains(event.target as Node)
       ) {
-        if (isAnimating) return;
-
-        setIsAnimating(true);
-        setShowContent(false);
-        setHoveredIndex(null);
-
-        await animate(
-          scope.current,
-          { height: "4rem", borderRadius: "10px" },
-          { duration: 0.6, ease: EASE_CLOSE }
-        );
-
-        await animate(
-          scope.current,
-          {
-            width: `${closedWidthRef.current}px`,
-            borderRadius: "10px",
-          },
-          { duration: 0.65, ease: EASE_CLOSE }
-        );
-
-        scope.current.style.width = "";
-        scope.current.style.height = "";
-        scope.current.style.borderRadius = "";
-
-        setIsOpen(false);
-        setIsAnimating(false);
+        return;
       }
+
+      setIsAnimating(true);
+      setShowContent(false);
+      setHoveredIndex(null);
+
+      await animate(
+        scope.current,
+        {
+          height: "3.75rem",
+          borderRadius: "18px",
+        },
+        {
+          duration: 0.5,
+          ease: EASE_CLOSE,
+        }
+      );
+
+      await animate(
+        scope.current,
+        {
+          width: `${closedWidthRef.current}px`,
+          borderRadius: "18px",
+        },
+        {
+          duration: 0.5,
+          ease: EASE_CLOSE,
+        }
+      );
+
+      scope.current.style.width = "";
+      scope.current.style.height = "";
+      scope.current.style.borderRadius = "";
+
+      setIsOpen(false);
+      setIsAnimating(false);
     };
 
-    if (isOpen) {
-      const timer = setTimeout(() => {
-        document.addEventListener("mousedown", handleClickOutside);
-      }, 100);
+    if (!isOpen) return;
 
-      return () => {
-        clearTimeout(timer);
-        document.removeEventListener("mousedown", handleClickOutside);
-      };
-    }
+    const timer = window.setTimeout(() => {
+      document.addEventListener("mousedown", handleClickOutside);
+    }, 100);
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, isAnimating]);
+    return () => {
+      window.clearTimeout(timer);
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen, isAnimating, animate, scope]);
 
   const handleToggle = async () => {
-    if (isAnimating) return;
+    if (isAnimating || !scope.current) return;
 
     setIsAnimating(true);
 
     if (!isOpen) {
       closedWidthRef.current = scope.current.offsetWidth;
+
       scope.current.style.width = `${closedWidthRef.current}px`;
+
       setIsOpen(true);
 
       await animate(
         scope.current,
-        { width: "90vw", borderRadius: "10px" },
-        { duration: 0.85, ease: EASE_OPEN }
+        {
+          width: "min(92vw, 680px)",
+          borderRadius: "18px",
+        },
+        {
+          duration: 0.65,
+          ease: EASE_OPEN,
+        }
       );
 
       setShowContent(true);
 
       await animate(
         scope.current,
-        { height: "72vh", borderRadius: "10px" },
-        { duration: 0.9, ease: EASE_OPEN }
+        {
+          height: "min(68vh, 520px)",
+          borderRadius: "18px",
+        },
+        {
+          duration: 0.7,
+          ease: EASE_OPEN,
+        }
       );
     } else {
       setShowContent(false);
@@ -113,17 +134,26 @@ const Navbar: React.FC = () => {
 
       await animate(
         scope.current,
-        { height: "4rem", borderRadius: "10px" },
-        { duration: 0.6, ease: EASE_CLOSE }
+        {
+          height: "3.75rem",
+          borderRadius: "18px",
+        },
+        {
+          duration: 0.5,
+          ease: EASE_CLOSE,
+        }
       );
 
       await animate(
         scope.current,
         {
           width: `${closedWidthRef.current}px`,
-          borderRadius: "10px",
+          borderRadius: "18px",
         },
-        { duration: 0.65, ease: EASE_CLOSE }
+        {
+          duration: 0.5,
+          ease: EASE_CLOSE,
+        }
       );
 
       scope.current.style.width = "";
@@ -137,310 +167,499 @@ const Navbar: React.FC = () => {
   };
 
   return (
-    <nav className="fixed top-5 left-0 right-0 z-50 flex justify-center items-center">
+    <nav className="fixed top-4 left-0 right-0 z-50 flex justify-center px-3 sm:px-4">
       <div
         ref={scope}
-        className="w-4/5 md:w-2xl border h-[4.5rem] rounded bg-background/80 dark:bg-background/60 backdrop-blur-md flex flex-col overflow-hidden"
+        className="
+          w-full max-w-[680px]
+          h-[3.75rem]
+          rounded-[18px]
+          border border-border/40
+          bg-background/75 dark:bg-background/55
+          backdrop-blur-xl
+          shadow-lg
+          flex flex-col
+          overflow-hidden
+        "
       >
-        {/* ── Top bar ──────────────────────────────── */}
-        <div className="flex justify-between items-center min-h-[4.5rem] shrink-0 px-6">
+        {/* TOP BAR */}
+        <div
+          className="
+            flex items-center justify-between
+            h-[3.75rem]
+            min-h-[3.75rem]
+            shrink-0
+            px-4 sm:px-5 md:px-6
+          "
+        >
+          {/* MENU BUTTON */}
           <motion.button
             onClick={handleToggle}
-            className="cursor-pointer relative h-6 w-6"
+            disabled={isAnimating}
+            className="
+              relative
+              flex items-center justify-center
+              h-9 w-9
+              sm:h-10 sm:w-10
+              rounded-full
+              cursor-pointer
+              shrink-0
+            "
             aria-label={isOpen ? "Close menu" : "Open menu"}
-            whileTap={{ scale: 0.85 }}
-            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            whileHover={{ scale: 1.04 }}
           >
-            <AnimatePresence mode="wait">
+            <AnimatePresence mode="wait" initial={false}>
               {isOpen ? (
                 <motion.div
                   key="close"
-                  initial={{ opacity: 0, rotate: -90 }}
-                  animate={{ opacity: 1, rotate: 0 }}
-                  exit={{ opacity: 0, rotate: 90 }}
-                  transition={{ duration: 0.25, ease: "easeInOut" }}
+                  initial={{ opacity: 0, rotate: -90, scale: 0.8 }}
+                  animate={{ opacity: 1, rotate: 0, scale: 1 }}
+                  exit={{ opacity: 0, rotate: 90, scale: 0.8 }}
+                  transition={{
+                    duration: 0.2,
+                    ease: "easeOut",
+                  }}
                 >
-                  <X className="h-6 w-6" />
+                  <X className="h-5 w-5 sm:h-[21px] sm:w-[21px]" />
                 </motion.div>
               ) : (
                 <motion.div
                   key="menu"
-                  initial={{ opacity: 0, rotate: 90 }}
-                  animate={{ opacity: 1, rotate: 0 }}
-                  exit={{ opacity: 0, rotate: -90 }}
-                  transition={{ duration: 0.25, ease: "easeInOut" }}
+                  initial={{ opacity: 0, rotate: 90, scale: 0.8 }}
+                  animate={{ opacity: 1, rotate: 0, scale: 1 }}
+                  exit={{ opacity: 0, rotate: -90, scale: 0.8 }}
+                  transition={{
+                    duration: 0.2,
+                    ease: "easeOut",
+                  }}
                 >
-                  <Menu className="h-6 w-6" />
+                  <Menu className="h-5 w-5 sm:h-[21px] sm:w-[21px]" />
                 </motion.div>
               )}
             </AnimatePresence>
           </motion.button>
 
+          {/* CENTER LOGO */}
           <Link
-            href={"/"}
+            href="/"
+            aria-label="Home"
             onClick={(e) => {
               e.preventDefault();
-              window.scrollTo({ top: 0, behavior: "smooth" });
 
-              if (isOpen) {
+              window.scrollTo({
+                top: 0,
+                behavior: "smooth",
+              });
+
+              if (isOpen && !isAnimating) {
                 handleToggle();
               }
             }}
+            className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center"
           >
             <Image
               src="/md-red-logo.svg"
-              alt="Md Logo"
-              className="h-12 w-12 cursor-pointer"
-              width={12}
-              height={12}
+              alt="Logo"
+              width={36}
+              height={36}
+              priority
+              className="
+                h-8 w-8
+                sm:h-9 sm:w-9
+                object-contain
+                cursor-pointer
+              "
             />
           </Link>
 
-          <ThemeToggleButton
-            start="left-right"
-            variant="rectangle"
-            className="bg-background-foreground border"
-          />
+          {/* THEME BUTTON */}
+          <div className="flex items-center justify-center shrink-0">
+            <ThemeToggleButton
+              start="left-right"
+              variant="rectangle"
+              className="
+                h-9
+                sm:h-10
+                px-2.5
+                sm:px-3
+                rounded-full
+                bg-background/70
+                border border-border/40
+              "
+            />
+          </div>
         </div>
 
-        {/* ── Awwwards-style Expandable content ────── */}
-        <AnimatePresence>
+        {/* EXPANDED MENU */}
+        <AnimatePresence initial={false}>
           {showContent && (
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.35, ease: "easeOut" }}
-              className="flex flex-col flex-1 px-6 md:px-10 pt-4 pb-6 overflow-hidden"
+              initial={{
+                opacity: 0,
+                y: 8,
+              }}
+              animate={{
+                opacity: 1,
+                y: 0,
+              }}
+              exit={{
+                opacity: 0,
+                y: 6,
+              }}
+              transition={{
+                duration: 0.28,
+                ease: [0.22, 1, 0.36, 1],
+              }}
+              className="
+                flex flex-col flex-1
+                px-4 sm:px-6 md:px-8
+                pt-2 sm:pt-3
+                pb-4 sm:pb-5
+                overflow-hidden
+              "
             >
-              {/* ── Main content: split layout ─────── */}
-              <div className="flex flex-col md:flex-row flex-1 gap-8 md:gap-0">
-                {/* ── Left: Navigation links ───────── */}
-                <div className="flex-1 flex flex-col justify-center">
-                  {/* Section label */}
+              {/* MAIN CONTENT */}
+              <div className="flex flex-col md:flex-row flex-1 min-h-0">
+                {/* NAVIGATION */}
+                <div className="flex-1 flex flex-col justify-center min-w-0">
                   <motion.span
-                    initial={{ opacity: 0, x: -10 }}
+                    initial={{ opacity: 0, x: -8 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0 }}
                     transition={{
-                      duration: 0.4,
+                      duration: 0.3,
                       ease: [0.22, 1, 0.36, 1],
                     }}
-                    className="text-xs uppercase tracking-[0.3em] text-muted-foreground mb-6 md:mb-8"
+                    className="
+                      text-[10px]
+                      sm:text-[11px]
+                      uppercase
+                      tracking-[0.24em]
+                      text-muted-foreground
+                      mb-3 sm:mb-4
+                    "
                   >
                     Navigation
                   </motion.span>
 
-                  {navLinks.map((link, i) => (
-                    <motion.div
-                      key={link.name}
-                      initial={{
-                        opacity: 0,
-                        y: 40,
-                        filter: "blur(6px)",
-                      }}
-                      animate={{
-                        opacity: 1,
-                        y: 0,
-                        filter: "blur(0px)",
-                      }}
-                      exit={{
-                        opacity: 0,
-                        y: -15,
-                        filter: "blur(4px)",
-                        transition: {
-                          duration: 0.16,
-                          delay: (navLinks.length - 1 - i) * 0.04,
-                        },
-                      }}
-                      transition={{
-                        duration: 0.6,
-                        delay: i * 0.08,
-                        ease: [0.22, 1, 0.36, 1],
-                      }}
-                      onMouseEnter={() => setHoveredIndex(i)}
-                      onMouseLeave={() => setHoveredIndex(null)}
-                    >
-                      <Link
-                        href={link.href}
-                        onClick={handleToggle}
-                        className="group relative pr-6 flex items-center gap-4 md:gap-6 py-3 md:py-4 border-b border-border/20 last:border-b-0"
+                  <div>
+                    {navLinks.map((link, i) => (
+                      <motion.div
+                        key={link.name}
+                        initial={{
+                          opacity: 0,
+                          y: 18,
+                        }}
+                        animate={{
+                          opacity: 1,
+                          y: 0,
+                        }}
+                        exit={{
+                          opacity: 0,
+                          y: -8,
+                        }}
+                        transition={{
+                          duration: 0.42,
+                          delay: i * 0.055,
+                          ease: [0.22, 1, 0.36, 1],
+                        }}
+                        onMouseEnter={() => setHoveredIndex(i)}
+                        onMouseLeave={() => setHoveredIndex(null)}
                       >
-                        {/* Number */}
-                        <motion.span
-                          className="text-xs md:text-sm font-mono text-muted-foreground/60 w-8 shrink-0"
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          transition={{
-                            duration: 0.3,
-                            delay: i * 0.08 + 0.2,
-                          }}
+                        <Link
+                          href={link.href}
+                          onClick={handleToggle}
+                          className="
+                            group
+                            relative
+                            flex items-center
+                            gap-3 sm:gap-4
+                            py-2.5 sm:py-3
+                            pr-3
+                            border-b border-border/20
+                            last:border-b-0
+                          "
                         >
-                          {String(i + 1).padStart(2, "0")}
-                        </motion.span>
-
-                        {/* Link text container */}
-                        <div className="flex-1 overflow-hidden">
-                          <motion.div
-                            className="flex items-baseline gap-3"
-                            animate={{
-                              x: hoveredIndex === i ? 12 : 0,
-                            }}
+                          {/* NUMBER */}
+                          <motion.span
+                            className="
+                              text-[10px]
+                              sm:text-xs
+                              font-mono
+                              text-muted-foreground/60
+                              w-5 sm:w-6
+                              shrink-0
+                            "
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
                             transition={{
-                              duration: 0.4,
-                              ease: [0.22, 1, 0.36, 1],
+                              duration: 0.25,
+                              delay: i * 0.055 + 0.12,
                             }}
                           >
-                            <span className="text-3xl md:text-5xl lg:text-6xl font-bold tracking-tighter leading-none">
-                              {link.name}
-                            </span>
+                            {String(i + 1).padStart(2, "0")}
+                          </motion.span>
 
-                            {/* Sublabel - shows on hover */}
-                            <motion.span
-                              className="text-xs md:text-sm text-muted-foreground hidden md:inline-block"
-                              initial={{
-                                opacity: 0,
-                                x: -10,
-                              }}
+                          {/* LINK TEXT */}
+                          <div className="flex-1 min-w-0 overflow-hidden">
+                            <motion.div
+                              className="
+                                flex items-baseline
+                                gap-2
+                                min-w-0
+                              "
                               animate={{
-                                opacity: hoveredIndex === i ? 1 : 0,
-                                x: hoveredIndex === i ? 0 : -10,
+                                x: hoveredIndex === i ? 6 : 0,
                               }}
                               transition={{
                                 duration: 0.3,
                                 ease: [0.22, 1, 0.36, 1],
                               }}
                             >
-                              — {link.label}
-                            </motion.span>
+                              <span
+                                className="
+                                  text-2xl
+                                  sm:text-3xl
+                                  md:text-4xl
+                                  lg:text-5xl
+                                  font-bold
+                                  tracking-tighter
+                                  leading-none
+                                "
+                              >
+                                {link.name}
+                              </span>
+
+                              <motion.span
+                                className="
+                                  hidden md:inline-block
+                                  text-xs
+                                  text-muted-foreground
+                                  whitespace-nowrap
+                                "
+                                initial={{
+                                  opacity: 0,
+                                  x: -6,
+                                }}
+                                animate={{
+                                  opacity: hoveredIndex === i ? 1 : 0,
+                                  x: hoveredIndex === i ? 0 : -6,
+                                }}
+                                transition={{
+                                  duration: 0.25,
+                                }}
+                              >
+                                — {link.label}
+                              </motion.span>
+                            </motion.div>
+                          </div>
+
+                          {/* ARROW */}
+                          <motion.div
+                            className="shrink-0"
+                            animate={{
+                              opacity: hoveredIndex === i ? 1 : 0.35,
+                              rotate: hoveredIndex === i ? 0 : -45,
+                              scale: hoveredIndex === i ? 1 : 0.8,
+                            }}
+                            transition={{
+                              duration: 0.25,
+                              ease: [0.22, 1, 0.36, 1],
+                            }}
+                          >
+                            <ArrowUpRight className="h-4 w-4 sm:h-5 sm:w-5" />
                           </motion.div>
-                        </div>
 
-                        {/* Arrow */}
-                        <motion.div
-                          className="shrink-0"
-                          animate={{
-                            opacity: hoveredIndex === i ? 1 : 0.3,
-                            rotate: hoveredIndex === i ? 0 : -45,
-                            scale: hoveredIndex === i ? 1 : 0.7,
-                          }}
-                          transition={{
-                            duration: 0.3,
-                            ease: [0.22, 1, 0.36, 1],
-                          }}
-                        >
-                          <ArrowUpRight className="h-5 w-5 md:h-6 md:w-6" />
-                        </motion.div>
-
-                        {/* Hover highlight bar */}
-                        <motion.div
-                          className="absolute -left-4 top-0 bottom-0 w-[3px] bg-primary rounded-full origin-top"
-                          initial={{ scaleY: 0 }}
-                          animate={{
-                            scaleY: hoveredIndex === i ? 1 : 0,
-                          }}
-                          transition={{
-                            duration: 0.3,
-                            ease: [0.22, 1, 0.36, 1],
-                          }}
-                        />
-                      </Link>
-                    </motion.div>
-                  ))}
+                          {/* HOVER BAR */}
+                          <motion.div
+                            className="
+                              absolute
+                              -left-2 sm:-left-3
+                              top-1 bottom-1
+                              w-[2px]
+                              bg-primary
+                              rounded-full
+                              origin-top
+                            "
+                            initial={{ scaleY: 0 }}
+                            animate={{
+                              scaleY: hoveredIndex === i ? 1 : 0,
+                            }}
+                            transition={{
+                              duration: 0.25,
+                              ease: [0.22, 1, 0.36, 1],
+                            }}
+                          />
+                        </Link>
+                      </motion.div>
+                    ))}
+                  </div>
                 </div>
 
-                {/* ── Right: Info panel (desktop) ──── */}
+                {/* DESKTOP INFO PANEL */}
                 <motion.div
-                  initial={{ opacity: 0, x: 30 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 20 }}
+                  initial={{
+                    opacity: 0,
+                    x: 15,
+                  }}
+                  animate={{
+                    opacity: 1,
+                    x: 0,
+                  }}
+                  exit={{
+                    opacity: 0,
+                    x: 10,
+                  }}
                   transition={{
-                    duration: 0.5,
-                    delay: 0.2,
+                    duration: 0.4,
+                    delay: 0.12,
                     ease: [0.22, 1, 0.36, 1],
                   }}
-                  className="hidden md:flex flex-col justify-between w-64 lg:w-96 pl-8 lg:pl-12 border-l border-border/20 mb-2"
+                  className="
+                    hidden md:flex
+                    flex-col
+                    justify-between
+                    w-52 lg:w-64
+                    pl-6 lg:pl-8
+                    ml-6 lg:ml-8
+                    border-l border-border/20
+                    py-1
+                  "
                 >
-                  {/* CTA section */}
-                  <div className="flex flex-col gap-4">
-                    <span className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
+                  <div className="flex flex-col gap-2">
+                    <span
+                      className="
+                        text-[10px]
+                        uppercase
+                        tracking-[0.24em]
+                        text-muted-foreground
+                      "
+                    >
                       Let&apos;s Talk
                     </span>
 
                     <motion.a
                       href="mailto:you@example.com"
-                      className="text-sm hover:text-primary transition-colors"
-                      whileHover={{ x: 4 }}
-                      transition={{ duration: 0.2 }}
+                      className="
+                        text-xs
+                        lg:text-sm
+                        hover:text-primary
+                        transition-colors
+                        truncate
+                      "
+                      whileHover={{ x: 3 }}
+                      transition={{ duration: 0.18 }}
                     >
                       you@example.com
                     </motion.a>
                   </div>
 
-                  {/* Social links */}
-                  <div className="flex flex-col gap-3">
-                    <span className="text-xs uppercase tracking-[0.3em] text-muted-foreground mb-2">
+                  <div className="flex flex-col gap-2">
+                    <span
+                      className="
+                        text-[10px]
+                        uppercase
+                        tracking-[0.24em]
+                        text-muted-foreground
+                      "
+                    >
                       Socials
                     </span>
 
-                    <div className="flex flex-wrap gap-x-4 gap-y-2">
+                    <div className="flex flex-wrap gap-x-3 gap-y-1.5">
                       {socialLinks.map((social, i) => (
                         <motion.a
                           key={social.name}
                           href={social.href}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{
-                            duration: 0.3,
-                            delay: 0.3 + i * 0.05,
-                            ease: [0.22, 1, 0.36, 1],
+                          initial={{
+                            opacity: 0,
+                            y: 6,
                           }}
-                          className="group/social relative text-sm text-muted-foreground hover:text-foreground transition-colors"
+                          animate={{
+                            opacity: 1,
+                            y: 0,
+                          }}
+                          transition={{
+                            duration: 0.25,
+                            delay: 0.18 + i * 0.04,
+                          }}
+                          className="
+                            text-xs
+                            text-muted-foreground
+                            hover:text-foreground
+                            transition-colors
+                          "
                         >
                           {social.name}
-
-                          <motion.span
-                            className="absolute bottom-0 left-0 h-[1px] bg-current origin-left"
-                            initial={{ scaleX: 0 }}
-                            whileHover={{ scaleX: 1 }}
-                            transition={{ duration: 0.3 }}
-                          />
                         </motion.a>
                       ))}
                     </div>
                   </div>
 
-                  {/* Location */}
                   <div className="flex flex-col gap-1">
-                    <span className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
+                    <span
+                      className="
+                        text-[10px]
+                        uppercase
+                        tracking-[0.24em]
+                        text-muted-foreground
+                      "
+                    >
                       Based In
                     </span>
 
-                    <span className="text-sm">India</span>
+                    <span className="text-xs lg:text-sm">
+                      India
+                    </span>
 
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-[10px] text-muted-foreground">
                       Available Worldwide
                     </span>
                   </div>
                 </motion.div>
               </div>
 
-              {/* ── Bottom bar ─────────────────────── */}
+              {/* BOTTOM BAR */}
               <motion.div
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                transition={{
-                  duration: 0.4,
-                  delay: navLinks.length * 0.08 + 0.1,
-                  ease: [0.22, 1, 0.36, 1],
+                initial={{
+                  opacity: 0,
+                  y: 8,
                 }}
-                className="flex flex-col justify-between items-start gap-2 pt-4 mt-auto border-t border-border/20"
+                animate={{
+                  opacity: 1,
+                  y: 0,
+                }}
+                exit={{
+                  opacity: 0,
+                }}
+                transition={{
+                  duration: 0.3,
+                  delay: 0.18,
+                }}
+                className="
+                  flex
+                  items-center
+                  justify-between
+                  gap-3
+                  pt-3
+                  mt-2
+                  border-t border-border/20
+                "
               >
                 <div className="flex items-center gap-2">
                   <motion.div
-                    className="h-2 w-2 rounded-full bg-green-500"
-                    animate={{ scale: [1, 1.3, 1] }}
+                    className="
+                      h-1.5
+                      w-1.5
+                      sm:h-2
+                      sm:w-2
+                      rounded-full
+                      bg-green-500
+                    "
+                    animate={{
+                      scale: [1, 1.25, 1],
+                    }}
                     transition={{
                       duration: 2,
                       repeat: Infinity,
@@ -448,18 +667,23 @@ const Navbar: React.FC = () => {
                     }}
                   />
 
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-[10px] sm:text-xs text-muted-foreground">
                     Available for projects
                   </span>
                 </div>
 
-                {/* Mobile social links */}
-                <div className="flex gap-3 md:hidden">
+                {/* MOBILE SOCIALS */}
+                <div className="flex gap-2.5 md:hidden">
                   {socialLinks.slice(0, 3).map((social) => (
                     <a
                       key={social.name}
                       href={social.href}
-                      className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                      className="
+                        text-[10px]
+                        text-muted-foreground
+                        hover:text-foreground
+                        transition-colors
+                      "
                     >
                       {social.name}
                     </a>
