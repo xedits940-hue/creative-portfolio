@@ -20,8 +20,7 @@ const socialLinks = [
   { name: "Discord", href: "https://discord.gg/yourinvite" },
 ];
 
-const EASE_OPEN: [number, number, number, number] = [0.76, 0, 0.24, 1];
-const EASE_CLOSE: [number, number, number, number] = [0.76, 0, 0.24, 1];
+const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -31,55 +30,22 @@ const Navbar: React.FC = () => {
 
   const [scope, animate] = useAnimate();
   const closedWidthRef = useRef<number>(0);
+  const closedHeightRef = useRef<number>(0);
 
   useEffect(() => {
+    if (!isOpen) return;
+
     const handleClickOutside = async (event: MouseEvent) => {
       if (
-        !isOpen ||
-        isAnimating ||
         !scope.current ||
-        scope.current.contains(event.target as Node)
+        scope.current.contains(event.target as Node) ||
+        isAnimating
       ) {
         return;
       }
 
-      setIsAnimating(true);
-      setShowContent(false);
-      setHoveredIndex(null);
-
-      await animate(
-        scope.current,
-        {
-          height: "3.75rem",
-          borderRadius: "18px",
-        },
-        {
-          duration: 0.5,
-          ease: EASE_CLOSE,
-        }
-      );
-
-      await animate(
-        scope.current,
-        {
-          width: `${closedWidthRef.current}px`,
-          borderRadius: "18px",
-        },
-        {
-          duration: 0.5,
-          ease: EASE_CLOSE,
-        }
-      );
-
-      scope.current.style.width = "";
-      scope.current.style.height = "";
-      scope.current.style.borderRadius = "";
-
-      setIsOpen(false);
-      setIsAnimating(false);
+      await closeMenu();
     };
-
-    if (!isOpen) return;
 
     const timer = window.setTimeout(() => {
       document.addEventListener("mousedown", handleClickOutside);
@@ -89,81 +55,76 @@ const Navbar: React.FC = () => {
       window.clearTimeout(timer);
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isOpen, isAnimating, animate, scope]);
+  }, [isOpen, isAnimating]);
 
-  const handleToggle = async () => {
-    if (isAnimating || !scope.current) return;
+  const openMenu = async () => {
+    if (!scope.current || isAnimating) return;
 
     setIsAnimating(true);
 
-    if (!isOpen) {
-      closedWidthRef.current = scope.current.offsetWidth;
+    closedWidthRef.current = scope.current.offsetWidth;
+    closedHeightRef.current = scope.current.offsetHeight;
 
-      scope.current.style.width = `${closedWidthRef.current}px`;
+    scope.current.style.width = `${closedWidthRef.current}px`;
+    scope.current.style.height = `${closedHeightRef.current}px`;
 
-      setIsOpen(true);
+    setIsOpen(true);
 
-      await animate(
-        scope.current,
-        {
-          width: "min(92vw, 680px)",
-          borderRadius: "18px",
-        },
-        {
-          duration: 0.65,
-          ease: EASE_OPEN,
-        }
-      );
+    await animate(
+      scope.current,
+      {
+        width: "min(92vw, 680px)",
+        height: "min(62dvh, 520px)",
+        borderRadius: "20px",
+      },
+      {
+        duration: 0.72,
+        ease: EASE,
+      }
+    );
 
-      setShowContent(true);
-
-      await animate(
-        scope.current,
-        {
-          height: "min(68vh, 520px)",
-          borderRadius: "18px",
-        },
-        {
-          duration: 0.7,
-          ease: EASE_OPEN,
-        }
-      );
-    } else {
-      setShowContent(false);
-      setHoveredIndex(null);
-
-      await animate(
-        scope.current,
-        {
-          height: "3.75rem",
-          borderRadius: "18px",
-        },
-        {
-          duration: 0.5,
-          ease: EASE_CLOSE,
-        }
-      );
-
-      await animate(
-        scope.current,
-        {
-          width: `${closedWidthRef.current}px`,
-          borderRadius: "18px",
-        },
-        {
-          duration: 0.5,
-          ease: EASE_CLOSE,
-        }
-      );
-
-      scope.current.style.width = "";
-      scope.current.style.height = "";
-      scope.current.style.borderRadius = "";
-
-      setIsOpen(false);
-    }
-
+    setShowContent(true);
     setIsAnimating(false);
+  };
+
+  const closeMenu = async () => {
+    if (!scope.current || isAnimating) return;
+
+    setIsAnimating(true);
+    setShowContent(false);
+    setHoveredIndex(null);
+
+    await new Promise((resolve) => setTimeout(resolve, 80));
+
+    await animate(
+      scope.current,
+      {
+        width: `${closedWidthRef.current}px`,
+        height: `${closedHeightRef.current}px`,
+        borderRadius: "16px",
+      },
+      {
+        duration: 0.65,
+        ease: EASE,
+      }
+    );
+
+    scope.current.style.width = "";
+    scope.current.style.height = "";
+    scope.current.style.borderRadius = "";
+
+    setIsOpen(false);
+    setIsAnimating(false);
+  };
+
+  const handleToggle = () => {
+    if (isAnimating) return;
+
+    if (isOpen) {
+      closeMenu();
+    } else {
+      openMenu();
+    }
   };
 
   return (
@@ -171,11 +132,14 @@ const Navbar: React.FC = () => {
       <div
         ref={scope}
         className="
-          w-full max-w-[680px]
+          relative
+          w-[calc(100vw-24px)]
+          max-w-[560px]
           h-[3.75rem]
-          rounded-[18px]
+          rounded-2xl
           border border-border/40
-          bg-background/75 dark:bg-background/55
+          bg-background/75
+          dark:bg-background/55
           backdrop-blur-xl
           shadow-lg
           flex flex-col
@@ -185,6 +149,7 @@ const Navbar: React.FC = () => {
         {/* TOP BAR */}
         <div
           className="
+            relative
             flex items-center justify-between
             h-[3.75rem]
             min-h-[3.75rem]
@@ -192,49 +157,42 @@ const Navbar: React.FC = () => {
             px-4 sm:px-5 md:px-6
           "
         >
-          {/* MENU BUTTON */}
+          {/* MENU */}
           <motion.button
+            type="button"
             onClick={handleToggle}
             disabled={isAnimating}
+            aria-label={isOpen ? "Close menu" : "Open menu"}
             className="
-              relative
               flex items-center justify-center
-              h-9 w-9
-              sm:h-10 sm:w-10
+              w-9 h-9
+              sm:w-10 sm:h-10
               rounded-full
               cursor-pointer
               shrink-0
             "
-            aria-label={isOpen ? "Close menu" : "Open menu"}
-            whileTap={{ scale: 0.9 }}
-            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.92 }}
           >
             <AnimatePresence mode="wait" initial={false}>
               {isOpen ? (
                 <motion.div
                   key="close"
-                  initial={{ opacity: 0, rotate: -90, scale: 0.8 }}
+                  initial={{ opacity: 0, rotate: -45, scale: 0.8 }}
                   animate={{ opacity: 1, rotate: 0, scale: 1 }}
-                  exit={{ opacity: 0, rotate: 90, scale: 0.8 }}
-                  transition={{
-                    duration: 0.2,
-                    ease: "easeOut",
-                  }}
+                  exit={{ opacity: 0, rotate: 45, scale: 0.8 }}
+                  transition={{ duration: 0.18, ease: "easeOut" }}
                 >
-                  <X className="h-5 w-5 sm:h-[21px] sm:w-[21px]" />
+                  <X className="w-5 h-5 sm:w-[21px] sm:h-[21px]" />
                 </motion.div>
               ) : (
                 <motion.div
                   key="menu"
-                  initial={{ opacity: 0, rotate: 90, scale: 0.8 }}
+                  initial={{ opacity: 0, rotate: 45, scale: 0.8 }}
                   animate={{ opacity: 1, rotate: 0, scale: 1 }}
-                  exit={{ opacity: 0, rotate: -90, scale: 0.8 }}
-                  transition={{
-                    duration: 0.2,
-                    ease: "easeOut",
-                  }}
+                  exit={{ opacity: 0, rotate: -45, scale: 0.8 }}
+                  transition={{ duration: 0.18, ease: "easeOut" }}
                 >
-                  <Menu className="h-5 w-5 sm:h-[21px] sm:w-[21px]" />
+                  <Menu className="w-5 h-5 sm:w-[21px] sm:h-[21px]" />
                 </motion.div>
               )}
             </AnimatePresence>
@@ -253,20 +211,25 @@ const Navbar: React.FC = () => {
               });
 
               if (isOpen && !isAnimating) {
-                handleToggle();
+                closeMenu();
               }
             }}
-            className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center"
+            className="
+              absolute
+              left-1/2
+              -translate-x-1/2
+              flex items-center justify-center
+            "
           >
             <Image
               src="/md-red-logo.svg"
               alt="Logo"
-              width={36}
-              height={36}
+              width={40}
+              height={40}
               priority
               className="
-                h-8 w-8
-                sm:h-9 sm:w-9
+                w-9 h-9
+                sm:w-10 sm:h-10
                 object-contain
                 cursor-pointer
               "
@@ -279,11 +242,12 @@ const Navbar: React.FC = () => {
               start="left-right"
               variant="rectangle"
               className="
-                h-9
-                sm:h-10
-                px-2.5
-                sm:px-3
-                rounded-full
+                !w-9
+                !h-9
+                sm:!w-10
+                sm:!h-10
+                !p-0
+                !rounded-full
                 bg-background/70
                 border border-border/40
               "
@@ -291,46 +255,35 @@ const Navbar: React.FC = () => {
           </div>
         </div>
 
-        {/* EXPANDED MENU */}
+        {/* OPEN MENU */}
         <AnimatePresence initial={false}>
           {showContent && (
             <motion.div
-              initial={{
-                opacity: 0,
-                y: 8,
-              }}
-              animate={{
-                opacity: 1,
-                y: 0,
-              }}
-              exit={{
-                opacity: 0,
-                y: 6,
-              }}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 5 }}
               transition={{
                 duration: 0.28,
-                ease: [0.22, 1, 0.36, 1],
+                ease: EASE,
               }}
               className="
-                flex flex-col flex-1
+                flex flex-col
+                flex-1
+                min-h-0
                 px-4 sm:px-6 md:px-8
                 pt-2 sm:pt-3
-                pb-4 sm:pb-5
+                pb-4
                 overflow-hidden
               "
             >
-              {/* MAIN CONTENT */}
+              {/* MAIN AREA */}
               <div className="flex flex-col md:flex-row flex-1 min-h-0">
                 {/* NAVIGATION */}
                 <div className="flex-1 flex flex-col justify-center min-w-0">
                   <motion.span
                     initial={{ opacity: 0, x: -8 }}
                     animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0 }}
-                    transition={{
-                      duration: 0.3,
-                      ease: [0.22, 1, 0.36, 1],
-                    }}
+                    transition={{ duration: 0.25 }}
                     className="
                       text-[10px]
                       sm:text-[11px]
@@ -347,42 +300,34 @@ const Navbar: React.FC = () => {
                     {navLinks.map((link, i) => (
                       <motion.div
                         key={link.name}
-                        initial={{
-                          opacity: 0,
-                          y: 18,
-                        }}
-                        animate={{
-                          opacity: 1,
-                          y: 0,
-                        }}
-                        exit={{
-                          opacity: 0,
-                          y: -8,
-                        }}
+                        initial={{ opacity: 0, y: 14 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -8 }}
                         transition={{
-                          duration: 0.42,
-                          delay: i * 0.055,
-                          ease: [0.22, 1, 0.36, 1],
+                          duration: 0.38,
+                          delay: i * 0.05,
+                          ease: EASE,
                         }}
                         onMouseEnter={() => setHoveredIndex(i)}
                         onMouseLeave={() => setHoveredIndex(null)}
                       >
                         <Link
                           href={link.href}
-                          onClick={handleToggle}
+                          onClick={() => closeMenu()}
                           className="
                             group
                             relative
                             flex items-center
                             gap-3 sm:gap-4
                             py-2.5 sm:py-3
-                            pr-3
-                            border-b border-border/20
+                            pr-2
+                            border-b
+                            border-border/20
                             last:border-b-0
                           "
                         >
                           {/* NUMBER */}
-                          <motion.span
+                          <span
                             className="
                               text-[10px]
                               sm:text-xs
@@ -391,30 +336,20 @@ const Navbar: React.FC = () => {
                               w-5 sm:w-6
                               shrink-0
                             "
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{
-                              duration: 0.25,
-                              delay: i * 0.055 + 0.12,
-                            }}
                           >
                             {String(i + 1).padStart(2, "0")}
-                          </motion.span>
+                          </span>
 
-                          {/* LINK TEXT */}
+                          {/* TEXT */}
                           <div className="flex-1 min-w-0 overflow-hidden">
                             <motion.div
-                              className="
-                                flex items-baseline
-                                gap-2
-                                min-w-0
-                              "
+                              className="flex items-baseline gap-2"
                               animate={{
-                                x: hoveredIndex === i ? 6 : 0,
+                                x: hoveredIndex === i ? 5 : 0,
                               }}
                               transition={{
-                                duration: 0.3,
-                                ease: [0.22, 1, 0.36, 1],
+                                duration: 0.25,
+                                ease: EASE,
                               }}
                             >
                               <span
@@ -438,16 +373,9 @@ const Navbar: React.FC = () => {
                                   text-muted-foreground
                                   whitespace-nowrap
                                 "
-                                initial={{
-                                  opacity: 0,
-                                  x: -6,
-                                }}
                                 animate={{
                                   opacity: hoveredIndex === i ? 1 : 0,
-                                  x: hoveredIndex === i ? 0 : -6,
-                                }}
-                                transition={{
-                                  duration: 0.25,
+                                  x: hoveredIndex === i ? 0 : -5,
                                 }}
                               >
                                 — {link.label}
@@ -464,14 +392,14 @@ const Navbar: React.FC = () => {
                               scale: hoveredIndex === i ? 1 : 0.8,
                             }}
                             transition={{
-                              duration: 0.25,
-                              ease: [0.22, 1, 0.36, 1],
+                              duration: 0.22,
+                              ease: EASE,
                             }}
                           >
-                            <ArrowUpRight className="h-4 w-4 sm:h-5 sm:w-5" />
+                            <ArrowUpRight className="w-4 h-4 sm:w-5 sm:h-5" />
                           </motion.div>
 
-                          {/* HOVER BAR */}
+                          {/* HOVER LINE */}
                           <motion.div
                             className="
                               absolute
@@ -480,15 +408,14 @@ const Navbar: React.FC = () => {
                               w-[2px]
                               bg-primary
                               rounded-full
-                              origin-top
                             "
                             initial={{ scaleY: 0 }}
                             animate={{
                               scaleY: hoveredIndex === i ? 1 : 0,
                             }}
                             transition={{
-                              duration: 0.25,
-                              ease: [0.22, 1, 0.36, 1],
+                              duration: 0.22,
+                              ease: EASE,
                             }}
                           />
                         </Link>
@@ -497,93 +424,51 @@ const Navbar: React.FC = () => {
                   </div>
                 </div>
 
-                {/* DESKTOP INFO PANEL */}
+                {/* DESKTOP INFO */}
                 <motion.div
-                  initial={{
-                    opacity: 0,
-                    x: 15,
-                  }}
-                  animate={{
-                    opacity: 1,
-                    x: 0,
-                  }}
-                  exit={{
-                    opacity: 0,
-                    x: 10,
-                  }}
+                  initial={{ opacity: 0, x: 12 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 8 }}
                   transition={{
-                    duration: 0.4,
-                    delay: 0.12,
-                    ease: [0.22, 1, 0.36, 1],
+                    duration: 0.35,
+                    delay: 0.1,
+                    ease: EASE,
                   }}
                   className="
                     hidden md:flex
                     flex-col
                     justify-between
-                    w-52 lg:w-64
-                    pl-6 lg:pl-8
-                    ml-6 lg:ml-8
-                    border-l border-border/20
+                    w-52 lg:w-60
+                    pl-6
+                    ml-6
+                    border-l
+                    border-border/20
                     py-1
                   "
                 >
                   <div className="flex flex-col gap-2">
-                    <span
-                      className="
-                        text-[10px]
-                        uppercase
-                        tracking-[0.24em]
-                        text-muted-foreground
-                      "
-                    >
+                    <span className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground">
                       Let&apos;s Talk
                     </span>
 
-                    <motion.a
+                    <a
                       href="mailto:you@example.com"
-                      className="
-                        text-xs
-                        lg:text-sm
-                        hover:text-primary
-                        transition-colors
-                        truncate
-                      "
-                      whileHover={{ x: 3 }}
-                      transition={{ duration: 0.18 }}
+                      className="text-xs lg:text-sm hover:text-primary transition-colors"
                     >
                       you@example.com
-                    </motion.a>
+                    </a>
                   </div>
 
                   <div className="flex flex-col gap-2">
-                    <span
-                      className="
-                        text-[10px]
-                        uppercase
-                        tracking-[0.24em]
-                        text-muted-foreground
-                      "
-                    >
+                    <span className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground">
                       Socials
                     </span>
 
                     <div className="flex flex-wrap gap-x-3 gap-y-1.5">
-                      {socialLinks.map((social, i) => (
-                        <motion.a
+                      {socialLinks.map((social) => (
+                        <a
                           key={social.name}
                           href={social.href}
-                          initial={{
-                            opacity: 0,
-                            y: 6,
-                          }}
-                          animate={{
-                            opacity: 1,
-                            y: 0,
-                          }}
-                          transition={{
-                            duration: 0.25,
-                            delay: 0.18 + i * 0.04,
-                          }}
                           className="
                             text-xs
                             text-muted-foreground
@@ -592,20 +477,13 @@ const Navbar: React.FC = () => {
                           "
                         >
                           {social.name}
-                        </motion.a>
+                        </a>
                       ))}
                     </div>
                   </div>
 
                   <div className="flex flex-col gap-1">
-                    <span
-                      className="
-                        text-[10px]
-                        uppercase
-                        tracking-[0.24em]
-                        text-muted-foreground
-                      "
-                    >
+                    <span className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground">
                       Based In
                     </span>
 
@@ -620,22 +498,13 @@ const Navbar: React.FC = () => {
                 </motion.div>
               </div>
 
-              {/* BOTTOM BAR */}
+              {/* BOTTOM */}
               <motion.div
-                initial={{
-                  opacity: 0,
-                  y: 8,
-                }}
-                animate={{
-                  opacity: 1,
-                  y: 0,
-                }}
-                exit={{
-                  opacity: 0,
-                }}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{
-                  duration: 0.3,
-                  delay: 0.18,
+                  duration: 0.25,
+                  delay: 0.12,
                 }}
                 className="
                   flex
@@ -644,21 +513,20 @@ const Navbar: React.FC = () => {
                   gap-3
                   pt-3
                   mt-2
-                  border-t border-border/20
+                  border-t
+                  border-border/20
                 "
               >
                 <div className="flex items-center gap-2">
                   <motion.div
                     className="
-                      h-1.5
-                      w-1.5
-                      sm:h-2
-                      sm:w-2
+                      w-1.5 h-1.5
+                      sm:w-2 sm:h-2
                       rounded-full
                       bg-green-500
                     "
                     animate={{
-                      scale: [1, 1.25, 1],
+                      scale: [1, 1.2, 1],
                     }}
                     transition={{
                       duration: 2,
