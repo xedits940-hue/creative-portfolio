@@ -41,6 +41,7 @@ const Navbar: React.FC = () => {
         !scope.current.contains(event.target as Node)
       ) {
         if (isAnimating) return;
+
         setIsAnimating(true);
         setShowContent(false);
         setHoveredIndex(null);
@@ -48,25 +49,28 @@ const Navbar: React.FC = () => {
         await animate(
           scope.current,
           { height: "4rem", borderRadius: "10px" },
-          { duration: 0.6, ease: EASE_CLOSE },
+          { duration: 0.6, ease: EASE_CLOSE }
         );
 
         await animate(
           scope.current,
-          { width: `${closedWidthRef.current}px`, borderRadius: "10px" },
-          { duration: 0.65, ease: EASE_CLOSE },
+          {
+            width: `${closedWidthRef.current}px`,
+            borderRadius: "10px",
+          },
+          { duration: 0.65, ease: EASE_CLOSE }
         );
 
         scope.current.style.width = "";
         scope.current.style.height = "";
         scope.current.style.borderRadius = "";
+
         setIsOpen(false);
         setIsAnimating(false);
       }
     };
 
     if (isOpen) {
-      // Add a small delay to prevent immediate closing when opening
       const timer = setTimeout(() => {
         document.addEventListener("mousedown", handleClickOutside);
       }, 100);
@@ -76,11 +80,13 @@ const Navbar: React.FC = () => {
         document.removeEventListener("mousedown", handleClickOutside);
       };
     }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, isAnimating]);
 
   const handleToggle = async () => {
     if (isAnimating) return;
+
     setIsAnimating(true);
 
     if (!isOpen) {
@@ -91,7 +97,7 @@ const Navbar: React.FC = () => {
       await animate(
         scope.current,
         { width: "90vw", borderRadius: "10px" },
-        { duration: 0.85, ease: EASE_OPEN },
+        { duration: 0.85, ease: EASE_OPEN }
       );
 
       setShowContent(true);
@@ -99,7 +105,7 @@ const Navbar: React.FC = () => {
       await animate(
         scope.current,
         { height: "72vh", borderRadius: "10px" },
-        { duration: 0.9, ease: EASE_OPEN },
+        { duration: 0.9, ease: EASE_OPEN }
       );
     } else {
       setShowContent(false);
@@ -108,18 +114,22 @@ const Navbar: React.FC = () => {
       await animate(
         scope.current,
         { height: "4rem", borderRadius: "10px" },
-        { duration: 0.6, ease: EASE_CLOSE },
+        { duration: 0.6, ease: EASE_CLOSE }
       );
 
       await animate(
         scope.current,
-        { width: `${closedWidthRef.current}px`, borderRadius: "10px" },
-        { duration: 0.65, ease: EASE_CLOSE },
+        {
+          width: `${closedWidthRef.current}px`,
+          borderRadius: "10px",
+        },
+        { duration: 0.65, ease: EASE_CLOSE }
       );
 
       scope.current.style.width = "";
       scope.current.style.height = "";
       scope.current.style.borderRadius = "";
+
       setIsOpen(false);
     }
 
@@ -171,7 +181,10 @@ const Navbar: React.FC = () => {
             onClick={(e) => {
               e.preventDefault();
               window.scrollTo({ top: 0, behavior: "smooth" });
-              if (isOpen) handleToggle();
+
+              if (isOpen) {
+                handleToggle();
+              }
             }}
           >
             <Image
@@ -221,8 +234,16 @@ const Navbar: React.FC = () => {
                   {navLinks.map((link, i) => (
                     <motion.div
                       key={link.name}
-                      initial={{ opacity: 0, y: 40, filter: "blur(6px)" }}
-                      animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                      initial={{
+                        opacity: 0,
+                        y: 40,
+                        filter: "blur(6px)",
+                      }}
+                      animate={{
+                        opacity: 1,
+                        y: 0,
+                        filter: "blur(0px)",
+                      }}
                       exit={{
                         opacity: 0,
                         y: -15,
@@ -259,7 +280,7 @@ const Navbar: React.FC = () => {
                         </motion.span>
 
                         {/* Link text container */}
-                        <div className="flex-1 overflow-hidden ">
+                        <div className="flex-1 overflow-hidden">
                           <motion.div
                             className="flex items-baseline gap-3"
                             animate={{
@@ -277,7 +298,10 @@ const Navbar: React.FC = () => {
                             {/* Sublabel - shows on hover */}
                             <motion.span
                               className="text-xs md:text-sm text-muted-foreground hidden md:inline-block"
-                              initial={{ opacity: 0, x: -10 }}
+                              initial={{
+                                opacity: 0,
+                                x: -10,
+                              }}
                               animate={{
                                 opacity: hoveredIndex === i ? 1 : 0,
                                 x: hoveredIndex === i ? 0 : -10,
@@ -342,6 +366,7 @@ const Navbar: React.FC = () => {
                     <span className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
                       Let&apos;s Talk
                     </span>
+
                     <motion.a
                       href="mailto:you@example.com"
                       className="text-sm hover:text-primary transition-colors"
@@ -357,6 +382,7 @@ const Navbar: React.FC = () => {
                     <span className="text-xs uppercase tracking-[0.3em] text-muted-foreground mb-2">
                       Socials
                     </span>
+
                     <div className="flex flex-wrap gap-x-4 gap-y-2">
                       {socialLinks.map((social, i) => (
                         <motion.a
@@ -372,6 +398,7 @@ const Navbar: React.FC = () => {
                           className="group/social relative text-sm text-muted-foreground hover:text-foreground transition-colors"
                         >
                           {social.name}
+
                           <motion.span
                             className="absolute bottom-0 left-0 h-[1px] bg-current origin-left"
                             initial={{ scaleX: 0 }}
@@ -388,7 +415,9 @@ const Navbar: React.FC = () => {
                     <span className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
                       Based In
                     </span>
+
                     <span className="text-sm">India</span>
+
                     <span className="text-xs text-muted-foreground">
                       Available Worldwide
                     </span>
@@ -418,6 +447,7 @@ const Navbar: React.FC = () => {
                       ease: "easeInOut",
                     }}
                   />
+
                   <span className="text-xs text-muted-foreground">
                     Available for projects
                   </span>
@@ -426,7 +456,7 @@ const Navbar: React.FC = () => {
                 {/* Mobile social links */}
                 <div className="flex gap-3 md:hidden">
                   {socialLinks.slice(0, 3).map((social) => (
-                    
+                    <a
                       key={social.name}
                       href={social.href}
                       className="text-xs text-muted-foreground hover:text-foreground transition-colors"
