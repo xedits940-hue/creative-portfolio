@@ -32,13 +32,11 @@ const SocialLink = ({
       <span className="relative z-10 text-muted-foreground transition-colors group-hover:text-primary">
         {label}
       </span>
-      {/* Fill effect */}
       <div className="absolute inset-0 -translate-x-[105%] bg-gradient-to-r from-primary/10 to-transparent transition-transform duration-500 ease-out group-hover:translate-x-0" />
     </Link>
   );
 };
 
-// A "Magnetic" button that pulls towards the mouse cursor
 const MagneticButton = ({ children }: { children: React.ReactNode }) => {
   const ref = useRef<HTMLDivElement>(null);
   const x = useMotionValue(0);
@@ -82,7 +80,6 @@ export default function CreativeFooter() {
 
   return (
     <footer className="relative w-full overflow-hidden border-t pt-20 md:pt-32 pb-10">
-      {/* --- BACKGROUND EFFECTS --- */}
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute inset-0 opacity-[0.03] mix-blend-hard-light"></div>
 
@@ -105,7 +102,6 @@ export default function CreativeFooter() {
       </div>
 
       <div className="container mx-auto px-6">
-        {/* 1. CTA SECTION */}
         <div className="mb-24 flex flex-col items-start justify-between gap-10 md:flex-row md:items-end">
           <div className="max-w-2xl overflow-hidden">
             <motion.h2
@@ -133,9 +129,7 @@ export default function CreativeFooter() {
           </MagneticButton>
         </div>
 
-        {/* 2. GRID SECTION (Links & Branding) */}
         <div className="grid grid-cols-1 gap-12 border-t border-border/40 pt-12 md:grid-cols-12 md:gap-6">
-          {/* Brand Column */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -146,7 +140,7 @@ export default function CreativeFooter() {
             <Link href="/" className="flex w-fit items-center gap-3">
               <div className="relative size-12 overflow-hidden rounded-xl bg-linear-to-br from-background to-muted border border-border shadow-sm flex items-center justify-center">
                 <Image
-                  src="/md-red-logo.svg"
+                  src="/logo.png"
                   alt="Md Logo"
                   width={32}
                   height={32}
@@ -163,7 +157,6 @@ export default function CreativeFooter() {
             </p>
           </motion.div>
 
-          {/* Navigation Links (Sitemap) */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -201,7 +194,6 @@ export default function CreativeFooter() {
             ))}
           </motion.div>
 
-          {/* Socials Column */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -237,7 +229,6 @@ export default function CreativeFooter() {
           </motion.div>
         </div>
 
-        {/* 3. BOTTOM BAR */}
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
@@ -248,14 +239,6 @@ export default function CreativeFooter() {
             © {currentYear}–{currentYear + 1} VISHAL SHARMA — VIBE-CODED
             HEURISTIC ARCHITECTURE. ALL RIGHTS RESERVED.
           </p>
-          {/* <div className="flex gap-6">
-            <Link href="#" className="hover:text-foreground transition-colors">
-              Privacy Policy
-            </Link>
-            <Link href="#" className="hover:text-foreground transition-colors">
-              Terms of Service
-            </Link>
-          </div> */}
         </motion.div>
       </div>
     </footer>
