@@ -41,7 +41,6 @@ const MagneticButton = ({ children }: { children: React.ReactNode }) => {
   const ref = useRef<HTMLDivElement>(null);
   const x = useMotionValue(0);
   const y = useMotionValue(0);
-
   const xSpring = useSpring(x, { stiffness: 150, damping: 15, mass: 0.1 });
   const ySpring = useSpring(y, { stiffness: 150, damping: 15, mass: 0.1 });
 
@@ -82,20 +81,13 @@ export default function CreativeFooter() {
     <footer className="relative w-full overflow-hidden border-t pt-20 md:pt-32 pb-10">
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute inset-0 opacity-[0.03] mix-blend-hard-light"></div>
-
         <motion.div
-          animate={{
-            scale: [1, 1.2, 1],
-            rotate: [0, 10, -10, 0],
-          }}
+          animate={{ scale: [1, 1.2, 1], rotate: [0, 10, -10, 0] }}
           transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
           className="absolute -top-1/2 left-1/4 h-[500px] w-[500px] rounded-full bg-primary/20 blur-[120px]"
         />
         <motion.div
-          animate={{
-            scale: [1.2, 1, 1.2],
-            x: [-50, 50, -50],
-          }}
+          animate={{ scale: [1.2, 1, 1.2], x: [-50, 50, -50] }}
           transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
           className="absolute -bottom-1/4 right-1/4 h-[400px] w-[400px] rounded-full bg-primary/30 blur-[100px]"
         />
@@ -178,11 +170,7 @@ export default function CreativeFooter() {
                 initial={{ opacity: 0, x: -10 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
-                transition={{
-                  duration: 0.5,
-                  delay: 0.2 + i * 0.07,
-                  ease: [0.16, 1, 0.3, 1],
-                }}
+                transition={{ duration: 0.5, delay: 0.2 + i * 0.07, ease: [0.16, 1, 0.3, 1] }}
               >
                 <Link
                   href={item.href}
@@ -205,26 +193,10 @@ export default function CreativeFooter() {
               Socials
             </h3>
             <div className="flex flex-wrap gap-2">
-              <SocialLink
-                href="https://www.youtube.com/@yourusername"
-                icon={FaYoutube}
-                label="YouTube"
-              />
-              <SocialLink
-                href="https://www.behance.net/yourusername"
-                icon={FaBehance}
-                label="Behance"
-              />
-              <SocialLink
-                href="https://www.instagram.com/yourusername"
-                icon={FaInstagram}
-                label="Instagram"
-              />
-              <SocialLink
-                href="https://discord.gg/yourinvite"
-                icon={FaDiscord}
-                label="Discord"
-              />
+              <SocialLink href="https://www.youtube.com/@yourusername" icon={FaYoutube} label="YouTube" />
+              <SocialLink href="https://www.behance.net/yourusername" icon={FaBehance} label="Behance" />
+              <SocialLink href="https://www.instagram.com/yourusername" icon={FaInstagram} label="Instagram" />
+              <SocialLink href="https://discord.gg/yourinvite" icon={FaDiscord} label="Discord" />
             </div>
           </motion.div>
         </div>
