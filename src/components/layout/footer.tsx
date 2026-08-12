@@ -131,13 +131,17 @@ export default function CreativeFooter() {
           >
             <Link href="/" className="flex w-fit items-center gap-3">
               <div className="relative size-12 overflow-hidden rounded-xl bg-linear-to-br from-background to-muted border border-border shadow-sm flex items-center justify-center">
+                
+                {/* Yahan changes kiye hain logo size ke liye 👇 */}
                 <Image
                   src="/logo.png"
                   alt="Md Logo"
-                  width={32}
-                  height={32}
-                  className="object-contain"
+                  width={100}
+                  height={100}
+                  className="object-contain w-full h-full scale-[1.5]"
                 />
+                {/* 👆 Changes End */}
+
               </div>
               <span className="text-xl font-bold tracking-tight">
                 VISHAL SHARMA PORTFOLIO
