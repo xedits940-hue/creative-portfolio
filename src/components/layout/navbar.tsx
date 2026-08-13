@@ -369,7 +369,7 @@ const Navbar: React.FC = () => {
 
                 <div className="flex gap-3 md:hidden">
                   {socialLinks.slice(0, 3).map((social) => (
-                    
+                    <a
                       key={social.name}
                       href={social.href}
                       className="text-xs text-muted-foreground hover:text-foreground transition-colors"
