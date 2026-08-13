@@ -10,7 +10,6 @@ export default function StructuredData() {
       "Self-taught vibe coder from Chandigarh, India, turning ideas into working digital products through AI-assisted development.",
     jobTitle: "Vibe Coder",
     sameAs: [
-      // Add your social media profiles
       "https://github.com/yourusername",
       "https://linkedin.com/in/yourusername",
       "https://twitter.com/yourhandle",
@@ -47,7 +46,7 @@ export default function StructuredData() {
     "@context": "https://schema.org",
     "@type": "ProfessionalService",
     name: "Vishal Sharma",
-    image: `${BASE_URL}/md-red-logo.svg`,
+    image: `${BASE_URL}/logo.png`,
     "@id": BASE_URL,
     url: BASE_URL,
     telephone: "",
