@@ -56,10 +56,10 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: BASE_URL,
-    title: "VISHAL SHARMA | NEXT-GEN VIBE CODER",
+    title: "Vishal Sharma - Vibe Coder & Portfolio",
     description:
       "Explore a portfolio built through vibe coding — AI-assisted projects, prototypes, and digital experiments by Vishal Sharma.",
-    siteName: "VISHAL SHARMA",
+    siteName: "Vishal Sharma Portfolio",
     images: [
       {
         url: OG_IMAGE,
