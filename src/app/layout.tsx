@@ -98,13 +98,10 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/logo.png", type: "image/png", sizes: "16x16" },
-      { url: "/logo.png", type: "image/png", sizes: "32x32" },
-      { url: "/logo.png", type: "image/png", sizes: "192x192" },
-      { url: "/logo.png", type: "image/png", sizes: "512x512" },
+      { url: "/logo.png", type: "image/png", sizes: "any" },
     ],
     shortcut: "/logo.png",
-    apple: [{ url: "/logo.png", sizes: "180x180", type: "image/png" }],
+    apple: [{ url: "/logo.png", type: "image/png" }],
   },
   manifest: "/manifest.webmanifest",
   verification: {
