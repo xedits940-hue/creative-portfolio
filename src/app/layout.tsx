@@ -28,8 +28,8 @@ const cormorantGaramond = Cormorant_Garamond({
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
   title: {
-    default: "VISHAL SHARMA | NEXT-GEN VIBE CODER",
-    template: "%s | VISHAL SHARMA",
+    default: "Vishal Sharma - Vibe Coder & Portfolio",
+    template: "%s | Vishal Sharma",
   },
   description:
     "Portfolio of Vishal Sharma, a self-taught vibe coder from Chandigarh, India, turning ideas into working digital products through AI-assisted development.",
@@ -59,7 +59,7 @@ export const metadata: Metadata = {
     title: "VISHAL SHARMA | NEXT-GEN VIBE CODER",
     description:
       "Explore a portfolio built through vibe coding — AI-assisted projects, prototypes, and digital experiments by Vishal Sharma.",
-    siteName: "Vishal Sharma Portfolio",
+    siteName: "VISHAL SHARMA",
     images: [
       {
         url: OG_IMAGE,
@@ -72,7 +72,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "VISHAL SHARMA | NEXT-GEN VIBE CODER",
+    title: "Vishal Sharma - Vibe Coder & Portfolio",
     description:
       "Explore a portfolio built through vibe coding — AI-assisted projects, prototypes, and digital experiments by Vishal Sharma.",
     creator: "@yourhandle",
@@ -99,10 +99,10 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: "/icon" },
-      { url: "/md-red-logo.svg", type: "image/svg+xml" },
+      { url: "/logo.png", type: "image/png" },
     ],
-    shortcut: "/md-red-logo.svg",
-    apple: "/md-red-logo.svg",
+    shortcut: "/logo.png",
+    apple: "/logo.png",
   },
   manifest: "/manifest.webmanifest",
   verification: {
@@ -122,24 +122,20 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        {/* Warm up Vimeo connections early so ShowReel iframes load faster */}
         <link rel="preconnect" href="https://player.vimeo.com" />
         <link rel="preconnect" href="https://i.vimeocdn.com" />
         <link rel="preconnect" href="https://f.vimeocdn.com" />
-
-        {/* ImageKit serves the 47 AboutScrollSection frames (crossOrigin) */}
         <link
           rel="preconnect"
           href="https://ik.imagekit.io"
           crossOrigin="anonymous"
         />
         <link rel="dns-prefetch" href="https://ik.imagekit.io" />
-
         <StructuredData />
         <Analytics />
       </head>
       <body
-        className={`${poppins.variable} ${cormorantGaramond.variable} antialiased mx-auto`}
+        className={`${poppins.variable} ${cormorantGaramond.variable} antialiased  mx-auto `}
       >
         <CustomCursor />
         <ConsoleLog />
