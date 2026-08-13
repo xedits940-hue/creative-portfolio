@@ -20,538 +20,359 @@ const socialLinks = [
   { name: "Discord", href: "https://discord.gg/yourinvite" },
 ];
 
-const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
+const EASE_OPEN: [number, number, number, number] = [0.76, 0, 0.24, 1];
+const EASE_CLOSE: [number, number, number, number] = [0.76, 0, 0.24, 1];
 
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [showContent, setShowContent] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-
   const [scope, animate] = useAnimate();
   const closedWidthRef = useRef<number>(0);
-  const closedHeightRef = useRef<number>(0);
 
   useEffect(() => {
-    if (!isOpen) return;
-
     const handleClickOutside = async (event: MouseEvent) => {
       if (
-        !scope.current ||
-        scope.current.contains(event.target as Node) ||
-        isAnimating
+        isOpen &&
+        scope.current &&
+        !scope.current.contains(event.target as Node)
       ) {
-        return;
-      }
+        if (isAnimating) return;
+        setIsAnimating(true);
+        setShowContent(false);
+        setHoveredIndex(null);
 
-      await closeMenu();
+        await animate(
+          scope.current,
+          { height: "4rem", borderRadius: "10px" },
+          { duration: 0.6, ease: EASE_CLOSE },
+        );
+
+        await animate(
+          scope.current,
+          { width: `${closedWidthRef.current}px`, borderRadius: "10px" },
+          { duration: 0.65, ease: EASE_CLOSE },
+        );
+
+        scope.current.style.width = "";
+        scope.current.style.height = "";
+        scope.current.style.borderRadius = "";
+        setIsOpen(false);
+        setIsAnimating(false);
+      }
     };
-
-    const timer = window.setTimeout(() => {
-      document.addEventListener("mousedown", handleClickOutside);
-    }, 100);
-
-    return () => {
-      window.clearTimeout(timer);
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [isOpen, isAnimating]);
-
-  const openMenu = async () => {
-    if (!scope.current || isAnimating) return;
-
-    setIsAnimating(true);
-
-    closedWidthRef.current = scope.current.offsetWidth;
-    closedHeightRef.current = scope.current.offsetHeight;
-
-    scope.current.style.width = `${closedWidthRef.current}px`;
-    scope.current.style.height = `${closedHeightRef.current}px`;
-
-    setIsOpen(true);
-
-    await animate(
-      scope.current,
-      {
-        width: "min(92vw, 680px)",
-        height: "min(62dvh, 520px)",
-        borderRadius: "20px",
-      },
-      {
-        duration: 0.72,
-        ease: EASE,
-      }
-    );
-
-    setShowContent(true);
-    setIsAnimating(false);
-  };
-
-  const closeMenu = async () => {
-    if (!scope.current || isAnimating) return;
-
-    setIsAnimating(true);
-    setShowContent(false);
-    setHoveredIndex(null);
-
-    await new Promise((resolve) => setTimeout(resolve, 80));
-
-    await animate(
-      scope.current,
-      {
-        width: `${closedWidthRef.current}px`,
-        height: `${closedHeightRef.current}px`,
-        borderRadius: "16px",
-      },
-      {
-        duration: 0.65,
-        ease: EASE,
-      }
-    );
-
-    scope.current.style.width = "";
-    scope.current.style.height = "";
-    scope.current.style.borderRadius = "";
-
-    setIsOpen(false);
-    setIsAnimating(false);
-  };
-
-  const handleToggle = () => {
-    if (isAnimating) return;
 
     if (isOpen) {
-      closeMenu();
-    } else {
-      openMenu();
+      const timer = setTimeout(() => {
+        document.addEventListener("mousedown", handleClickOutside);
+      }, 100);
+
+      return () => {
+        clearTimeout(timer);
+        document.removeEventListener("mousedown", handleClickOutside);
+      };
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, isAnimating]);
+
+  const handleToggle = async () => {
+    if (isAnimating) return;
+    setIsAnimating(true);
+
+    if (!isOpen) {
+      closedWidthRef.current = scope.current.offsetWidth;
+      scope.current.style.width = `${closedWidthRef.current}px`;
+      setIsOpen(true);
+
+      await animate(
+        scope.current,
+        { width: "90vw", borderRadius: "10px" },
+        { duration: 0.85, ease: EASE_OPEN },
+      );
+
+      setShowContent(true);
+
+      await animate(
+        scope.current,
+        { height: "72vh", borderRadius: "10px" },
+        { duration: 0.9, ease: EASE_OPEN },
+      );
+    } else {
+      setShowContent(false);
+      setHoveredIndex(null);
+
+      await animate(
+        scope.current,
+        { height: "4rem", borderRadius: "10px" },
+        { duration: 0.6, ease: EASE_CLOSE },
+      );
+
+      await animate(
+        scope.current,
+        { width: `${closedWidthRef.current}px`, borderRadius: "10px" },
+        { duration: 0.65, ease: EASE_CLOSE },
+      );
+
+      scope.current.style.width = "";
+      scope.current.style.height = "";
+      scope.current.style.borderRadius = "";
+      setIsOpen(false);
+    }
+
+    setIsAnimating(false);
   };
 
   return (
-    <nav className="fixed top-4 left-0 right-0 z-50 flex justify-center px-3 sm:px-4">
+    <nav className="fixed top-5 left-0 right-0 z-50 flex justify-center items-center">
       <div
         ref={scope}
-        className="
-          relative
-          w-[calc(100vw-24px)]
-          max-w-[560px]
-          h-[3.75rem]
-          rounded-2xl
-          border border-border/40
-          bg-background/75
-          dark:bg-background/55
-          backdrop-blur-xl
-          shadow-lg
-          flex flex-col
-          overflow-hidden
-        "
+        className="w-4/5 md:w-2xl border h-[4.5rem] rounded bg-background/80 dark:bg-background/60 backdrop-blur-md flex flex-col overflow-hidden"
       >
-        {/* TOP BAR */}
-        <div
-          className="
-            relative
-            flex items-center justify-between
-            h-[3.75rem]
-            min-h-[3.75rem]
-            shrink-0
-            px-4 sm:px-5 md:px-6
-          "
-        >
-          {/* MENU */}
+        <div className="flex justify-between items-center min-h-[4.5rem] shrink-0 px-6">
           <motion.button
-            type="button"
             onClick={handleToggle}
-            disabled={isAnimating}
+            className="cursor-pointer relative h-7 w-7"
             aria-label={isOpen ? "Close menu" : "Open menu"}
-            className="
-              flex items-center justify-center
-              w-9 h-9
-              sm:w-10 sm:h-10
-              rounded-full
-              cursor-pointer
-              shrink-0
-            "
-            whileTap={{ scale: 0.92 }}
+            whileTap={{ scale: 0.85 }}
+            whileHover={{ scale: 1.1 }}
           >
-            <AnimatePresence mode="wait" initial={false}>
+            <AnimatePresence mode="wait">
               {isOpen ? (
                 <motion.div
                   key="close"
-                  initial={{ opacity: 0, rotate: -45, scale: 0.8 }}
-                  animate={{ opacity: 1, rotate: 0, scale: 1 }}
-                  exit={{ opacity: 0, rotate: 45, scale: 0.8 }}
-                  transition={{ duration: 0.18, ease: "easeOut" }}
+                  initial={{ opacity: 0, rotate: -90 }}
+                  animate={{ opacity: 1, rotate: 0 }}
+                  exit={{ opacity: 0, rotate: 90 }}
+                  transition={{ duration: 0.25, ease: "easeInOut" }}
                 >
-                  <X className="w-5 h-5 sm:w-[21px] sm:h-[21px]" />
+                  <X className="h-7 w-7" />
                 </motion.div>
               ) : (
                 <motion.div
                   key="menu"
-                  initial={{ opacity: 0, rotate: 45, scale: 0.8 }}
-                  animate={{ opacity: 1, rotate: 0, scale: 1 }}
-                  exit={{ opacity: 0, rotate: -45, scale: 0.8 }}
-                  transition={{ duration: 0.18, ease: "easeOut" }}
+                  initial={{ opacity: 0, rotate: 90 }}
+                  animate={{ opacity: 1, rotate: 0 }}
+                  exit={{ opacity: 0, rotate: -90 }}
+                  transition={{ duration: 0.25, ease: "easeInOut" }}
                 >
-                  <Menu className="w-5 h-5 sm:w-[21px] sm:h-[21px]" />
+                  <Menu className="h-7 w-7" />
                 </motion.div>
               )}
             </AnimatePresence>
           </motion.button>
 
-          {/* CENTER LOGO */}
           <Link
-            href="/"
-            aria-label="Home"
+            href={"/"}
             onClick={(e) => {
               e.preventDefault();
-
-              window.scrollTo({
-                top: 0,
-                behavior: "smooth",
-              });
-
-              if (isOpen && !isAnimating) {
-                closeMenu();
-              }
+              window.scrollTo({ top: 0, behavior: "smooth" });
+              if (isOpen) handleToggle();
             }}
-            className="
-              absolute
-              left-1/2
-              -translate-x-1/2
-              flex items-center justify-center
-            "
           >
             <Image
-              src="/md-red-logo.svg"
-              alt="Logo"
-              width={40}
-              height={40}
-              priority
-              className="
-                w-9 h-9
-                sm:w-10 sm:h-10
-                object-contain
-                cursor-pointer
-              "
+              src="/logo.png"
+              alt="Md Logo"
+              className="h-12 w-12 cursor-pointer object-contain"
+              width={96}
+              height={96}
             />
           </Link>
 
-          {/* THEME BUTTON */}
-          <div className="flex items-center justify-center shrink-0">
-            <ThemeToggleButton
-              start="left-right"
-              variant="rectangle"
-              className="
-                !w-9
-                !h-9
-                sm:!w-10
-                sm:!h-10
-                !p-0
-                !rounded-full
-                bg-background/70
-                border border-border/40
-              "
-            />
-          </div>
+          <ThemeToggleButton
+            start="left-right"
+            variant="rectangle"
+            className="bg-background-foreground border"
+          />
         </div>
 
-        {/* OPEN MENU */}
-        <AnimatePresence initial={false}>
+        <AnimatePresence>
           {showContent && (
             <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 5 }}
-              transition={{
-                duration: 0.28,
-                ease: EASE,
-              }}
-              className="
-                flex flex-col
-                flex-1
-                min-h-0
-                px-4 sm:px-6 md:px-8
-                pt-2 sm:pt-3
-                pb-4
-                overflow-hidden
-              "
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.35, ease: "easeOut" }}
+              className="flex flex-col flex-1 px-6 md:px-10 pt-4 pb-6 overflow-hidden"
             >
-              {/* MAIN AREA */}
-              <div className="flex flex-col md:flex-row flex-1 min-h-0">
-                {/* NAVIGATION */}
-                <div className="flex-1 flex flex-col justify-center min-w-0">
+              <div className="flex flex-col md:flex-row flex-1 gap-8 md:gap-0">
+                <div className="flex-1 flex flex-col justify-center">
                   <motion.span
-                    initial={{ opacity: 0, x: -8 }}
+                    initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.25 }}
-                    className="
-                      text-[10px]
-                      sm:text-[11px]
-                      uppercase
-                      tracking-[0.24em]
-                      text-muted-foreground
-                      mb-3 sm:mb-4
-                    "
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                    className="text-xs uppercase tracking-[0.3em] text-muted-foreground mb-6 md:mb-8"
                   >
                     Navigation
                   </motion.span>
 
-                  <div>
-                    {navLinks.map((link, i) => (
-                      <motion.div
-                        key={link.name}
-                        initial={{ opacity: 0, y: 14 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -8 }}
-                        transition={{
-                          duration: 0.38,
-                          delay: i * 0.05,
-                          ease: EASE,
-                        }}
-                        onMouseEnter={() => setHoveredIndex(i)}
-                        onMouseLeave={() => setHoveredIndex(null)}
+                  {navLinks.map((link, i) => (
+                    <motion.div
+                      key={link.name}
+                      initial={{ opacity: 0, y: 40, filter: "blur(6px)" }}
+                      animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                      exit={{
+                        opacity: 0,
+                        y: -15,
+                        filter: "blur(4px)",
+                        transition: {
+                          duration: 0.16,
+                          delay: (navLinks.length - 1 - i) * 0.04,
+                        },
+                      }}
+                      transition={{
+                        duration: 0.6,
+                        delay: i * 0.08,
+                        ease: [0.22, 1, 0.36, 1],
+                      }}
+                      onMouseEnter={() => setHoveredIndex(i)}
+                      onMouseLeave={() => setHoveredIndex(null)}
+                    >
+                      <Link
+                        href={link.href}
+                        onClick={handleToggle}
+                        className="group relative pr-6 flex items-center gap-4 md:gap-6 py-3 md:py-4 border-b border-border/20 last:border-b-0"
                       >
-                        <Link
-                          href={link.href}
-                          onClick={() => closeMenu()}
-                          className="
-                            group
-                            relative
-                            flex items-center
-                            gap-3 sm:gap-4
-                            py-2.5 sm:py-3
-                            pr-2
-                            border-b
-                            border-border/20
-                            last:border-b-0
-                          "
+                        <motion.span
+                          className="text-xs md:text-sm font-mono text-muted-foreground/60 w-8 shrink-0"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ duration: 0.3, delay: i * 0.08 + 0.2 }}
                         >
-                          {/* NUMBER */}
-                          <span
-                            className="
-                              text-[10px]
-                              sm:text-xs
-                              font-mono
-                              text-muted-foreground/60
-                              w-5 sm:w-6
-                              shrink-0
-                            "
-                          >
-                            {String(i + 1).padStart(2, "0")}
-                          </span>
+                          {String(i + 1).padStart(2, "0")}
+                        </motion.span>
 
-                          {/* TEXT */}
-                          <div className="flex-1 min-w-0 overflow-hidden">
-                            <motion.div
-                              className="flex items-baseline gap-2"
+                        <div className="flex-1 overflow-hidden ">
+                          <motion.div
+                            className="flex items-baseline gap-3"
+                            animate={{ x: hoveredIndex === i ? 12 : 0 }}
+                            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                          >
+                            <span className="text-3xl md:text-5xl lg:text-6xl font-bold tracking-tighter leading-none">
+                              {link.name}
+                            </span>
+
+                            <motion.span
+                              className="text-xs md:text-sm text-muted-foreground hidden md:inline-block"
+                              initial={{ opacity: 0, x: -10 }}
                               animate={{
-                                x: hoveredIndex === i ? 5 : 0,
+                                opacity: hoveredIndex === i ? 1 : 0,
+                                x: hoveredIndex === i ? 0 : -10,
                               }}
-                              transition={{
-                                duration: 0.25,
-                                ease: EASE,
-                              }}
+                              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
                             >
-                              <span
-                                className="
-                                  text-2xl
-                                  sm:text-3xl
-                                  md:text-4xl
-                                  lg:text-5xl
-                                  font-bold
-                                  tracking-tighter
-                                  leading-none
-                                "
-                              >
-                                {link.name}
-                              </span>
-
-                              <motion.span
-                                className="
-                                  hidden md:inline-block
-                                  text-xs
-                                  text-muted-foreground
-                                  whitespace-nowrap
-                                "
-                                animate={{
-                                  opacity: hoveredIndex === i ? 1 : 0,
-                                  x: hoveredIndex === i ? 0 : -5,
-                                }}
-                              >
-                                — {link.label}
-                              </motion.span>
-                            </motion.div>
-                          </div>
-
-                          {/* ARROW */}
-                          <motion.div
-                            className="shrink-0"
-                            animate={{
-                              opacity: hoveredIndex === i ? 1 : 0.35,
-                              rotate: hoveredIndex === i ? 0 : -45,
-                              scale: hoveredIndex === i ? 1 : 0.8,
-                            }}
-                            transition={{
-                              duration: 0.22,
-                              ease: EASE,
-                            }}
-                          >
-                            <ArrowUpRight className="w-4 h-4 sm:w-5 sm:h-5" />
+                              — {link.label}
+                            </motion.span>
                           </motion.div>
+                        </div>
 
-                          {/* HOVER LINE */}
-                          <motion.div
-                            className="
-                              absolute
-                              -left-2 sm:-left-3
-                              top-1 bottom-1
-                              w-[2px]
-                              bg-primary
-                              rounded-full
-                            "
-                            initial={{ scaleY: 0 }}
-                            animate={{
-                              scaleY: hoveredIndex === i ? 1 : 0,
-                            }}
-                            transition={{
-                              duration: 0.22,
-                              ease: EASE,
-                            }}
-                          />
-                        </Link>
-                      </motion.div>
-                    ))}
-                  </div>
+                        <motion.div
+                          className="shrink-0"
+                          animate={{
+                            opacity: hoveredIndex === i ? 1 : 0.3,
+                            rotate: hoveredIndex === i ? 0 : -45,
+                            scale: hoveredIndex === i ? 1 : 0.7,
+                          }}
+                          transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                        >
+                          <ArrowUpRight className="h-5 w-5 md:h-6 md:w-6" />
+                        </motion.div>
+
+                        <motion.div
+                          className="absolute -left-4 top-0 bottom-0 w-[3px] bg-primary rounded-full origin-top"
+                          initial={{ scaleY: 0 }}
+                          animate={{ scaleY: hoveredIndex === i ? 1 : 0 }}
+                          transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                        />
+                      </Link>
+                    </motion.div>
+                  ))}
                 </div>
 
-                {/* DESKTOP INFO */}
                 <motion.div
-                  initial={{ opacity: 0, x: 12 }}
+                  initial={{ opacity: 0, x: 30 }}
                   animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 8 }}
-                  transition={{
-                    duration: 0.35,
-                    delay: 0.1,
-                    ease: EASE,
-                  }}
-                  className="
-                    hidden md:flex
-                    flex-col
-                    justify-between
-                    w-52 lg:w-60
-                    pl-6
-                    ml-6
-                    border-l
-                    border-border/20
-                    py-1
-                  "
+                  exit={{ opacity: 0, x: 20 }}
+                  transition={{ duration: 0.5, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                  className="hidden md:flex flex-col justify-between w-64 lg:w-96 pl-8 lg:pl-12 border-l border-border/20 mb-2"
                 >
-                  <div className="flex flex-col gap-2">
-                    <span className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground">
+                  <div className="flex flex-col gap-4">
+                    <span className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
                       Let&apos;s Talk
                     </span>
-
-                    <a
-                      href="mailto:you@example.com"
-                      className="text-xs lg:text-sm hover:text-primary transition-colors"
+                    <motion.a
+                      href="mailto:vishal.builds09@gmail.com"
+                      className="text-sm hover:text-primary transition-colors"
+                      whileHover={{ x: 4 }}
+                      transition={{ duration: 0.2 }}
                     >
-                      you@example.com
-                    </a>
+                      vishal.builds09@gmail.com
+                    </motion.a>
                   </div>
 
-                  <div className="flex flex-col gap-2">
-                    <span className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground">
+                  <div className="flex flex-col gap-3">
+                    <span className="text-xs uppercase tracking-[0.3em] text-muted-foreground mb-2">
                       Socials
                     </span>
-
-                    <div className="flex flex-wrap gap-x-3 gap-y-1.5">
-                      {socialLinks.map((social) => (
-                        <a
+                    <div className="flex flex-wrap gap-x-4 gap-y-2">
+                      {socialLinks.map((social, i) => (
+                        <motion.a
                           key={social.name}
                           href={social.href}
-                          className="
-                            text-xs
-                            text-muted-foreground
-                            hover:text-foreground
-                            transition-colors
-                          "
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.3, delay: 0.3 + i * 0.05, ease: [0.22, 1, 0.36, 1] }}
+                          className="group/social relative text-sm text-muted-foreground hover:text-foreground transition-colors"
                         >
                           {social.name}
-                        </a>
+                          <motion.span
+                            className="absolute bottom-0 left-0 h-[1px] bg-current origin-left"
+                            initial={{ scaleX: 0 }}
+                            whileHover={{ scaleX: 1 }}
+                            transition={{ duration: 0.3 }}
+                          />
+                        </motion.a>
                       ))}
                     </div>
                   </div>
 
                   <div className="flex flex-col gap-1">
-                    <span className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground">
+                    <span className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
                       Based In
                     </span>
-
-                    <span className="text-xs lg:text-sm">
-                      India
-                    </span>
-
-                    <span className="text-[10px] text-muted-foreground">
+                    <span className="text-sm">India</span>
+                    <span className="text-xs text-muted-foreground">
                       Available Worldwide
                     </span>
                   </div>
                 </motion.div>
               </div>
 
-              {/* BOTTOM */}
               <motion.div
-                initial={{ opacity: 0, y: 6 }}
+                initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  duration: 0.25,
-                  delay: 0.12,
-                }}
-                className="
-                  flex
-                  items-center
-                  justify-between
-                  gap-3
-                  pt-3
-                  mt-2
-                  border-t
-                  border-border/20
-                "
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.4, delay: navLinks.length * 0.08 + 0.1, ease: [0.22, 1, 0.36, 1] }}
+                className="flex flex-col justify-between items-start gap-2 pt-4 mt-auto border-t border-border/20"
               >
                 <div className="flex items-center gap-2">
                   <motion.div
-                    className="
-                      w-1.5 h-1.5
-                      sm:w-2 sm:h-2
-                      rounded-full
-                      bg-green-500
-                    "
-                    animate={{
-                      scale: [1, 1.2, 1],
-                    }}
-                    transition={{
-                      duration: 2,
-                      repeat: Infinity,
-                      ease: "easeInOut",
-                    }}
+                    className="h-2 w-2 rounded-full bg-green-500"
+                    animate={{ scale: [1, 1.3, 1] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
                   />
-
-                  <span className="text-[10px] sm:text-xs text-muted-foreground">
+                  <span className="text-xs text-muted-foreground">
                     Available for projects
                   </span>
                 </div>
 
-                {/* MOBILE SOCIALS */}
-                <div className="flex gap-2.5 md:hidden">
+                <div className="flex gap-3 md:hidden">
                   {socialLinks.slice(0, 3).map((social) => (
-                    <a
+                    
                       key={social.name}
                       href={social.href}
-                      className="
-                        text-[10px]
-                        text-muted-foreground
-                        hover:text-foreground
-                        transition-colors
-                      "
+                      className="text-xs text-muted-foreground hover:text-foreground transition-colors"
                     >
                       {social.name}
                     </a>
