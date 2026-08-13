@@ -28,7 +28,7 @@ const cormorantGaramond = Cormorant_Garamond({
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
   title: {
-    default: "Vishal Sharma - Vibe Coder & Portfolio",
+    default: "VISHAL SHARMA | NEXT-GEN VIBE CODER",
     template: "%s | Vishal Sharma",
   },
   description:
@@ -56,7 +56,7 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: BASE_URL,
-    title: "Vishal Sharma - Vibe Coder & Portfolio",
+    title: "VISHAL SHARMA | NEXT-GEN VIBE CODER",
     description:
       "Explore a portfolio built through vibe coding — AI-assisted projects, prototypes, and digital experiments by Vishal Sharma.",
     siteName: "Vishal Sharma Portfolio",
@@ -72,7 +72,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Vishal Sharma - Vibe Coder & Portfolio",
+    title: "VISHAL SHARMA | NEXT-GEN VIBE CODER",
     description:
       "Explore a portfolio built through vibe coding — AI-assisted projects, prototypes, and digital experiments by Vishal Sharma.",
     creator: "@yourhandle",
@@ -99,10 +99,15 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: "/icon" },
-      { url: "/logo.png", type: "image/png" },
+      { url: "/logo.png", type: "image/png", sizes: "32x32" },
+      { url: "/logo.png", type: "image/png", sizes: "16x16" },
+      { url: "/logo.png", type: "image/png", sizes: "192x192" },
+      { url: "/logo.png", type: "image/png", sizes: "512x512" },
     ],
     shortcut: "/logo.png",
-    apple: "/logo.png",
+    apple: [
+      { url: "/logo.png", sizes: "180x180", type: "image/png" },
+    ],
   },
   manifest: "/manifest.webmanifest",
   verification: {
@@ -135,7 +140,7 @@ export default function RootLayout({
         <Analytics />
       </head>
       <body
-        className={`${poppins.variable} ${cormorantGaramond.variable} antialiased  mx-auto `}
+        className={`${poppins.variable} ${cormorantGaramond.variable} antialiased mx-auto`}
       >
         <CustomCursor />
         <ConsoleLog />
