@@ -173,7 +173,7 @@ const Navbar: React.FC = () => {
             <Image
               src="/logo.png"
               alt="Md Logo"
-              className="h-12 w-12 cursor-pointer object-contain"
+              className="h-14 w-14 cursor-pointer object-contain"
               width={96}
               height={96}
             />
