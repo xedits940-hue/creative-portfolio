@@ -8,7 +8,6 @@ import Link from "next/link";
 const AboutMe = () => {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Scroll Parallax Logic
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end start"],
@@ -23,15 +22,25 @@ const AboutMe = () => {
     >
       {/* Background Noise Texture for Awwwards feel */}
       <div className="absolute inset-0 z-0 opacity-[0.05] pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
-      {/* <Image
-        src="/bg-hero.png"
-        fill
-        priority
-        quality={85}
-        className="absolute inset-0 object-cover"
-        alt="Hero background"
-        sizes="100vw"
-      /> */}
+
+      {/* Giant stacked name — sits behind the character */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 z-10 flex flex-col items-center justify-center pointer-events-none select-none"
+      >
+        <span
+          className="font-black uppercase leading-[0.8] tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-primary via-primary to-primary/30"
+          style={{ fontSize: "clamp(60px, 18vw, 260px)" }}
+        >
+          VISHAL
+        </span>
+        <span
+          className="font-black uppercase leading-[0.8] tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-primary via-primary to-primary/30"
+          style={{ fontSize: "clamp(60px, 18vw, 260px)" }}
+        >
+          SHARMA
+        </span>
+      </div>
 
       <motion.div
         style={{
@@ -39,12 +48,8 @@ const AboutMe = () => {
         }}
         className="relative z-20 flex items-end group"
       >
-        {/* Glow Effect */}
         <div className="absolute inset-0 bg-primary/20 blur-[100px] rounded-full group-hover:bg-primary/30 transition-all duration-500" />
 
-        {/* <div className="relative w-full h-full rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl bg-neutral-900/50 backdrop-blur-sm"> */}
-        {/* Swap for your own hero video/photo — see README for the full asset list */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/ichigo.png"
           alt="Profile photo"
@@ -52,7 +57,6 @@ const AboutMe = () => {
         />
       </motion.div>
 
-      {/* Mobile: Vertical Side Label (editorial, clears navbar + video) */}
       <motion.div
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
@@ -72,7 +76,6 @@ const AboutMe = () => {
         </div>
       </motion.div>
 
-      {/* Bottom Info Strip (desktop) */}
       <motion.div
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
@@ -127,7 +130,6 @@ const AboutMe = () => {
   );
 };
 
-// Helper Component for Stats
 const StatCard = ({
   position,
   label,
