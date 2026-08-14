@@ -23,23 +23,56 @@ const AboutMe = () => {
       {/* Background Noise Texture for Awwwards feel */}
       <div className="absolute inset-0 z-0 opacity-[0.05] pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
 
-      {/* Giant stacked name — sits behind the character */}
+      {/* Giant curved name — sits behind the character, arcs upward like the
+          reference (bright red at top, fading to near-black at the bottom) */}
       <div
         aria-hidden="true"
-        className="absolute inset-0 z-10 flex flex-col items-center justify-center pointer-events-none select-none"
+        className="absolute inset-0 z-10 pointer-events-none select-none"
       >
-        <span
-          className="font-black uppercase leading-[0.8] tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-primary via-primary to-primary/30"
-          style={{ fontSize: "clamp(60px, 18vw, 260px)" }}
+        <svg
+          viewBox="0 0 1000 900"
+          className="w-full h-full"
+          preserveAspectRatio="xMidYMid slice"
         >
-          VISHAL
-        </span>
-        <span
-          className="font-black uppercase leading-[0.8] tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-primary via-primary to-primary/30"
-          style={{ fontSize: "clamp(60px, 18vw, 260px)" }}
-        >
-          SHARMA
-        </span>
+          <defs>
+            <linearGradient id="nameGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#ff4d4d" />
+              <stop offset="40%" stopColor="#c93a2a" />
+              <stop offset="75%" stopColor="#5c1410" />
+              <stop offset="100%" stopColor="#120302" />
+            </linearGradient>
+            <path id="arcTop" d="M -80 300 Q 500 190 1080 300" fill="none" />
+            <path id="arcBottom" d="M -80 660 Q 500 560 1080 660" fill="none" />
+          </defs>
+          <text
+            fontSize="260"
+            fontWeight="900"
+            fill="url(#nameGradient)"
+            style={{
+              fontFamily:
+                "'Arial Black', 'Helvetica Neue', Impact, sans-serif",
+              letterSpacing: "-6px",
+            }}
+          >
+            <textPath href="#arcTop" startOffset="50%" textAnchor="middle">
+              VISHAL
+            </textPath>
+          </text>
+          <text
+            fontSize="260"
+            fontWeight="900"
+            fill="url(#nameGradient)"
+            style={{
+              fontFamily:
+                "'Arial Black', 'Helvetica Neue', Impact, sans-serif",
+              letterSpacing: "-6px",
+            }}
+          >
+            <textPath href="#arcBottom" startOffset="50%" textAnchor="middle">
+              SHARMA
+            </textPath>
+          </text>
+        </svg>
       </div>
 
       <motion.div
