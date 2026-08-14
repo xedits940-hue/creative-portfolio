@@ -173,7 +173,7 @@ const AboutSection = () => {
 
               <Image
                 src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1200&auto=format&fit=crop"
-                alt="Vishal Sharma — Vibe Coder"
+                alt="Your Name — Creative Director"
                 fill
                 priority
                 className="object-cover object-top transition-transform duration-700 group-hover:scale-105"
@@ -212,7 +212,7 @@ const AboutSection = () => {
                 }}
                 className="text-4xl md:text-5xl font-black tracking-tighter leading-none"
               >
-                VISHAL SHARMA
+                Your Name
               </motion.h2>
 
               <motion.p
@@ -222,7 +222,7 @@ const AboutSection = () => {
                 transition={{ duration: 0.7, delay: 0.2 }}
                 className="font-mono text-sm uppercase tracking-widest text-primary"
               >
-                Turning Ideas Into Products Through Vibe Coding
+                Creative Director & Video Editor
               </motion.p>
 
               <motion.p
@@ -232,10 +232,9 @@ const AboutSection = () => {
                 transition={{ duration: 0.7, delay: 0.3 }}
                 className="text-muted-foreground text-[15px] leading-relaxed max-w-xs"
               >
-                A self-taught vibe coder from Chandigarh, India, with 1.5+
-                years of experience building real products using AI-assisted
-                development. From prompt engineering to full working apps, I
-                turn ideas into reality — fast.
+                Crafting high-impact visuals for gaming, sports, and lifestyle
+                brands. Turning raw footage into stories that resonate and
+                convert.
               </motion.p>
             </div>
 
@@ -248,11 +247,11 @@ const AboutSection = () => {
               className="flex flex-wrap gap-2"
             >
               {[
-                "Vibe Coding",
-                "Prompt Engineering",
-                "AI Prototyping",
-                "Product Logic",
-                "Web Development",
+                "2D Animation",
+                "Motion Design",
+                "Video Editing",
+                "Color Grading",
+                "Brand Direction",
               ].map((tag) => (
                 <span
                   key={tag}
@@ -289,37 +288,38 @@ const AboutSection = () => {
                 }}
                 className="text-4xl md:text-5xl lg:text-[3.5rem] font-black tracking-tighter leading-[0.93] uppercase"
               >
-                Just Getting
+                Results that
                 <br />
-                <span className=" text-primary">Started.</span>
+                <span className=" text-primary">Speak Loudly.</span>
               </motion.h3>
             </div>
 
             {/* Metric cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <MetricCard
-                value={2}
+                value={5}
                 suffix="+ yrs"
-                label="Years of Vibe Coding"
-                description="Building real, working products with AI-assisted development since 9th grade — self-taught, all the way."
+                label="Years of Experience"
+                description="Half a decade honing the craft of visual storytelling across global brands and viral campaigns."
                 delay={0.15}
               />
 
               <MetricCard
-                value={5}
+                value={100}
                 suffix="+"
-                label="Apps & Projects Built"
-                description="From an AI image generator to a custom voice model and full websites — always shipping something new."
+                label="Projects Completed"
+                description="From FIFA tournaments to esports highlights — diverse, delivered, and always ahead of deadline."
                 delay={0.25}
               />
 
-              {/* Highlighted card */}
+              {/* Revenue — full-width highlighted */}
               <div className="sm:col-span-2">
                 <MetricCard
-                  value={100}
-                  suffix="%"
-                  label="Self-Taught & Self-Driven"
-                  description="No formal training — just curiosity, consistency, and countless hours spent building with AI."
+                  prefix="$"
+                  value={3}
+                  suffix="M+"
+                  label="Revenue Achieved"
+                  description="Revenue generated for clients through high-conversion content, brand campaigns, and viral media strategies that move the needle."
                   highlight
                   delay={0.35}
                 />
@@ -334,7 +334,7 @@ const AboutSection = () => {
               transition={{ duration: 0.7, delay: 0.5 }}
               className="text-xs font-mono text-muted-foreground/50 uppercase tracking-widest border-t border-border pt-6"
             >
-              Numbers reflect real projects and real hours — not estimates.
+              Numbers reflect verified client outcomes — not estimates.
             </motion.p>
           </div>
         </div>
