@@ -12,36 +12,17 @@ const anton = Anton({
   display: "swap",
 });
 
-// Reusable "Watermark Shine" capsule — dark translucent base +
-// a thin solid neon bar on the inner-left edge + faint neon rim border.
-const ShineCapsule = ({
-  children,
-  className = "",
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) => {
-  return (
-    <div
-      className={`relative overflow-hidden rounded-full pl-5 pr-4 py-2.5 backdrop-blur-md ${className}`}
-      style={{
-        backgroundColor: "rgba(8, 9, 12, 0.76)",
-        border: "1.2px solid rgba(0, 243, 255, 0.25)",
-      }}
-    >
-      {/* Inner highlight bar — the "shine" */}
-      <span
-        aria-hidden="true"
-        className="absolute left-0 top-0 bottom-0 w-[3px] rounded-l-full"
-        style={{
-          backgroundColor: "#00f3ff",
-          boxShadow: "0 0 6px 1px rgba(0, 243, 255, 0.55)",
-        }}
-      />
-      {children}
-    </div>
-  );
-};
+// Small neon "shine" accent — a thin glowing bar, not a full box.
+const ShineBar = () => (
+  <span
+    aria-hidden="true"
+    className="inline-block w-[3px] h-4 rounded-full mr-1"
+    style={{
+      backgroundColor: "#00f3ff",
+      boxShadow: "0 0 6px 1.5px rgba(0, 243, 255, 0.6)",
+    }}
+  />
+);
 
 const AboutMe = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -74,7 +55,6 @@ const AboutMe = () => {
               "linear-gradient(to bottom, #ff1f3d 0%, #ef1230 20%, #b8081f 45%, #5c0210 70%, #150005 92%, transparent 100%)",
             WebkitFontSmoothing: "antialiased",
             textRendering: "optimizeLegibility",
-            filter: "drop-shadow(0 0 25px rgba(239, 18, 48, 0.25))",
           }}
         >
           VISHAL
@@ -87,7 +67,6 @@ const AboutMe = () => {
               "linear-gradient(to bottom, #ff1f3d 0%, #ef1230 20%, #b8081f 45%, #5c0210 70%, #150005 92%, transparent 100%)",
             WebkitFontSmoothing: "antialiased",
             textRendering: "optimizeLegibility",
-            filter: "drop-shadow(0 0 25px rgba(239, 18, 48, 0.25))",
           }}
         >
           SHARMA
@@ -109,82 +88,74 @@ const AboutMe = () => {
         />
       </motion.div>
 
-      {/* Mobile — vertical shine capsule */}
       <motion.div
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.5, duration: 0.8 }}
         className="md:hidden absolute left-3 top-1/2 -translate-y-1/2 z-30 text-foreground"
       >
-        <ShineCapsule className="pl-6">
-          <div className="flex items-center gap-4 [writing-mode:vertical-rl] rotate-180">
-            <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-gray-300">
-              Featured Work
-            </span>
-            <span className="w-1 h-1 bg-white/70 rounded-full" />
-            <span className="text-sm font-bold text-white">VISIONARY</span>
-            <span className="w-1 h-1 bg-white/70 rounded-full" />
-            <span className="text-sm font-bold text-white">VIBE CODER</span>
-            <span className="w-1 h-1 bg-white/70 rounded-full" />
-            <span className="text-sm font-bold text-white">
-              NEXT-GEN BUILDER
-            </span>
-          </div>
-        </ShineCapsule>
+        <div className="flex items-center gap-4 [writing-mode:vertical-rl] rotate-180">
+          <ShineBar />
+          <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-gray-500 dark:text-gray-400">
+            Featured Work
+          </span>
+          <span className="w-1 h-1 bg-foreground rounded-full" />
+          <span className="text-sm font-bold">VISIONARY</span>
+          <span className="w-1 h-1 bg-foreground rounded-full" />
+          <span className="text-sm font-bold">VIBE CODER</span>
+          <span className="w-1 h-1 bg-foreground rounded-full" />
+          <span className="text-sm font-bold">NEXT-GEN BUILDER</span>
+        </div>
       </motion.div>
 
-      {/* Desktop — shine capsules */}
       <motion.div
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5, duration: 0.8 }}
         className="hidden md:flex absolute bottom-10 z-30 w-full px-10 flex-row justify-between items-center text-foreground"
       >
-        <ShineCapsule>
-          <div className="flex flex-col gap-1.5">
-            <p className="text-xs font-mono uppercase text-gray-300">
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center">
+            <ShineBar />
+            <p className="text-xs font-mono uppercase text-gray-500 dark:text-gray-400">
               Featured Work
             </p>
-            <div className="flex items-center gap-4 text-sm font-bold text-white">
-              <span className="hover:text-[#00f3ff] transition-colors cursor-pointer">
-                VISIONARY
-              </span>
-              <span className="w-1 h-1 bg-white/70 rounded-full" />
-              <span className="hover:text-[#00f3ff] transition-colors cursor-pointer">
-                VIBE CODER
-              </span>
-              <span className="w-1 h-1 bg-white/70 rounded-full" />
-              <span className="hover:text-[#00f3ff] transition-colors cursor-pointer">
-                NEXT-GEN BUILDER
-              </span>
-            </div>
           </div>
-        </ShineCapsule>
+          <div className="flex items-center gap-4 text-sm font-bold">
+            <span className="hover:text-primary transition-colors cursor-pointer">
+              VISIONARY
+            </span>
+            <span className="w-1 h-1 bg-foreground rounded-full" />
+            <span className="hover:text-primary transition-colors cursor-pointer">
+              VIBE CODER
+            </span>
+            <span className="w-1 h-1 bg-foreground rounded-full" />
+            <span className="hover:text-primary transition-colors cursor-pointer">
+              NEXT-GEN BUILDER
+            </span>
+          </div>
+        </div>
 
-        <ShineCapsule>
-          <div className="flex flex-col gap-1.5">
-            <p className="text-xs font-mono text-gray-300">Social</p>
-            <div className="flex items-center gap-4 text-sm font-bold text-white">
-              <Link
-                href={"https://www.instagram.com/yourusername"}
-                target="_blank"
-              >
-                <span className="hover:text-[#00f3ff] transition-colors cursor-pointer">
-                  Instagram
-                </span>
-              </Link>
-              <span className="w-1 h-1 bg-white/70 rounded-full" />
-              <Link
-                href={"https://www.youtube.com/@yourusername"}
-                target="_blank"
-              >
-                <span className="hover:text-[#00f3ff] transition-colors cursor-pointer">
-                  Youtube
-                </span>
-              </Link>
-            </div>
+        <div className="hidden md:block">
+          <div className="flex items-center justify-end">
+            <p className="text-xs font-mono text-right text-gray-500 dark:text-gray-400">
+              Social
+            </p>
+            <span className="ml-1">
+              <ShineBar />
+            </span>
           </div>
-        </ShineCapsule>
+          <div className="flex items-center gap-4 text-sm font-bold">
+            <Link
+              href={"https://www.instagram.com/yourusername"}
+              target="_blank"
+            >
+              <span className="hover:text-primary transition-colors cursor-pointer">
+                INSTAGRAM
+              </span>
+            </Link>
+          </div>
+        </div>
       </motion.div>
     </section>
   );
