@@ -82,8 +82,8 @@ const AboutMe = () => {
         <div className="absolute inset-0 bg-primary/20 blur-[100px] rounded-full group-hover:bg-primary/30 transition-all duration-500" />
 
         <img
-          src="/ichigo.png"
-          alt="Profile photo"
+          src="/P%20F.png"
+          alt="Vishal Sharma"
           className="relative w-[125vw] md:w-[60vw] lg:w-[40vw] h-[75vh] md:h-[75dvh] object-contain object-bottom rounded-3xl"
         />
       </motion.div>
