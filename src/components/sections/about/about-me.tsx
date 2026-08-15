@@ -26,24 +26,24 @@ const AboutMe = () => {
       {/* Giant stacked name — sits behind the character */}
       <div
         aria-hidden="true"
-        className="absolute inset-0 z-10 flex flex-col items-center justify-center pointer-events-none select-none overflow-hidden"
+        className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-1 md:gap-3 pointer-events-none select-none overflow-hidden"
       >
         <span
-          className="font-black uppercase leading-[0.78] tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-red-600 via-red-700 to-red-950/20"
+          className="font-black uppercase leading-none tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-red-600 via-red-700 to-red-950/10"
           style={{
             fontSize: "clamp(70px, 20vw, 280px)",
             fontFamily: "'Arial Black', 'Helvetica Neue', sans-serif",
-            transform: "scaleY(1.35) scaleX(0.92)",
+            transform: "scaleX(0.85)",
           }}
         >
           VISHAL
         </span>
         <span
-          className="font-black uppercase leading-[0.78] tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-red-600 via-red-700 to-red-950/20"
+          className="font-black uppercase leading-none tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-red-600 via-red-700 to-red-950/10"
           style={{
             fontSize: "clamp(70px, 20vw, 280px)",
             fontFamily: "'Arial Black', 'Helvetica Neue', sans-serif",
-            transform: "scaleY(1.35) scaleX(0.92)",
+            transform: "scaleX(0.85)",
           }}
         >
           SHARMA
