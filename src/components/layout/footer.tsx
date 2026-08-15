@@ -77,6 +77,8 @@ export default function CreativeFooter() {
     window.location.href = "mailto:vishal.builds09@gmail.com";
   };
 
+  const copyrightText = `© ${currentYear}–${currentYear + 1} VISHAL SHARMA — VIBE-CODED HEURISTIC ARCHITECTURE. ALL RIGHTS RESERVED.`;
+
   return (
     <footer className="relative w-full overflow-hidden border-t pt-20 md:pt-32 pb-10">
       <div className="pointer-events-none absolute inset-0 -z-10">
@@ -212,7 +214,7 @@ export default function CreativeFooter() {
           className="mt-16 flex flex-col items-center justify-between gap-4 border-t border-border/40 py-6 text-xs text-muted-foreground md:flex-row"
         >
           <style>{`
-            @keyframes copyrightShine {
+            @keyframes copyrightShineSweep {
               0% {
                 background-position: 200% center;
               }
@@ -221,24 +223,40 @@ export default function CreativeFooter() {
               }
             }
           `}</style>
-          <p
-            className="font-medium tracking-wide"
-            style={{
-              backgroundImage:
-                "linear-gradient(90deg, currentColor 0%, currentColor 42%, #ffffff 50%, currentColor 58%, currentColor 100%)",
-              backgroundSize: "200% 100%",
-              WebkitBackgroundClip: "text",
-              backgroundClip: "text",
-              color: "transparent",
-              WebkitTextFillColor: "transparent",
-              animation: "copyrightShine 4s linear infinite",
-              WebkitFontSmoothing: "antialiased",
-              textRendering: "optimizeLegibility",
-            }}
-          >
-            © {currentYear}–{currentYear + 1} VISHAL SHARMA — VIBE-CODED
-            HEURISTIC ARCHITECTURE. ALL RIGHTS RESERVED.
-          </p>
+
+          {/* Wrapper to stack base text + shine overlay exactly on top of each other */}
+          <div className="relative inline-block">
+            {/* Base text — always fully visible, normal readable color */}
+            <p
+              className="font-medium tracking-wide text-muted-foreground"
+              style={{
+                WebkitFontSmoothing: "antialiased",
+                textRendering: "optimizeLegibility",
+              }}
+            >
+              {copyrightText}
+            </p>
+
+            {/* Shine overlay — same text, but only a bright band is visible, rest fully transparent */}
+            <p
+              aria-hidden="true"
+              className="absolute inset-0 font-medium tracking-wide pointer-events-none select-none"
+              style={{
+                backgroundImage:
+                  "linear-gradient(90deg, transparent 0%, transparent 40%, rgba(255,255,255,0.9) 50%, transparent 60%, transparent 100%)",
+                backgroundSize: "200% 100%",
+                WebkitBackgroundClip: "text",
+                backgroundClip: "text",
+                color: "transparent",
+                WebkitTextFillColor: "transparent",
+                animation: "copyrightShineSweep 4s linear infinite",
+                WebkitFontSmoothing: "antialiased",
+                textRendering: "optimizeLegibility",
+              }}
+            >
+              {copyrightText}
+            </p>
+          </div>
         </motion.div>
       </div>
     </footer>
