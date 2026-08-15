@@ -1,128 +1,32 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 
 gsap.registerPlugin(ScrollTrigger);
 
-// Placeholder sequence: Lorem Picsum's seeded URLs return a distinct, stable
-// photo per seed, which gives us 47 real (if unrelated) frames for the
-// scroll-scrub without needing an account. `seed-${index}` keeps each frame
-// deterministic across reloads. On phones we never need full-res frames for a
-// scroll-scrub, so we cap the requested width per device.
-// TODO: swap this for your own 47 sequential frames (e.g. hosted on
-// ImageKit/Cloudinary/S3) for a real scrubbing animation instead of a slideshow.
-function buildImageUrl(index: number): string {
-  const width =
-    typeof window === "undefined"
-      ? 1200
-      : Math.round(
-          Math.min(
-            window.innerWidth * Math.min(window.devicePixelRatio || 1, 2),
-            window.innerWidth < 768 ? 900 : 1920,
-          ),
-        );
-  const height = Math.round(width * 1.3);
-
-  return `https://picsum.photos/seed/about-section-${index}/${width}/${height}`;
-}
-
-const aboutSectionImages = Array.from({ length: 47 }, (_, i) => ({ index: i }));
-
-// Ratio: 5 units (images) + 2 units (text reveal) = 7 total → h-[700vh]
 const IMAGE_DURATION = 5;
 const TEXT_DURATION = 2;
 
-// oklch(59.71% 0.23 23.86) ≈ #c93a2a — site-wide red accent
 const redColor = "oklch(59.71% 0.23 23.86)";
 
 const AboutScrollSection = () => {
   const sectionRef = useRef<HTMLDivElement>(null);
   const pinWrapperRef = useRef<HTMLDivElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const photoRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
-  const [imagesLoaded, setImagesLoaded] = useState(false);
-  const imagesRef = useRef<HTMLImageElement[]>([]);
-  const frameIndexRef = useRef({ value: 0 });
-
-  // Preload all images
-  useEffect(() => {
-    const loadImages = async () => {
-      const promises = aboutSectionImages.map((img, index) => {
-        return new Promise<HTMLImageElement>((resolve, reject) => {
-          const image = new window.Image();
-          image.crossOrigin = "anonymous";
-          image.src = buildImageUrl(img.index);
-          image.onload = () => {
-            imagesRef.current[index] = image;
-            resolve(image);
-          };
-          image.onerror = reject;
-        });
-      });
-
-      try {
-        await Promise.all(promises);
-        setImagesLoaded(true);
-      } catch (error) {
-        console.error("Error loading images:", error);
-      }
-    };
-
-    loadImages();
-  }, []);
-
-  // Render frame on canvas
-  const renderFrame = (index: number) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    const img = imagesRef.current[index];
-    if (!img) return;
-
-    if (canvas.width !== window.innerWidth) canvas.width = window.innerWidth;
-    if (canvas.height !== window.innerHeight)
-      canvas.height = window.innerHeight;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    const imgRatio = img.width / img.height;
-    const canvasRatio = canvas.width / canvas.height;
-
-    let drawWidth, drawHeight, drawX, drawY;
-
-    if (canvasRatio > imgRatio) {
-      drawWidth = canvas.width;
-      drawHeight = canvas.width / imgRatio;
-      drawX = 0;
-      drawY = (canvas.height - drawHeight) / 2;
-    } else {
-      drawHeight = canvas.height;
-      drawWidth = canvas.height * imgRatio;
-      drawX = (canvas.width - drawWidth) / 2;
-      drawY = 0;
-    }
-
-    ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
-  };
 
   useGSAP(
     () => {
       if (
-        !imagesLoaded ||
         !sectionRef.current ||
-        !canvasRef.current ||
+        !photoRef.current ||
         !pinWrapperRef.current ||
         !textRef.current
       )
         return;
-
-      renderFrame(0);
 
       const tl = gsap.timeline({
         scrollTrigger: {
@@ -134,16 +38,10 @@ const AboutScrollSection = () => {
         },
       });
 
-      tl.to(
-        frameIndexRef.current,
-        {
-          value: aboutSectionImages.length - 1,
-          ease: "none",
-          duration: IMAGE_DURATION,
-          onUpdate: () => {
-            renderFrame(Math.round(frameIndexRef.current.value));
-          },
-        },
+      tl.fromTo(
+        photoRef.current,
+        { scale: 1 },
+        { scale: 1.08, ease: "none", duration: IMAGE_DURATION },
         0,
       );
 
@@ -151,16 +49,10 @@ const AboutScrollSection = () => {
         pinWrapperRef.current.querySelector<HTMLElement>("[data-scroll-hint]");
 
       if (scrollHint) {
-        const lastFrame = aboutSectionImages.length - 1;
-        const frameToTime = (frame: number) =>
-          (IMAGE_DURATION * frame) / lastFrame;
-        const fadeStart = frameToTime(0);
-        const fadeEnd = frameToTime(30);
-
         tl.to(
           scrollHint,
-          { opacity: 0, ease: "none", duration: fadeEnd - fadeStart },
-          fadeStart,
+          { opacity: 0, ease: "none", duration: IMAGE_DURATION * 0.3 },
+          0,
         );
       }
 
@@ -194,37 +86,24 @@ const AboutScrollSection = () => {
         },
         IMAGE_DURATION,
       );
-
-      const handleResize = () => {
-        renderFrame(Math.round(frameIndexRef.current.value));
-        ScrollTrigger.refresh();
-      };
-
-      window.addEventListener("resize", handleResize);
-
-      return () => {
-        window.removeEventListener("resize", handleResize);
-      };
     },
-    { scope: sectionRef, dependencies: [imagesLoaded] },
+    { scope: sectionRef },
   );
 
   return (
-    <div ref={sectionRef} className="relative h-[800vh]">
-      {!imagesLoaded && (
-        <div className="absolute inset-x-0 top-0 z-40 flex h-screen items-center justify-center bg-black">
-          <div className="flex flex-col items-center gap-4">
-            <div className="h-12 w-12 animate-spin rounded-full border-4 border-white border-t-transparent" />
-            <p className="text-lg text-white">Loading images...</p>
-          </div>
-        </div>
-      )}
-
+    <div ref={sectionRef} className="relative h-[700vh]">
       <div
         ref={pinWrapperRef}
-        className="relative h-screen w-full overflow-hidden"
+        className="relative h-screen w-full overflow-hidden bg-black"
       >
-        <canvas ref={canvasRef} className="h-full w-full" />
+        <div ref={photoRef} className="absolute inset-0 h-full w-full">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/vishal.png"
+            alt="Vishal Sharma"
+            className="h-full w-full object-cover"
+          />
+        </div>
 
         <div
           data-scroll-hint
