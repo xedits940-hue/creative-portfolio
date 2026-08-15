@@ -81,10 +81,28 @@ const AboutMe = () => {
       >
         <div className="absolute inset-0 bg-primary/20 blur-[100px] rounded-full group-hover:bg-primary/30 transition-all duration-500" />
 
+        {/* Mobile image — forced via inline style so it ALWAYS applies, no caching/purge issues */}
         <img
           src="/P%20F.png"
           alt="Vishal Sharma"
-          className="relative w-[300vw] md:w-[95vw] lg:w-[70vw] h-[135vh] md:h-[112dvh] object-contain object-bottom rounded-3xl"
+          className="relative md:hidden object-contain object-bottom rounded-3xl"
+          style={{
+            width: "260vw",
+            height: "130vh",
+            maxWidth: "none",
+          }}
+        />
+
+        {/* Desktop / Laptop image — slightly reduced from before */}
+        <img
+          src="/P%20F.png"
+          alt="Vishal Sharma"
+          className="relative hidden md:block object-contain object-bottom rounded-3xl"
+          style={{
+            width: "88vw",
+            height: "104dvh",
+            maxWidth: "none",
+          }}
         />
       </motion.div>
 
