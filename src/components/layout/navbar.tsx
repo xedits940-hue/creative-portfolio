@@ -31,6 +31,15 @@ const Navbar: React.FC = () => {
   const [scope, animate] = useAnimate();
   const closedWidthRef = useRef<number>(0);
 
+  // Helper to get device-specific open dimensions (mobile vs desktop)
+  const getOpenDimensions = () => {
+    const isMobile = window.innerWidth < 768;
+    return {
+      width: isMobile ? "88vw" : "68vw",
+      height: isMobile ? "62vh" : "56vh",
+    };
+  };
+
   useEffect(() => {
     const handleClickOutside = async (event: MouseEvent) => {
       if (
@@ -85,9 +94,11 @@ const Navbar: React.FC = () => {
       scope.current.style.width = `${closedWidthRef.current}px`;
       setIsOpen(true);
 
+      const { width, height } = getOpenDimensions();
+
       await animate(
         scope.current,
-        { width: "90vw", borderRadius: "10px" },
+        { width, borderRadius: "10px" },
         { duration: 0.85, ease: EASE_OPEN },
       );
 
@@ -95,7 +106,7 @@ const Navbar: React.FC = () => {
 
       await animate(
         scope.current,
-        { height: "72vh", borderRadius: "10px" },
+        { height, borderRadius: "10px" },
         { duration: 0.9, ease: EASE_OPEN },
       );
     } else {
@@ -127,9 +138,9 @@ const Navbar: React.FC = () => {
     <nav className="fixed top-5 left-0 right-0 z-50 flex justify-center items-center">
       <div
         ref={scope}
-        className="w-4/5 md:w-2xl border h-[4.5rem] rounded bg-background/80 dark:bg-background/60 backdrop-blur-md flex flex-col overflow-hidden"
+        className="w-4/5 md:w-xl border h-[4.5rem] md:h-16 rounded bg-background/80 dark:bg-background/60 backdrop-blur-md flex flex-col overflow-hidden"
       >
-        <div className="flex justify-between items-center min-h-[4.5rem] shrink-0 px-6">
+        <div className="flex justify-between items-center min-h-[4.5rem] md:min-h-16 shrink-0 px-6">
           <motion.button
             onClick={handleToggle}
             className="cursor-pointer relative h-7 w-7"
