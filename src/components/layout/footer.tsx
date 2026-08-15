@@ -211,7 +211,31 @@ export default function CreativeFooter() {
           transition={{ delay: 0.2 }}
           className="mt-16 flex flex-col items-center justify-between gap-4 border-t border-border/40 py-6 text-xs text-muted-foreground md:flex-row"
         >
-          <p>
+          <style>{`
+            @keyframes copyrightShine {
+              0% {
+                background-position: 200% center;
+              }
+              100% {
+                background-position: -200% center;
+              }
+            }
+          `}</style>
+          <p
+            className="font-medium tracking-wide"
+            style={{
+              backgroundImage:
+                "linear-gradient(90deg, currentColor 0%, currentColor 42%, #ffffff 50%, currentColor 58%, currentColor 100%)",
+              backgroundSize: "200% 100%",
+              WebkitBackgroundClip: "text",
+              backgroundClip: "text",
+              color: "transparent",
+              WebkitTextFillColor: "transparent",
+              animation: "copyrightShine 4s linear infinite",
+              WebkitFontSmoothing: "antialiased",
+              textRendering: "optimizeLegibility",
+            }}
+          >
             © {currentYear}–{currentYear + 1} VISHAL SHARMA — VIBE-CODED
             HEURISTIC ARCHITECTURE. ALL RIGHTS RESERVED.
           </p>
