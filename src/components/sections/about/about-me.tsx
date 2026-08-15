@@ -4,6 +4,13 @@ import React, { useRef } from "react";
 import Image from "next/image";
 import { motion, useScroll, useTransform } from "framer-motion";
 import Link from "next/link";
+import { Anton } from "next/font/google";
+
+const anton = Anton({
+  subsets: ["latin"],
+  weight: "400",
+  display: "swap",
+});
 
 const AboutMe = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -26,24 +33,28 @@ const AboutMe = () => {
       {/* Giant stacked name — sits behind the character */}
       <div
         aria-hidden="true"
-        className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-1 md:gap-3 pointer-events-none select-none overflow-hidden"
+        className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-0 pointer-events-none select-none overflow-hidden"
       >
         <span
-          className="font-black uppercase leading-none tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-red-600 via-red-700 to-red-950/10"
+          className={`${anton.className} uppercase leading-[0.82] tracking-tight text-transparent bg-clip-text`}
           style={{
-            fontSize: "clamp(70px, 20vw, 280px)",
-            fontFamily: "'Arial Black', 'Helvetica Neue', sans-serif",
-            transform: "scaleX(0.85)",
+            fontSize: "clamp(70px, 19vw, 270px)",
+            backgroundImage:
+              "linear-gradient(to bottom, #ff1f3d 0%, #ef1230 20%, #b8081f 45%, #5c0210 70%, #150005 92%, transparent 100%)",
+            WebkitFontSmoothing: "antialiased",
+            textRendering: "optimizeLegibility",
           }}
         >
           VISHAL
         </span>
         <span
-          className="font-black uppercase leading-none tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-red-600 via-red-700 to-red-950/10"
+          className={`${anton.className} uppercase leading-[0.82] tracking-tight text-transparent bg-clip-text`}
           style={{
-            fontSize: "clamp(70px, 20vw, 280px)",
-            fontFamily: "'Arial Black', 'Helvetica Neue', sans-serif",
-            transform: "scaleX(0.85)",
+            fontSize: "clamp(70px, 19vw, 270px)",
+            backgroundImage:
+              "linear-gradient(to bottom, #ff1f3d 0%, #ef1230 20%, #b8081f 45%, #5c0210 70%, #150005 92%, transparent 100%)",
+            WebkitFontSmoothing: "antialiased",
+            textRendering: "optimizeLegibility",
           }}
         >
           SHARMA
