@@ -84,7 +84,7 @@ const AboutMe = () => {
         <img
           src="/P%20F.png"
           alt="Vishal Sharma"
-          className="relative w-[150vw] md:w-[75vw] lg:w-[52vw] h-[95vh] md:h-[95dvh] object-contain object-bottom rounded-3xl"
+          className="relative w-[300vw] md:w-[95vw] lg:w-[70vw] h-[135vh] md:h-[112dvh] object-contain object-bottom rounded-3xl"
         />
       </motion.div>
 
