@@ -54,6 +54,8 @@ const Preloader: React.FC<PreloaderProps> = ({
   const isMobile = useIsMobile();
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const fadeIntervalRef = useRef<number | null>(null);
+  const hasStartedRef = useRef(false);
+  const isDoneRef = useRef(false);
 
   // Real load progress lives here (not in the page), so its updates only
   // re-render this overlay and never the heavy page tree behind it.
@@ -63,22 +65,46 @@ const Preloader: React.FC<PreloaderProps> = ({
     setDimension({ width: window.innerWidth, height: window.innerHeight });
   }, []);
 
-  // Start the riser sound the moment the preloader itself appears (i.e. the
-  // moment the site starts loading), not when it finishes.
+  // Set up the riser sound the moment the preloader appears (loading starts).
+  // It's looped so it keeps playing for however long real assets take to
+  // load — no matter the actual duration, it never runs out mid-loading.
   useEffect(() => {
-    try {
-      const audio = new Audio("/dragon-studio-dramatic-riser-397994.mp3");
-      audio.volume = 0.5;
-      audioRef.current = audio;
-      void audio.play().catch(() => {
-        // Some browsers block audio until the first user interaction.
-      });
-    } catch {
-      // A sound error must never stop the website from opening.
-    }
+    const audio = new Audio("/dragon-studio-dramatic-riser-397994.mp3");
+    audio.loop = true;
+    audio.volume = 0.5;
+    audioRef.current = audio;
+
+    const tryPlay = () => {
+      if (hasStartedRef.current || isDoneRef.current) return;
+      audio
+        .play()
+        .then(() => {
+          hasStartedRef.current = true;
+        })
+        .catch(() => {
+          // Autoplay blocked — will retry on the first user interaction below.
+        });
+    };
+
+    // First attempt immediately (works if the browser allows it).
+    tryPlay();
+
+    // Browsers block audio-with-sound until the user interacts with the
+    // page at least once. This listens for the very first interaction
+    // (anywhere, even on the loading screen itself) and starts the sound
+    // right then if it hasn't started yet.
+    const onFirstInteraction = () => {
+      tryPlay();
+    };
+    window.addEventListener("pointerdown", onFirstInteraction);
+    window.addEventListener("keydown", onFirstInteraction);
+    window.addEventListener("touchstart", onFirstInteraction);
 
     return () => {
-      audioRef.current?.pause();
+      window.removeEventListener("pointerdown", onFirstInteraction);
+      window.removeEventListener("keydown", onFirstInteraction);
+      window.removeEventListener("touchstart", onFirstInteraction);
+      audio.pause();
       if (fadeIntervalRef.current !== null) {
         window.clearInterval(fadeIntervalRef.current);
       }
@@ -86,12 +112,14 @@ const Preloader: React.FC<PreloaderProps> = ({
   }, []);
 
   // As soon as loading finishes, fade the sound out over ~0.9s so it ends
-  // right around the same time the loading screen slides away.
+  // right around the same time the loading screen slides away — regardless
+  // of how long the loading actually took.
   useEffect(() => {
     if (!isComplete) return;
+    isDoneRef.current = true;
 
     const audio = audioRef.current;
-    if (audio) {
+    if (audio && !audio.paused) {
       const fadeDurationMs = 900;
       const steps = 18;
       const stepTime = fadeDurationMs / steps;
