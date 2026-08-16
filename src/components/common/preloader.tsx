@@ -5,10 +5,6 @@ import { motion, Variants } from "framer-motion";
 import { useAssetLoader } from "@/hooks/use-asset-loader";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-// The whole overlay slides up and off-screen once loading completes.
-// NOTE: we animate `y` (a GPU-composited transform), never `top` — animating
-// `top` forces a layout+paint on every frame and is the classic cause of a
-// juddering slide-up on phones.
 const slideUp: Variants = {
   initial: { y: 0 },
   exit: {
@@ -22,7 +18,6 @@ const slideUp: Variants = {
 };
 
 interface PreloaderProps {
-  /** Fired once all real assets are in — the parent then unmounts this. */
   onComplete?: () => void;
   words?: string[];
   backgroundColor?: string;
@@ -53,111 +48,68 @@ const Preloader: React.FC<PreloaderProps> = ({
   const [dimension, setDimension] = useState({ width: 0, height: 0 });
   const isMobile = useIsMobile();
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const fadeIntervalRef = useRef<number | null>(null);
-  const hasStartedRef = useRef(false);
-  const isDoneRef = useRef(false);
+  const hasPlayedRef = useRef(false);
 
-  // Real load progress lives here (not in the page), so its updates only
-  // re-render this overlay and never the heavy page tree behind it.
   const { progress, isComplete } = useAssetLoader();
 
   useEffect(() => {
     setDimension({ width: window.innerWidth, height: window.innerHeight });
   }, []);
 
-  // Set up the riser sound the moment the preloader appears (loading starts).
-  // It's looped so it keeps playing for however long real assets take to
-  // load — no matter the actual duration, it never runs out mid-loading.
+  // Preloader sound using direct MyInstants link with user-interaction fallback
   useEffect(() => {
-    const audio = new Audio("/dragon-studio-dramatic-riser-397994.mp3");
-    audio.loop = true;
+    // Direct MP3 link from MyInstants
+    const audio = new Audio(
+      "https://www.myinstants.com/media/sounds/ffxiv-duty-unlocked.mp3"
+    );
     audio.volume = 0.5;
     audioRef.current = audio;
 
-    const tryPlay = () => {
-      if (hasStartedRef.current || isDoneRef.current) return;
+    const playSound = () => {
+      if (hasPlayedRef.current) return;
       audio
         .play()
         .then(() => {
-          hasStartedRef.current = true;
+          hasPlayedRef.current = true;
         })
         .catch(() => {
-          // Autoplay blocked — will retry on the first user interaction below.
+          // Browser blocked autoplay until user interaction
         });
     };
 
-    // First attempt immediately (works if the browser allows it).
-    tryPlay();
+    // Try playing immediately
+    playSound();
 
-    // Browsers block audio-with-sound until the user interacts with the
-    // page at least once. This listens for the very first interaction
-    // (anywhere, even on the loading screen itself) and starts the sound
-    // right then if it hasn't started yet.
-    const onFirstInteraction = () => {
-      tryPlay();
+    // Fallback: play on first click/tap/keypress anywhere on the screen
+    const handleInteraction = () => {
+      playSound();
     };
-    window.addEventListener("pointerdown", onFirstInteraction);
-    window.addEventListener("keydown", onFirstInteraction);
-    window.addEventListener("touchstart", onFirstInteraction);
+
+    window.addEventListener("pointerdown", handleInteraction, { once: true });
+    window.addEventListener("keydown", handleInteraction, { once: true });
 
     return () => {
-      window.removeEventListener("pointerdown", onFirstInteraction);
-      window.removeEventListener("keydown", onFirstInteraction);
-      window.removeEventListener("touchstart", onFirstInteraction);
+      window.removeEventListener("pointerdown", handleInteraction);
+      window.removeEventListener("keydown", handleInteraction);
       audio.pause();
-      if (fadeIntervalRef.current !== null) {
-        window.clearInterval(fadeIntervalRef.current);
-      }
     };
   }, []);
 
-  // As soon as loading finishes, fade the sound out over ~0.9s so it ends
-  // right around the same time the loading screen slides away — regardless
-  // of how long the loading actually took.
   useEffect(() => {
-    if (!isComplete) return;
-    isDoneRef.current = true;
-
-    const audio = audioRef.current;
-    if (audio && !audio.paused) {
-      const fadeDurationMs = 900;
-      const steps = 18;
-      const stepTime = fadeDurationMs / steps;
-      const startVolume = audio.volume;
-      let currentStep = 0;
-
-      fadeIntervalRef.current = window.setInterval(() => {
-        currentStep += 1;
-        const nextVolume = Math.max(
-          0,
-          startVolume * (1 - currentStep / steps),
-        );
-        audio.volume = nextVolume;
-
-        if (currentStep >= steps) {
-          audio.pause();
-          if (fadeIntervalRef.current !== null) {
-            window.clearInterval(fadeIntervalRef.current);
-            fadeIntervalRef.current = null;
-          }
-        }
-      }, stepTime);
+    if (isComplete) {
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+      onComplete?.();
     }
-
-    onComplete?.();
   }, [isComplete, onComplete]);
 
-  // The greeting shown is derived from real progress, so the languages march
-  // forward in lock-step with how much of the site has actually loaded.
   const clamped = Math.min(100, Math.max(0, progress));
   const index = Math.min(
     words.length - 1,
     Math.floor((clamped / 100) * words.length),
   );
 
-  // Curved-edge reveal for the slide-up (the classic elastic bottom) — desktop
-  // only. Morphing two full-screen SVG paths every frame is far too heavy for
-  // mobile GPUs, so phones get a clean straight edge instead.
   const initialPath = `M0 0 L${dimension.width} 0 L${dimension.width} ${
     dimension.height
   } Q${dimension.width / 2} ${dimension.height + 300} 0 ${
@@ -206,10 +158,6 @@ const Preloader: React.FC<PreloaderProps> = ({
     >
       {dimension.width > 0 && (
         <>
-          {/* Soft accent glow — desktop only. A large `blur-[120px]` surface is
-              cheap to paint once but ruinous to re-composite on mobile, so we
-              simply omit it there. It pulses on its own timeline (scale/opacity
-              transforms) rather than re-animating on every progress tick. */}
           {!isMobile && (
             <motion.div
               aria-hidden
@@ -227,7 +175,6 @@ const Preloader: React.FC<PreloaderProps> = ({
             />
           )}
 
-          {/* Center: the cycling multilingual greeting */}
           <div className="absolute inset-0 z-[2] flex items-center justify-center">
             <div className="flex items-center overflow-hidden">
               <span
@@ -235,12 +182,6 @@ const Preloader: React.FC<PreloaderProps> = ({
                 style={{ backgroundColor: accentColor }}
               />
               <div className="relative overflow-hidden">
-                {/* Keyed by index: each greeting is fully opaque the moment it
-                    appears (only a small slide), so nothing flashes invisible
-                    even when words change quickly. Natural width (no fixed
-                    sizer box) keeps the dot sitting right next to the word
-                    for every language, instead of floating far from short
-                    words like "やあ". */}
                 <motion.span
                   key={index}
                   initial={{ y: "35%" }}
@@ -258,7 +199,6 @@ const Preloader: React.FC<PreloaderProps> = ({
             </div>
           </div>
 
-          {/* Bottom-left label */}
           <div className="absolute bottom-8 left-8 z-[2] flex items-center gap-3">
             <motion.span
               className="block h-1.5 w-1.5 rounded-full"
@@ -278,7 +218,6 @@ const Preloader: React.FC<PreloaderProps> = ({
             </span>
           </div>
 
-          {/* Bottom-right: the big live counter */}
           <div className="absolute bottom-4 right-3 z-[2] flex items-end tabular-nums sm:right-6 md:right-10">
             <span
               className="font-[var(--font-accent)] text-[12vw] leading-none tracking-tighter sm:text-[10vw] md:text-[6vw]"
@@ -295,9 +234,6 @@ const Preloader: React.FC<PreloaderProps> = ({
           </div>
 
           {isMobile ? (
-            /* Mobile: a dead-simple straight progress bar pinned to the bottom.
-               Only its `scaleX` transform animates (compositor-only), so it
-               stays perfectly smooth even on low-end phones. */
             <div className="absolute bottom-0 left-0 z-[3] h-[3px] w-full">
               <div
                 className="absolute inset-0"
@@ -312,13 +248,10 @@ const Preloader: React.FC<PreloaderProps> = ({
             </div>
           ) : (
             <>
-              {/* Progress line — a stroke tracing the same bottom curve, so it
-                  bows and sweeps up exactly with the panel. Sits above content. */}
               <svg
                 className="absolute top-0 left-0 z-[3] w-full"
                 style={{ height: "calc(100% + 300px)" }}
               >
-                {/* faint track */}
                 <motion.path
                   variants={lineCurve}
                   initial="initial"
@@ -328,7 +261,6 @@ const Preloader: React.FC<PreloaderProps> = ({
                   strokeWidth={4}
                   vectorEffect="non-scaling-stroke"
                 />
-                {/* red fill, revealed left→right by real progress */}
                 <motion.path
                   variants={lineCurve}
                   initial="initial"
@@ -345,7 +277,6 @@ const Preloader: React.FC<PreloaderProps> = ({
                 />
               </svg>
 
-              {/* Curved slide-up reveal */}
               <svg
                 className="absolute top-0 left-0 z-[0] w-full"
                 style={{ height: "calc(100% + 300px)" }}
