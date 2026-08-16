@@ -30,14 +30,20 @@ const Navbar: React.FC = () => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [scope, animate] = useAnimate();
   const closedWidthRef = useRef<number>(0);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Helper to get device-specific open dimensions (mobile vs desktop)
-  const getOpenDimensions = () => {
-    const isMobile = window.innerWidth < 768;
-    return {
-      width: isMobile ? "88vw" : "68vw",
-      height: isMobile ? "56vh" : "54vh",
-    };
+  useEffect(() => {
+    audioRef.current = new Audio(
+      "https://assets.mixkit.co/sfx/preview/mixkit-select-click-1109.mp3"
+    );
+    audioRef.current.volume = 0.5;
+  }, []);
+
+  const playSound = () => {
+    if (audioRef.current) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().catch(() => {});
+    }
   };
 
   useEffect(() => {
@@ -88,17 +94,16 @@ const Navbar: React.FC = () => {
   const handleToggle = async () => {
     if (isAnimating) return;
     setIsAnimating(true);
+    playSound();
 
     if (!isOpen) {
       closedWidthRef.current = scope.current.offsetWidth;
       scope.current.style.width = `${closedWidthRef.current}px`;
       setIsOpen(true);
 
-      const { width, height } = getOpenDimensions();
-
       await animate(
         scope.current,
-        { width, borderRadius: "10px" },
+        { width: "90vw", borderRadius: "10px" },
         { duration: 0.85, ease: EASE_OPEN },
       );
 
@@ -106,7 +111,7 @@ const Navbar: React.FC = () => {
 
       await animate(
         scope.current,
-        { height, borderRadius: "10px" },
+        { height: "72vh", borderRadius: "10px" },
         { duration: 0.9, ease: EASE_OPEN },
       );
     } else {
@@ -138,9 +143,9 @@ const Navbar: React.FC = () => {
     <nav className="fixed top-5 left-0 right-0 z-50 flex justify-center items-center">
       <div
         ref={scope}
-        className="w-4/5 md:w-xl border h-[4.5rem] md:h-16 rounded bg-background/80 dark:bg-background/60 backdrop-blur-md flex flex-col overflow-hidden"
+        className="w-4/5 md:w-2xl border h-[4.5rem] rounded bg-background/80 dark:bg-background/60 backdrop-blur-md flex flex-col overflow-hidden"
       >
-        <div className="flex justify-between items-center min-h-[4.5rem] md:min-h-16 shrink-0 px-6">
+        <div className="flex justify-between items-center min-h-[4.5rem] shrink-0 px-6">
           <motion.button
             onClick={handleToggle}
             className="cursor-pointer relative h-7 w-7"
@@ -183,10 +188,10 @@ const Navbar: React.FC = () => {
           >
             <Image
               src="/logo.png"
-              alt="Md Logo"
-              className="h-20 w-20 cursor-pointer object-contain"
-              width={120}
-              height={120}
+              alt="Vishal Sharma Logo"
+              className="h-14 w-14 cursor-pointer object-contain"
+              width={96}
+              height={96}
             />
           </Link>
 
@@ -204,7 +209,7 @@ const Navbar: React.FC = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.35, ease: "easeOut" }}
-              className="flex flex-col flex-1 px-6 md:px-10 pt-3 pb-4 overflow-hidden"
+              className="flex flex-col flex-1 px-6 md:px-10 pt-4 pb-6 overflow-hidden"
             >
               <div className="flex flex-col md:flex-row flex-1 gap-8 md:gap-0">
                 <div className="flex-1 flex flex-col justify-center">
@@ -213,7 +218,7 @@ const Navbar: React.FC = () => {
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-                    className="text-xs uppercase tracking-[0.3em] text-muted-foreground mb-4 md:mb-5"
+                    className="text-xs uppercase tracking-[0.3em] text-muted-foreground mb-6 md:mb-8"
                   >
                     Navigation
                   </motion.span>
@@ -243,7 +248,7 @@ const Navbar: React.FC = () => {
                       <Link
                         href={link.href}
                         onClick={handleToggle}
-                        className="group relative pr-6 flex items-center gap-4 md:gap-6 py-2 md:py-2.5 border-b border-border/20 last:border-b-0"
+                        className="group relative pr-6 flex items-center gap-4 md:gap-6 py-3 md:py-4 border-b border-border/20 last:border-b-0"
                       >
                         <motion.span
                           className="text-xs md:text-sm font-mono text-muted-foreground/60 w-8 shrink-0"
@@ -260,7 +265,7 @@ const Navbar: React.FC = () => {
                             animate={{ x: hoveredIndex === i ? 12 : 0 }}
                             transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
                           >
-                            <span className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tighter leading-none">
+                            <span className="text-3xl md:text-5xl lg:text-6xl font-bold tracking-tighter leading-none">
                               {link.name}
                             </span>
 
@@ -287,7 +292,7 @@ const Navbar: React.FC = () => {
                           }}
                           transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
                         >
-                          <ArrowUpRight className="h-4 w-4 md:h-5 md:w-5" />
+                          <ArrowUpRight className="h-5 w-5 md:h-6 md:w-6" />
                         </motion.div>
 
                         <motion.div
@@ -308,7 +313,7 @@ const Navbar: React.FC = () => {
                   transition={{ duration: 0.5, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
                   className="hidden md:flex flex-col justify-between w-64 lg:w-96 pl-8 lg:pl-12 border-l border-border/20 mb-2"
                 >
-                  <div className="flex flex-col gap-3">
+                  <div className="flex flex-col gap-4">
                     <span className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
                       Let&apos;s Talk
                     </span>
@@ -322,8 +327,8 @@ const Navbar: React.FC = () => {
                     </motion.a>
                   </div>
 
-                  <div className="flex flex-col gap-2">
-                    <span className="text-xs uppercase tracking-[0.3em] text-muted-foreground mb-1">
+                  <div className="flex flex-col gap-3">
+                    <span className="text-xs uppercase tracking-[0.3em] text-muted-foreground mb-2">
                       Socials
                     </span>
                     <div className="flex flex-wrap gap-x-4 gap-y-2">
@@ -365,7 +370,7 @@ const Navbar: React.FC = () => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.4, delay: navLinks.length * 0.08 + 0.1, ease: [0.22, 1, 0.36, 1] }}
-                className="flex flex-col justify-between items-start gap-2 pt-3 mt-auto border-t border-border/20"
+                className="flex flex-col justify-between items-start gap-2 pt-4 mt-auto border-t border-border/20"
               >
                 <div className="flex items-center gap-2">
                   <motion.div
