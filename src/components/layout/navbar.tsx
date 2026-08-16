@@ -30,21 +30,6 @@ const Navbar: React.FC = () => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [scope, animate] = useAnimate();
   const closedWidthRef = useRef<number>(0);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-
-  useEffect(() => {
-    audioRef.current = new Audio(
-      "https://assets.mixkit.co/sfx/preview/mixkit-select-click-1109.mp3"
-    );
-    audioRef.current.volume = 0.5;
-  }, []);
-
-  const playSound = () => {
-    if (audioRef.current) {
-      audioRef.current.currentTime = 0;
-      audioRef.current.play().catch(() => {});
-    }
-  };
 
   useEffect(() => {
     const handleClickOutside = async (event: MouseEvent) => {
@@ -94,7 +79,6 @@ const Navbar: React.FC = () => {
   const handleToggle = async () => {
     if (isAnimating) return;
     setIsAnimating(true);
-    playSound();
 
     if (!isOpen) {
       closedWidthRef.current = scope.current.offsetWidth;
@@ -188,8 +172,8 @@ const Navbar: React.FC = () => {
           >
             <Image
               src="/logo.png"
-              alt="Vishal Sharma Logo"
-              className="h-14 w-14 cursor-pointer object-contain"
+              alt="Md Logo"
+              className="h-12 w-12 cursor-pointer object-contain"
               width={96}
               height={96}
             />
