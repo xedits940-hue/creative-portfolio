@@ -48,7 +48,8 @@ const Preloader: React.FC<PreloaderProps> = ({
   const [dimension, setDimension] = useState({ width: 0, height: 0 });
   const isMobile = useIsMobile();
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const hasPlayedRef = useRef(false);
+  const hasStartedRef = useRef(false);
+  const isDoneRef = useRef(false);
 
   const { progress, isComplete } = useAssetLoader();
 
@@ -56,52 +57,82 @@ const Preloader: React.FC<PreloaderProps> = ({
     setDimension({ width: window.innerWidth, height: window.innerHeight });
   }, []);
 
-  // Preloader sound using direct MyInstants link with user-interaction fallback
+  // Attempt truly automatic (no-click) sound using the mute-then-unmute
+  // trick, with a first-interaction fallback for browsers that still block it.
   useEffect(() => {
-    // Direct MP3 link from MyInstants
     const audio = new Audio(
       "https://www.myinstants.com/media/sounds/ffxiv-duty-unlocked.mp3"
     );
+    audio.loop = true;
     audio.volume = 0.5;
     audioRef.current = audio;
 
-    const playSound = () => {
-      if (hasPlayedRef.current) return;
-      audio
-        .play()
-        .then(() => {
-          hasPlayedRef.current = true;
-        })
-        .catch(() => {
-          // Browser blocked autoplay until user interaction
-        });
+    const markStarted = () => {
+      hasStartedRef.current = true;
     };
 
-    // Try playing immediately
-    playSound();
+    // Step 1: start muted — this is ALWAYS allowed by every browser,
+    // no click needed at all.
+    audio.muted = true;
+    audio
+      .play()
+      .then(() => {
+        // Step 2: unmute right after playback actually begins. On most
+        // Chromium browsers this keeps playing with sound automatically.
+        audio.muted = false;
+        markStarted();
+      })
+      .catch(() => {
+        // Even muted autoplay was blocked (rare) — wait for interaction.
+      });
 
-    // Fallback: play on first click/tap/keypress anywhere on the screen
-    const handleInteraction = () => {
-      playSound();
+    // Step 3: safety net for browsers (mainly Safari) that still refuse
+    // sound after the unmute trick. This fires on the very first tap,
+    // click, or key press anywhere on the page — nothing has to be
+    // clicked directly, it just needs to be the first interaction at all.
+    const tryPlayOnInteraction = () => {
+      if (hasStartedRef.current || isDoneRef.current) return;
+      audio.muted = false;
+      audio.play().then(markStarted).catch(() => {});
     };
 
-    window.addEventListener("pointerdown", handleInteraction, { once: true });
-    window.addEventListener("keydown", handleInteraction, { once: true });
+    window.addEventListener("pointerdown", tryPlayOnInteraction);
+    window.addEventListener("keydown", tryPlayOnInteraction);
+    window.addEventListener("touchstart", tryPlayOnInteraction);
 
     return () => {
-      window.removeEventListener("pointerdown", handleInteraction);
-      window.removeEventListener("keydown", handleInteraction);
+      window.removeEventListener("pointerdown", tryPlayOnInteraction);
+      window.removeEventListener("keydown", tryPlayOnInteraction);
+      window.removeEventListener("touchstart", tryPlayOnInteraction);
       audio.pause();
     };
   }, []);
 
+  // Fade the sound out in sync with loading finishing, whatever the
+  // actual loading duration turned out to be.
   useEffect(() => {
-    if (isComplete) {
-      if (audioRef.current) {
-        audioRef.current.pause();
-      }
-      onComplete?.();
+    if (!isComplete) return;
+    isDoneRef.current = true;
+
+    const audio = audioRef.current;
+    if (audio && !audio.paused) {
+      const fadeDurationMs = 900;
+      const steps = 18;
+      const stepTime = fadeDurationMs / steps;
+      const startVolume = audio.volume;
+      let currentStep = 0;
+
+      const fadeInterval = window.setInterval(() => {
+        currentStep += 1;
+        audio.volume = Math.max(0, startVolume * (1 - currentStep / steps));
+        if (currentStep >= steps) {
+          audio.pause();
+          window.clearInterval(fadeInterval);
+        }
+      }, stepTime);
     }
+
+    onComplete?.();
   }, [isComplete, onComplete]);
 
   const clamped = Math.min(100, Math.max(0, progress));
