@@ -52,7 +52,8 @@ const Preloader: React.FC<PreloaderProps> = ({
 }) => {
   const [dimension, setDimension] = useState({ width: 0, height: 0 });
   const isMobile = useIsMobile();
-  const riserPlayedRef = useRef(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const fadeIntervalRef = useRef<number | null>(null);
 
   // Real load progress lives here (not in the page), so its updates only
   // re-render this overlay and never the heavy page tree behind it.
@@ -62,22 +63,57 @@ const Preloader: React.FC<PreloaderProps> = ({
     setDimension({ width: window.innerWidth, height: window.innerHeight });
   }, []);
 
+  // Start the riser sound the moment the preloader itself appears (i.e. the
+  // moment the site starts loading), not when it finishes.
   useEffect(() => {
-    if (!isComplete || riserPlayedRef.current) return;
-
-    riserPlayedRef.current = true;
-
     try {
-      const audio = new Audio(
-        "/dragon-studio-dramatic-riser-397994.mp3",
-      );
-      audio.currentTime = 0;
+      const audio = new Audio("/dragon-studio-dramatic-riser-397994.mp3");
       audio.volume = 0.5;
+      audioRef.current = audio;
       void audio.play().catch(() => {
         // Some browsers block audio until the first user interaction.
       });
     } catch {
       // A sound error must never stop the website from opening.
+    }
+
+    return () => {
+      audioRef.current?.pause();
+      if (fadeIntervalRef.current !== null) {
+        window.clearInterval(fadeIntervalRef.current);
+      }
+    };
+  }, []);
+
+  // As soon as loading finishes, fade the sound out over ~0.9s so it ends
+  // right around the same time the loading screen slides away.
+  useEffect(() => {
+    if (!isComplete) return;
+
+    const audio = audioRef.current;
+    if (audio) {
+      const fadeDurationMs = 900;
+      const steps = 18;
+      const stepTime = fadeDurationMs / steps;
+      const startVolume = audio.volume;
+      let currentStep = 0;
+
+      fadeIntervalRef.current = window.setInterval(() => {
+        currentStep += 1;
+        const nextVolume = Math.max(
+          0,
+          startVolume * (1 - currentStep / steps),
+        );
+        audio.volume = nextVolume;
+
+        if (currentStep >= steps) {
+          audio.pause();
+          if (fadeIntervalRef.current !== null) {
+            window.clearInterval(fadeIntervalRef.current);
+            fadeIntervalRef.current = null;
+          }
+        }
+      }, stepTime);
     }
 
     onComplete?.();
