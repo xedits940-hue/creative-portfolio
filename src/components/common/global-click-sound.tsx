@@ -13,7 +13,7 @@ export default function GlobalClickSound() {
       if (target.closest("[data-sound-exclude]")) return;
 
       playSound(
-        "https://www.myinstants.com/media/sounds/nintendo-switch-click.mp3",
+        "https://www.myinstants.com/en/instant/nintendo-switch-click-69023/?utm_source=copy&utm_medium=share",
         0.35
       );
     };
