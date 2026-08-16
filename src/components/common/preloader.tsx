@@ -1,5 +1,6 @@
 "use client";
-import React, { useEffect, useState } from "react";
+
+import React, { useEffect, useRef, useState } from "react";
 import { motion, Variants } from "framer-motion";
 import { useAssetLoader } from "@/hooks/use-asset-loader";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -51,6 +52,7 @@ const Preloader: React.FC<PreloaderProps> = ({
 }) => {
   const [dimension, setDimension] = useState({ width: 0, height: 0 });
   const isMobile = useIsMobile();
+  const riserPlayedRef = useRef(false);
 
   // Real load progress lives here (not in the page), so its updates only
   // re-render this overlay and never the heavy page tree behind it.
@@ -61,7 +63,24 @@ const Preloader: React.FC<PreloaderProps> = ({
   }, []);
 
   useEffect(() => {
-    if (isComplete) onComplete?.();
+    if (!isComplete || riserPlayedRef.current) return;
+
+    riserPlayedRef.current = true;
+
+    try {
+      const audio = new Audio(
+        "/dragon-studio-dramatic-riser-397994.mp3",
+      );
+      audio.currentTime = 0;
+      audio.volume = 0.5;
+      void audio.play().catch(() => {
+        // Some browsers block audio until the first user interaction.
+      });
+    } catch {
+      // A sound error must never stop the website from opening.
+    }
+
+    onComplete?.();
   }, [isComplete, onComplete]);
 
   // The greeting shown is derived from real progress, so the languages march
@@ -131,9 +150,16 @@ const Preloader: React.FC<PreloaderProps> = ({
             <motion.div
               aria-hidden
               className="pointer-events-none absolute left-1/2 top-1/2 z-[1] h-[320px] w-[320px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-[120px]"
-              style={{ backgroundColor: accentColor, willChange: "transform, opacity" }}
+              style={{
+                backgroundColor: accentColor,
+                willChange: "transform, opacity",
+              }}
               animate={{ scale: [1, 1.35, 1], opacity: [0.08, 0.2, 0.08] }}
-              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+              transition={{
+                duration: 4,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
             />
           )}
 
@@ -155,7 +181,10 @@ const Preloader: React.FC<PreloaderProps> = ({
                   key={index}
                   initial={{ y: "35%" }}
                   animate={{ y: "0%" }}
-                  transition={{ duration: 0.4, ease: [0.33, 1, 0.68, 1] }}
+                  transition={{
+                    duration: 0.4,
+                    ease: [0.33, 1, 0.68, 1],
+                  }}
                   className="block whitespace-nowrap text-4xl font-light leading-[1.6] md:text-5xl"
                   style={{ color: textColor }}
                 >
@@ -171,7 +200,11 @@ const Preloader: React.FC<PreloaderProps> = ({
               className="block h-1.5 w-1.5 rounded-full"
               style={{ backgroundColor: accentColor }}
               animate={{ opacity: [0.3, 1, 0.3] }}
-              transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
+              transition={{
+                duration: 1.4,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
             />
             <span
               className="text-[11px] font-medium uppercase tracking-[0.35em] opacity-60"
