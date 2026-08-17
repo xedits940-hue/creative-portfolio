@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion, Variants } from "framer-motion";
 import { useAssetLoader } from "@/hooks/use-asset-loader";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -47,9 +47,6 @@ const Preloader: React.FC<PreloaderProps> = ({
 }) => {
   const [dimension, setDimension] = useState({ width: 0, height: 0 });
   const isMobile = useIsMobile();
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const hasStartedRef = useRef(false);
-  const isDoneRef = useRef(false);
 
   const { progress, isComplete } = useAssetLoader();
 
@@ -57,81 +54,8 @@ const Preloader: React.FC<PreloaderProps> = ({
     setDimension({ width: window.innerWidth, height: window.innerHeight });
   }, []);
 
-  // Attempt truly automatic (no-click) sound using the mute-then-unmute
-  // trick, with a first-interaction fallback for browsers that still block it.
-  useEffect(() => {
-    const audio = new Audio(
-      "https://www.myinstants.com/media/sounds/ffxiv-duty-unlocked.mp3"
-    );
-    audio.loop = true;
-    audio.volume = 0.5;
-    audioRef.current = audio;
-
-    const markStarted = () => {
-      hasStartedRef.current = true;
-    };
-
-    // Step 1: start muted — this is ALWAYS allowed by every browser,
-    // no click needed at all.
-    audio.muted = true;
-    audio
-      .play()
-      .then(() => {
-        // Step 2: unmute right after playback actually begins. On most
-        // Chromium browsers this keeps playing with sound automatically.
-        audio.muted = false;
-        markStarted();
-      })
-      .catch(() => {
-        // Even muted autoplay was blocked (rare) — wait for interaction.
-      });
-
-    // Step 3: safety net for browsers (mainly Safari) that still refuse
-    // sound after the unmute trick. This fires on the very first tap,
-    // click, or key press anywhere on the page — nothing has to be
-    // clicked directly, it just needs to be the first interaction at all.
-    const tryPlayOnInteraction = () => {
-      if (hasStartedRef.current || isDoneRef.current) return;
-      audio.muted = false;
-      audio.play().then(markStarted).catch(() => {});
-    };
-
-    window.addEventListener("pointerdown", tryPlayOnInteraction);
-    window.addEventListener("keydown", tryPlayOnInteraction);
-    window.addEventListener("touchstart", tryPlayOnInteraction);
-
-    return () => {
-      window.removeEventListener("pointerdown", tryPlayOnInteraction);
-      window.removeEventListener("keydown", tryPlayOnInteraction);
-      window.removeEventListener("touchstart", tryPlayOnInteraction);
-      audio.pause();
-    };
-  }, []);
-
-  // Fade the sound out in sync with loading finishing, whatever the
-  // actual loading duration turned out to be.
   useEffect(() => {
     if (!isComplete) return;
-    isDoneRef.current = true;
-
-    const audio = audioRef.current;
-    if (audio && !audio.paused) {
-      const fadeDurationMs = 900;
-      const steps = 18;
-      const stepTime = fadeDurationMs / steps;
-      const startVolume = audio.volume;
-      let currentStep = 0;
-
-      const fadeInterval = window.setInterval(() => {
-        currentStep += 1;
-        audio.volume = Math.max(0, startVolume * (1 - currentStep / steps));
-        if (currentStep >= steps) {
-          audio.pause();
-          window.clearInterval(fadeInterval);
-        }
-      }, stepTime);
-    }
-
     onComplete?.();
   }, [isComplete, onComplete]);
 
@@ -146,6 +70,7 @@ const Preloader: React.FC<PreloaderProps> = ({
   } Q${dimension.width / 2} ${dimension.height + 300} 0 ${
     dimension.height
   } L0 0`;
+
   const targetPath = `M0 0 L${dimension.width} 0 L${dimension.width} ${
     dimension.height
   } Q${dimension.width / 2} ${dimension.height} 0 ${dimension.height} L0 0`;
@@ -157,13 +82,18 @@ const Preloader: React.FC<PreloaderProps> = ({
     },
     exit: {
       d: targetPath,
-      transition: { duration: 1.7, ease: [0.76, 0, 0.24, 1], delay: 0.3 },
+      transition: {
+        duration: 1.7,
+        ease: [0.76, 0, 0.24, 1],
+        delay: 0.3,
+      },
     },
   };
 
   const lineInitial = `M0 ${dimension.height} Q${dimension.width / 2} ${
     dimension.height + 300
   } ${dimension.width} ${dimension.height}`;
+
   const lineTarget = `M0 ${dimension.height} Q${dimension.width / 2} ${
     dimension.height
   } ${dimension.width} ${dimension.height}`;
@@ -175,7 +105,11 @@ const Preloader: React.FC<PreloaderProps> = ({
     },
     exit: {
       d: lineTarget,
-      transition: { duration: 1.7, ease: [0.76, 0, 0.24, 1], delay: 0.3 },
+      transition: {
+        duration: 1.7,
+        ease: [0.76, 0, 0.24, 1],
+        delay: 0.3,
+      },
     },
   };
 
@@ -197,7 +131,10 @@ const Preloader: React.FC<PreloaderProps> = ({
                 backgroundColor: accentColor,
                 willChange: "transform, opacity",
               }}
-              animate={{ scale: [1, 1.35, 1], opacity: [0.08, 0.2, 0.08] }}
+              animate={{
+                scale: [1, 1.35, 1],
+                opacity: [0.08, 0.2, 0.08],
+              }}
               transition={{
                 duration: 4,
                 repeat: Infinity,
