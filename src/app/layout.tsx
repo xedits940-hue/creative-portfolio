@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     template: "%s | Vishal Sharma",
   },
   description:
-    "Portfolio of Vishal Sharma, a self-taught vibe coder from Chandigarh, India, turning ideas into working digital products through AI-assisted development.",
+    "PORTFOLIO OF VISHAL SHARMA, A SELF-TAUGHT VIBE CODER FROM CHANDIGARH, INDIA, TURNING IDEAS INTO IMMERSIVE DIGITAL EXPERIENCES THROUGH CREATIVITY, EXPERIMENTATION, AND AI.",
   keywords: [
     "Vibe Coding",
     "Prompt Engineering",
@@ -58,15 +58,15 @@ export const metadata: Metadata = {
     url: BASE_URL,
     title: "VISHAL SHARMA | NEXT-GEN VIBE CODER",
     description:
-      "EXPLORE A PORTFOLIO BUILT THROUGH VIBE CODING — AI-ASSISTED PROJECTS, PROTOTYPES, AND DIGITAL EXPERIMENTS BY VISHAL SHARMA.",
+      "EXPLORE THE PORTFOLIO OF VISHAL SHARMA — A SELF-TAUGHT VIBE CODER CREATING IMMERSIVE DIGITAL EXPERIENCES THROUGH CREATIVITY, EXPERIMENTATION, AND AI.",
     siteName: "Vishal Sharma Portfolio",
     images: [
       {
-        url: OG_IMAGE,
+        url: "/logo.png",
         width: 1200,
         height: 630,
-        alt: "Portfolio preview",
-        type: "image/jpeg",
+        alt: "Vishal Sharma Portfolio",
+        type: "image/png",
       },
     ],
   },
@@ -74,14 +74,14 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "VISHAL SHARMA | NEXT-GEN VIBE CODER",
     description:
-      "Explore a portfolio built through vibe coding — AI-assisted projects, prototypes, and digital experiments by Vishal Sharma.",
-    creator: "@yourhandle",
+      "EXPLORE THE PORTFOLIO OF VISHAL SHARMA — A SELF-TAUGHT VIBE CODER CREATING IMMERSIVE DIGITAL EXPERIENCES THROUGH CREATIVITY, EXPERIMENTATION, AND AI.",
+    creator: "@vishalcore07",
     images: [
       {
-        url: OG_IMAGE,
+        url: "/logo.png",
         width: 1200,
         height: 630,
-        alt: "Portfolio preview",
+        alt: "Vishal Sharma Portfolio",
       },
     ],
   },
