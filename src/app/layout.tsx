@@ -98,9 +98,9 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/logo.png", type: "image/png", sizes: "any" },
+      { url: "/favicon.png", type: "image/png", sizes: "512x512" },
     ],
-    shortcut: "/logo.png",
+    shortcut: "/favicon.png",
     apple: [{ url: "/logo.png", type: "image/png" }],
   },
   manifest: "/manifest.webmanifest",
