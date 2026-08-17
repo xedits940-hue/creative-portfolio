@@ -1,7 +1,7 @@
 "use client";
-import React from "react";
+
+import React, { useRef } from "react";
 import { useInView, motion, Variants } from "framer-motion";
-import { useRef } from "react";
 
 interface PhraseAnimationProps {
   phrase: string;
@@ -22,7 +22,7 @@ const PhraseAnimation: React.FC<PhraseAnimationProps> = ({
   accent = false,
 }) => {
   const containerRef = useRef<HTMLSpanElement>(null);
-  const isInView = useInView(containerRef, { once: false });
+  const isInView = useInView(containerRef, { once: false, amount: 0.2 });
 
   const slideUp: Variants = {
     initial: {
@@ -40,16 +40,23 @@ const PhraseAnimation: React.FC<PhraseAnimationProps> = ({
       y: "100%",
       transition: {
         duration: animationDuration,
+        ease: [0.33, 1, 0.68, 1],
       },
     },
   };
 
   return (
-    // Rendered as a block-display <span> (not <p>) so it stays valid HTML when
-    // nested inside <p>, <h2>, or <h3> — avoids the p-in-p hydration error.
-    <span ref={containerRef} className={`block leading-tight ${className}`}>
+    <span
+      ref={containerRef}
+      className={`block leading-tight ${className}`}
+      aria-label={phrase}
+    >
       {phrase.split(" ").map((word, index) => (
-        <span key={index} className="relative inline-flex overflow-hidden mr-1">
+        <span
+          key={`${word}-${index}`}
+          className="relative inline-flex overflow-hidden mr-1"
+          aria-hidden="true"
+        >
           <motion.span
             variants={slideUp}
             custom={index}
