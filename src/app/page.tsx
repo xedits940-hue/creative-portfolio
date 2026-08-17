@@ -33,31 +33,24 @@ export default function Home() {
       <section id="hero" className="w-full scroll-mt-24">
         <AboutMe />
       </section>
+
       <ShowReel />
 
       {/* About Scroll Section */}
-      <section id="about" className="">
+      <section id="about" className="w-full scroll-mt-24">
         <AboutScrollSection />
       </section>
-
-      {/* <div className="w-full scroll-mt-24" id="services">
-        <LogoCloud />
-      </div> */}
-
-      {/* Services Section */}
-      {/* <section id="services" className="w-full scroll-mt-24">
-        <ServicesMenu />
-      </section> */}
 
       {/* Timeline & Testimonials */}
       {/* Projects Section */}
       <section id="projects" className="w-full scroll-mt-24">
-        {/* <ViralShowcase /> */}
         <TimelineDemo />
       </section>
+
       <CollabSec />
 
       <Testimonials />
+
       {/* Contact Section */}
       <section id="contact" className="w-full scroll-mt-24">
         <CalBooking />
