@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 
-const VIDEO_SRC = "/public/WhatsApp Video 2026-08-18 at 8.19.40 PM.mp4";
+const VIDEO_SRC = "/intro.mp4";
 
 export default function CinematicStartGate() {
   const entryRef = useRef<HTMLDivElement | null>(null);
