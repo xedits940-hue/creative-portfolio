@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from "react";
 import { motion, Variants } from "framer-motion";
-import { useAssetLoader } from "@/hooks/use-asset-loader";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const slideUp: Variants = {
@@ -46,20 +45,89 @@ const Preloader: React.FC<PreloaderProps> = ({
   accentColor = "#e11d2a",
 }) => {
   const [dimension, setDimension] = useState({ width: 0, height: 0 });
+  const [released, setReleased] = useState(false);
+  const [progress, setProgress] = useState(0);
   const isMobile = useIsMobile();
 
-  const { progress, isComplete } = useAssetLoader();
-
   useEffect(() => {
-    setDimension({ width: window.innerWidth, height: window.innerHeight });
+    setDimension({
+      width: window.innerWidth,
+      height: window.innerHeight,
+    });
   }, []);
 
   useEffect(() => {
-    if (!isComplete) return;
-    onComplete?.();
-  }, [isComplete, onComplete]);
+    let frameId = 0;
+    let startTime = 0;
+    let completed = false;
+
+    const handleCinematicComplete = () => {
+      if (released) return;
+
+      setProgress(0);
+      setReleased(true);
+      startTime = performance.now();
+
+      const duration = 3200;
+
+      const animateProgress = (time: number) => {
+        const elapsed = time - startTime;
+        const rawProgress = Math.min(elapsed / duration, 1);
+
+        // Smooth cinematic acceleration/deceleration.
+        const easedProgress =
+          rawProgress < 0.55
+            ? rawProgress / 0.55
+            : 1 - Math.pow((1 - rawProgress) / 0.45, 1.8);
+
+        const nextProgress = Math.min(
+          100,
+          Math.round(Math.max(0, easedProgress) * 100),
+        );
+
+        setProgress(nextProgress);
+
+        if (rawProgress < 1) {
+          frameId = requestAnimationFrame(animateProgress);
+          return;
+        }
+
+        if (!completed) {
+          completed = true;
+          setProgress(100);
+
+          window.setTimeout(() => {
+            onComplete?.();
+          }, 260);
+        }
+      };
+
+      frameId = requestAnimationFrame(animateProgress);
+    };
+
+    window.addEventListener(
+      "vishal:cinematic-complete",
+      handleCinematicComplete,
+    );
+
+    return () => {
+      window.removeEventListener(
+        "vishal:cinematic-complete",
+        handleCinematicComplete,
+      );
+
+      if (frameId) {
+        cancelAnimationFrame(frameId);
+      }
+    };
+  }, [onComplete, released]);
+
+  if (!released) {
+    return null;
+  }
 
   const clamped = Math.min(100, Math.max(0, progress));
+
   const index = Math.min(
     words.length - 1,
     Math.floor((clamped / 100) * words.length),
@@ -78,7 +146,10 @@ const Preloader: React.FC<PreloaderProps> = ({
   const curve: Variants = {
     initial: {
       d: initialPath,
-      transition: { duration: 1.7, ease: [0.76, 0, 0.24, 1] },
+      transition: {
+        duration: 1.7,
+        ease: [0.76, 0, 0.24, 1],
+      },
     },
     exit: {
       d: targetPath,
@@ -101,7 +172,10 @@ const Preloader: React.FC<PreloaderProps> = ({
   const lineCurve: Variants = {
     initial: {
       d: lineInitial,
-      transition: { duration: 1.7, ease: [0.76, 0, 0.24, 1] },
+      transition: {
+        duration: 1.7,
+        ease: [0.76, 0, 0.24, 1],
+      },
     },
     exit: {
       d: lineTarget,
@@ -117,9 +191,13 @@ const Preloader: React.FC<PreloaderProps> = ({
     <motion.div
       variants={slideUp}
       initial="initial"
+      animate="initial"
       exit="exit"
-      className="h-screen w-screen fixed left-0 top-0 z-[99]"
-      style={{ backgroundColor, willChange: "transform" }}
+      className="h-screen w-screen fixed left-0 top-0 z-[99998]"
+      style={{
+        backgroundColor,
+        willChange: "transform",
+      }}
     >
       {dimension.width > 0 && (
         <>
@@ -149,11 +227,12 @@ const Preloader: React.FC<PreloaderProps> = ({
                 className="mr-3 block h-2.5 w-2.5 shrink-0 rounded-full"
                 style={{ backgroundColor: accentColor }}
               />
+
               <div className="relative overflow-hidden">
                 <motion.span
                   key={index}
-                  initial={{ y: "35%" }}
-                  animate={{ y: "0%" }}
+                  initial={{ y: "35%", opacity: 0 }}
+                  animate={{ y: "0%", opacity: 1 }}
                   transition={{
                     duration: 0.4,
                     ease: [0.33, 1, 0.68, 1],
@@ -178,6 +257,7 @@ const Preloader: React.FC<PreloaderProps> = ({
                 ease: "easeInOut",
               }}
             />
+
             <span
               className="text-[11px] font-medium uppercase tracking-[0.35em] opacity-60"
               style={{ color: textColor }}
@@ -191,8 +271,9 @@ const Preloader: React.FC<PreloaderProps> = ({
               className="font-[var(--font-accent)] text-[12vw] leading-none tracking-tighter sm:text-[10vw] md:text-[6vw]"
               style={{ color: textColor }}
             >
-              {String(Math.round(clamped)).padStart(2, "0")}
+              {String(clamped).padStart(2, "0")}
             </span>
+
             <span
               className="mb-[1vw] ml-1 text-[2.5vw] font-light sm:mb-[1.2vw] sm:text-[2vw] md:mb-[0.8vw] md:text-[1.3vw]"
               style={{ color: accentColor }}
@@ -205,33 +286,48 @@ const Preloader: React.FC<PreloaderProps> = ({
             <div className="absolute bottom-0 left-0 z-[3] h-[3px] w-full">
               <div
                 className="absolute inset-0"
-                style={{ backgroundColor: "rgba(255,255,255,0.12)" }}
+                style={{
+                  backgroundColor: "rgba(255,255,255,0.12)",
+                }}
               />
+
               <motion.div
                 className="absolute inset-0 origin-left"
-                style={{ backgroundColor: accentColor }}
-                animate={{ scaleX: clamped / 100 }}
-                transition={{ ease: "easeOut", duration: 0.3 }}
+                style={{
+                  backgroundColor: accentColor,
+                }}
+                animate={{
+                  scaleX: clamped / 100,
+                }}
+                transition={{
+                  ease: "easeOut",
+                  duration: 0.2,
+                }}
               />
             </div>
           ) : (
             <>
               <svg
                 className="absolute top-0 left-0 z-[3] w-full"
-                style={{ height: "calc(100% + 300px)" }}
+                style={{
+                  height: "calc(100% + 300px)",
+                }}
               >
                 <motion.path
                   variants={lineCurve}
                   initial="initial"
+                  animate="initial"
                   exit="exit"
                   fill="none"
                   stroke="rgba(255,255,255,0.12)"
                   strokeWidth={4}
                   vectorEffect="non-scaling-stroke"
                 />
+
                 <motion.path
                   variants={lineCurve}
                   initial="initial"
+                  animate="initial"
                   exit="exit"
                   fill="none"
                   stroke={accentColor}
@@ -240,20 +336,30 @@ const Preloader: React.FC<PreloaderProps> = ({
                   vectorEffect="non-scaling-stroke"
                   pathLength={1}
                   strokeDasharray="1 1"
-                  animate={{ strokeDashoffset: 1 - clamped / 100 }}
-                  transition={{ ease: "easeOut", duration: 0.4 }}
+                  animate={{
+                    strokeDashoffset: 1 - clamped / 100,
+                  }}
+                  transition={{
+                    ease: "easeOut",
+                    duration: 0.3,
+                  }}
                 />
               </svg>
 
               <svg
                 className="absolute top-0 left-0 z-[0] w-full"
-                style={{ height: "calc(100% + 300px)" }}
+                style={{
+                  height: "calc(100% + 300px)",
+                }}
               >
                 <motion.path
                   variants={curve}
                   initial="initial"
+                  animate="initial"
                   exit="exit"
-                  style={{ fill: backgroundColor }}
+                  style={{
+                    fill: backgroundColor,
+                  }}
                 />
               </svg>
             </>
