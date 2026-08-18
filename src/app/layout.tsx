@@ -9,6 +9,7 @@ import Navbar from "@/components/layout/navbar";
 import StructuredData from "@/components/common/structured-data";
 import Analytics from "@/components/common/analytics";
 import ConsoleLog from "@/components/common/console-log";
+import CinematicStartGate from "@/components/common/CinematicStartGate";
 import CustomCursor from "@/components/ui/custom-cursor";
 
 const poppins = Poppins({
@@ -145,6 +146,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <LenisWrapper>
+            <CinematicStartGate />
             <Navbar />
             {children}
             <FooterSection />
