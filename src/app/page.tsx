@@ -1,6 +1,7 @@
+```tsx
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import AboutMe from "@/components/sections/about/about-me";
 import CalBooking from "@/components/sections/home/cal-booking";
@@ -12,10 +13,26 @@ import CollabSec from "@/components/sections/home/collab-section";
 import AboutScrollSection from "@/components/sections/about/about-scroll-section";
 
 export default function Home() {
-  // The Preloader owns the (60fps) load-progress state internally so those
-  // updates never re-render this heavy page tree. It just tells us when it's
-  // done, and we drop it.
+  const [isCinematicComplete, setIsCinematicComplete] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const handleCinematicComplete = () => {
+      setIsCinematicComplete(true);
+    };
+
+    window.addEventListener(
+      "vishal:cinematic-complete",
+      handleCinematicComplete,
+    );
+
+    return () => {
+      window.removeEventListener(
+        "vishal:cinematic-complete",
+        handleCinematicComplete,
+      );
+    };
+  }, []);
 
   const handleLoaded = () => {
     setIsLoading(false);
@@ -26,10 +43,12 @@ export default function Home() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center scroll-smooth">
       <AnimatePresence mode="wait">
-        {isLoading && <Preloader onComplete={handleLoaded} />}
+        {isCinematicComplete && isLoading && (
+          <Preloader onComplete={handleLoaded} />
+        )}
       </AnimatePresence>
 
-      {/*About Me is Hero Section */}
+      {/* About Me is Hero Section */}
       <section id="hero" className="w-full scroll-mt-24">
         <AboutMe />
       </section>
@@ -42,7 +61,6 @@ export default function Home() {
       </section>
 
       {/* Timeline & Testimonials */}
-      {/* Projects Section */}
       <section id="projects" className="w-full scroll-mt-24">
         <TimelineDemo />
       </section>
@@ -58,3 +76,4 @@ export default function Home() {
     </div>
   );
 }
+```
