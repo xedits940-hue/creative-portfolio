@@ -1,4 +1,3 @@
-```tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -48,19 +47,16 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      {/* About Me is Hero Section */}
       <section id="hero" className="w-full scroll-mt-24">
         <AboutMe />
       </section>
 
       <ShowReel />
 
-      {/* About Scroll Section */}
       <section id="about" className="w-full scroll-mt-24">
         <AboutScrollSection />
       </section>
 
-      {/* Timeline & Testimonials */}
       <section id="projects" className="w-full scroll-mt-24">
         <TimelineDemo />
       </section>
@@ -69,11 +65,9 @@ export default function Home() {
 
       <Testimonials />
 
-      {/* Contact Section */}
       <section id="contact" className="w-full scroll-mt-24">
         <CalBooking />
       </section>
     </div>
   );
 }
-```
