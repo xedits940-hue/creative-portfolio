@@ -443,4 +443,3 @@ const AboutScrollSection = () => {
 };
 
 export default AboutScrollSection;
-```
