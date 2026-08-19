@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { motion, Variants } from "framer-motion";
+import { useAssetLoader } from "@/hooks/use-asset-loader";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const slideUp: Variants = {
@@ -45,9 +46,9 @@ const Preloader: React.FC<PreloaderProps> = ({
   accentColor = "#e11d2a",
 }) => {
   const [dimension, setDimension] = useState({ width: 0, height: 0 });
-  const [released, setReleased] = useState(false);
-  const [progress, setProgress] = useState(0);
   const isMobile = useIsMobile();
+
+  const { progress, isComplete } = useAssetLoader();
 
   useEffect(() => {
     setDimension({
@@ -57,74 +58,9 @@ const Preloader: React.FC<PreloaderProps> = ({
   }, []);
 
   useEffect(() => {
-    let frameId = 0;
-    let startTime = 0;
-    let completed = false;
-
-    const handleCinematicComplete = () => {
-      if (released) return;
-
-      setProgress(0);
-      setReleased(true);
-      startTime = performance.now();
-
-      const duration = 3200;
-
-      const animateProgress = (time: number) => {
-        const elapsed = time - startTime;
-        const rawProgress = Math.min(elapsed / duration, 1);
-
-        // Smooth cinematic acceleration/deceleration.
-        const easedProgress =
-          rawProgress < 0.55
-            ? rawProgress / 0.55
-            : 1 - Math.pow((1 - rawProgress) / 0.45, 1.8);
-
-        const nextProgress = Math.min(
-          100,
-          Math.round(Math.max(0, easedProgress) * 100),
-        );
-
-        setProgress(nextProgress);
-
-        if (rawProgress < 1) {
-          frameId = requestAnimationFrame(animateProgress);
-          return;
-        }
-
-        if (!completed) {
-          completed = true;
-          setProgress(100);
-
-          window.setTimeout(() => {
-            onComplete?.();
-          }, 260);
-        }
-      };
-
-      frameId = requestAnimationFrame(animateProgress);
-    };
-
-    window.addEventListener(
-      "vishal:cinematic-complete",
-      handleCinematicComplete,
-    );
-
-    return () => {
-      window.removeEventListener(
-        "vishal:cinematic-complete",
-        handleCinematicComplete,
-      );
-
-      if (frameId) {
-        cancelAnimationFrame(frameId);
-      }
-    };
-  }, [onComplete, released]);
-
-  if (!released) {
-    return null;
-  }
+    if (!isComplete) return;
+    onComplete?.();
+  }, [isComplete, onComplete]);
 
   const clamped = Math.min(100, Math.max(0, progress));
 
@@ -225,20 +161,30 @@ const Preloader: React.FC<PreloaderProps> = ({
             <div className="flex items-center overflow-hidden">
               <span
                 className="mr-3 block h-2.5 w-2.5 shrink-0 rounded-full"
-                style={{ backgroundColor: accentColor }}
+                style={{
+                  backgroundColor: accentColor,
+                }}
               />
 
               <div className="relative overflow-hidden">
                 <motion.span
                   key={index}
-                  initial={{ y: "35%", opacity: 0 }}
-                  animate={{ y: "0%", opacity: 1 }}
+                  initial={{
+                    y: "35%",
+                    opacity: 0,
+                  }}
+                  animate={{
+                    y: "0%",
+                    opacity: 1,
+                  }}
                   transition={{
                     duration: 0.4,
                     ease: [0.33, 1, 0.68, 1],
                   }}
                   className="block whitespace-nowrap text-4xl font-light leading-[1.6] md:text-5xl"
-                  style={{ color: textColor }}
+                  style={{
+                    color: textColor,
+                  }}
                 >
                   {words[index]}
                 </motion.span>
@@ -249,8 +195,12 @@ const Preloader: React.FC<PreloaderProps> = ({
           <div className="absolute bottom-8 left-8 z-[2] flex items-center gap-3">
             <motion.span
               className="block h-1.5 w-1.5 rounded-full"
-              style={{ backgroundColor: accentColor }}
-              animate={{ opacity: [0.3, 1, 0.3] }}
+              style={{
+                backgroundColor: accentColor,
+              }}
+              animate={{
+                opacity: [0.3, 1, 0.3],
+              }}
               transition={{
                 duration: 1.4,
                 repeat: Infinity,
@@ -260,7 +210,9 @@ const Preloader: React.FC<PreloaderProps> = ({
 
             <span
               className="text-[11px] font-medium uppercase tracking-[0.35em] opacity-60"
-              style={{ color: textColor }}
+              style={{
+                color: textColor,
+              }}
             >
               Loading experience
             </span>
@@ -269,14 +221,18 @@ const Preloader: React.FC<PreloaderProps> = ({
           <div className="absolute bottom-4 right-3 z-[2] flex items-end tabular-nums sm:right-6 md:right-10">
             <span
               className="font-[var(--font-accent)] text-[12vw] leading-none tracking-tighter sm:text-[10vw] md:text-[6vw]"
-              style={{ color: textColor }}
+              style={{
+                color: textColor,
+              }}
             >
-              {String(clamped).padStart(2, "0")}
+              {String(Math.round(clamped)).padStart(2, "0")}
             </span>
 
             <span
               className="mb-[1vw] ml-1 text-[2.5vw] font-light sm:mb-[1.2vw] sm:text-[2vw] md:mb-[0.8vw] md:text-[1.3vw]"
-              style={{ color: accentColor }}
+              style={{
+                color: accentColor,
+              }}
             >
               %
             </span>
@@ -301,7 +257,7 @@ const Preloader: React.FC<PreloaderProps> = ({
                 }}
                 transition={{
                   ease: "easeOut",
-                  duration: 0.2,
+                  duration: 0.3,
                 }}
               />
             </div>
@@ -341,7 +297,7 @@ const Preloader: React.FC<PreloaderProps> = ({
                   }}
                   transition={{
                     ease: "easeOut",
-                    duration: 0.3,
+                    duration: 0.4,
                   }}
                 />
               </svg>
