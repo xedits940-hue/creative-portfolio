@@ -2,18 +2,23 @@ import { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "VISHAL SHARMA",
-    short_name: "VISHAL SHARMA",
+    name: "VTECH STUDIOS",
+    short_name: "VTECH STUDIOS",
     description:
-      "PORTFOLIO OF VISHAL SHARMA, A SELF-TAUGHT VIBE CODER FROM CHANDIGARH, INDIA, TURNING IDEAS INTO IMMERSIVE DIGITAL EXPERIENCES THROUGH CREATIVITY, EXPERIMENTATION, AND AI.",
+      "OFFICIAL STUDIO PORTFOLIO OF VTECH STUDIOS — DIGITAL PRODUCTION, MOTION, AND HIGH-END CREATIVE ENGINEERING.",
     start_url: "/",
     display: "standalone",
     background_color: "#050505",
     theme_color: "#050505",
     icons: [
       {
+        src: "/favicon.png",
+        sizes: "512x512",
+        type: "image/png",
+      },
+      {
         src: "/logo.png",
-        sizes: "any",
+        sizes: "192x192",
         type: "image/png",
       },
     ],

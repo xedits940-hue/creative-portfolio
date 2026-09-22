@@ -9,7 +9,7 @@ import { TimelineDemo } from "@/components/sections/home/timeline-demo";
 import Preloader from "@/components/common/preloader";
 import ShowReel from "@/components/sections/showreel";
 import CollabSec from "@/components/sections/home/collab-section";
-import AboutScrollSection from "@/components/sections/about/about-scroll-section";
+import AboutSection from "@/components/sections/about/about-section";
 
 export default function Home() {
   const [isCinematicComplete, setIsCinematicComplete] = useState(false);
@@ -35,7 +35,6 @@ export default function Home() {
 
   const handleLoaded = () => {
     setIsLoading(false);
-    document.body.style.cursor = "default";
     window.scrollTo(0, 0);
   };
 
@@ -54,7 +53,7 @@ export default function Home() {
       <ShowReel />
 
       <section id="about" className="w-full scroll-mt-24">
-        <AboutScrollSection />
+        <AboutSection />
       </section>
 
       <section id="projects" className="w-full scroll-mt-24">

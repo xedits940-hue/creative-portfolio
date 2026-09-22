@@ -172,10 +172,11 @@ const AboutSection = () => {
               <div className="absolute -inset-px rounded-3xl border border-primary/15 z-20 pointer-events-none" />
 
               <Image
-                src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1200&auto=format&fit=crop"
-                alt="Your Name — Creative Director"
+                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=1200&auto=format&fit=crop"
+                alt="VTECH STUDIOS — Creative Direction"
                 fill
                 priority
+                referrerPolicy="no-referrer"
                 className="object-cover object-top transition-transform duration-700 group-hover:scale-105"
                 sizes="(max-width: 1024px) 340px, 28vw"
               />
@@ -212,7 +213,7 @@ const AboutSection = () => {
                 }}
                 className="text-4xl md:text-5xl font-black tracking-tighter leading-none"
               >
-                Your Name
+                VTECH STUDIOS
               </motion.h2>
 
               <motion.p
@@ -222,7 +223,7 @@ const AboutSection = () => {
                 transition={{ duration: 0.7, delay: 0.2 }}
                 className="font-mono text-sm uppercase tracking-widest text-primary"
               >
-                Creative Director & Video Editor
+                Digital Production & Creative Direction
               </motion.p>
 
               <motion.p
@@ -232,9 +233,9 @@ const AboutSection = () => {
                 transition={{ duration: 0.7, delay: 0.3 }}
                 className="text-muted-foreground text-[15px] leading-relaxed max-w-xs"
               >
-                Crafting high-impact visuals for gaming, sports, and lifestyle
-                brands. Turning raw footage into stories that resonate and
-                convert.
+                Crafting high-impact motion design, cinematic storytelling, and
+                digital production for global brands. Turning bold concepts into
+                compelling visual experiences that command attention.
               </motion.p>
             </div>
 
@@ -247,11 +248,11 @@ const AboutSection = () => {
               className="flex flex-wrap gap-2"
             >
               {[
-                "2D Animation",
+                "Creative Direction",
                 "Motion Design",
                 "Video Editing",
-                "Color Grading",
-                "Brand Direction",
+                "Brand Strategy",
+                "Digital Production",
               ].map((tag) => (
                 <span
                   key={tag}

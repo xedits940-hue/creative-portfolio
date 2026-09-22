@@ -7,31 +7,35 @@ export default function StructuredData() {
     url: BASE_URL,
     image: OG_IMAGE,
     description:
-      "Self-taught vibe coder from Chandigarh, India, turning ideas into working digital products through AI-assisted development.",
-    jobTitle: "Vibe Coder",
+      "Founder and Creative Director at VTECH STUDIOS, specializing in cinematic motion design, digital production, and creative engineering.",
+    jobTitle: "Founder & Creative Director",
+    worksFor: {
+      "@type": "Organization",
+      name: "VTECH STUDIOS",
+    },
     sameAs: [
       "https://github.com/yourusername",
       "https://linkedin.com/in/yourusername",
       "https://twitter.com/yourhandle",
     ],
     knowsAbout: [
-      "Vibe Coding",
-      "Prompt Engineering",
-      "AI Prototyping",
-      "Product Logic",
-      "Web Development",
+      "Creative Direction",
+      "Motion Design",
+      "Digital Production",
+      "Video Editing",
+      "Web Engineering",
     ],
   };
   const websiteStructuredData = {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    name: "Vishal Sharma Portfolio",
+    name: "VTECH STUDIOS",
     url: BASE_URL,
     description:
-      "Portfolio of Vishal Sharma — a self-taught vibe coder building digital products through AI-assisted development.",
+      "Official studio portfolio of VTECH STUDIOS — digital production, motion, and creative web engineering.",
     author: {
-      "@type": "Person",
-      name: "Vishal Sharma",
+      "@type": "Organization",
+      name: "VTECH STUDIOS",
     },
     potentialAction: {
       "@type": "SearchAction",
@@ -45,7 +49,7 @@ export default function StructuredData() {
   const organizationStructuredData = {
     "@context": "https://schema.org",
     "@type": "ProfessionalService",
-    name: "Vishal Sharma",
+    name: "VTECH STUDIOS",
     image: `${BASE_URL}/logo.png`,
     "@id": BASE_URL,
     url: BASE_URL,

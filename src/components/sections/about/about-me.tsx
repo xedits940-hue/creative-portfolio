@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useRef } from "react";
-import Image from "next/image";
 import { motion, useScroll, useTransform } from "framer-motion";
 import Link from "next/link";
 import { Anton } from "next/font/google";
@@ -57,7 +56,7 @@ const AboutMe = () => {
             textRendering: "optimizeLegibility",
           }}
         >
-          VISHAL
+          VTECH
         </span>
         <span
           className={`${anton.className} uppercase leading-[0.82] tracking-tight text-transparent bg-clip-text`}
@@ -69,7 +68,7 @@ const AboutMe = () => {
             textRendering: "optimizeLegibility",
           }}
         >
-          SHARMA
+          STUDIOS
         </span>
       </div>
 
@@ -83,8 +82,8 @@ const AboutMe = () => {
 
         {/* Mobile image — forced via inline style so it ALWAYS applies, no caching/purge issues */}
         <img
-          src="/P%20F.png"
-          alt="Vishal Sharma"
+          src="/profile.png"
+          alt="VTECH STUDIOS"
           className="relative md:hidden object-contain object-bottom rounded-3xl"
           style={{
             width: "260vw",
@@ -95,8 +94,8 @@ const AboutMe = () => {
 
         {/* Desktop / Laptop image — slightly reduced from before */}
         <img
-          src="/P%20F.png"
-          alt="Vishal Sharma"
+          src="/profile.png"
+          alt="VTECH STUDIOS"
           className="relative hidden md:block object-contain object-bottom rounded-3xl"
           style={{
             width: "88vw",
@@ -115,14 +114,14 @@ const AboutMe = () => {
         <div className="flex items-center gap-4 [writing-mode:vertical-rl] rotate-180">
           <ShineBar />
           <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-gray-500 dark:text-gray-400">
-            Featured Work
+            Studio Capabilities
           </span>
           <span className="w-1 h-1 bg-foreground rounded-full" />
-          <span className="text-sm font-bold">VISIONARY</span>
+          <span className="text-sm font-bold">CREATIVE DIRECTION</span>
           <span className="w-1 h-1 bg-foreground rounded-full" />
-          <span className="text-sm font-bold">VIBE CODER</span>
+          <span className="text-sm font-bold">CINEMATIC MOTION</span>
           <span className="w-1 h-1 bg-foreground rounded-full" />
-          <span className="text-sm font-bold">NEXT-GEN BUILDER</span>
+          <span className="text-sm font-bold">DIGITAL PRODUCTION</span>
         </div>
       </motion.div>
 
@@ -136,20 +135,20 @@ const AboutMe = () => {
           <div className="flex items-center">
             <ShineBar />
             <p className="text-xs font-mono uppercase text-gray-500 dark:text-gray-400">
-              Featured Work
+              Studio Capabilities
             </p>
           </div>
           <div className="flex items-center gap-4 text-sm font-bold">
             <span className="hover:text-primary transition-colors cursor-pointer">
-              VISIONARY
+              CREATIVE DIRECTION
             </span>
             <span className="w-1 h-1 bg-foreground rounded-full" />
             <span className="hover:text-primary transition-colors cursor-pointer">
-              VIBE CODER
+              CINEMATIC MOTION
             </span>
             <span className="w-1 h-1 bg-foreground rounded-full" />
             <span className="hover:text-primary transition-colors cursor-pointer">
-              NEXT-GEN BUILDER
+              DIGITAL PRODUCTION
             </span>
           </div>
         </div>
@@ -176,34 +175,6 @@ const AboutMe = () => {
         </div>
       </motion.div>
     </section>
-  );
-};
-
-const StatCard = ({
-  position,
-  label,
-  value,
-  delay,
-}: {
-  position: string;
-  label: string;
-  value: string;
-  delay: number;
-}) => {
-  return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.8, y: 20 }}
-      animate={{ opacity: 1, scale: 1, y: 0 }}
-      transition={{ delay, duration: 0.5, type: "spring" }}
-      className={`absolute ${position} z-30`}
-    >
-      <div className="backdrop-blur-md bg-white/5 border border-white/10 p-4 rounded-xl shadow-2xl hover:bg-white/10 transition-colors duration-300 w-32 md:w-40">
-        <h3 className="text-3xl font-bold  mb-1">{value}</h3>
-        <p className="text-xs text-gray-500 dark:text-gray-300 uppercase tracking-wider font-mono">
-          {label}
-        </p>
-      </div>
-    </motion.div>
   );
 };
 

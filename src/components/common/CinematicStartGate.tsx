@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 
-const VIDEO_SRC = "/WhatsApp Video 2026-08-18 at 9.35.08 PM.mp4";
+const VIDEO_SRC = "/intro-video.mp4";
 const AUDIO_SRC = "/intro-audio.mp3";
 
 export default function CinematicStartGate() {
@@ -10,19 +10,64 @@ export default function CinematicStartGate() {
   const gateRef = useRef<HTMLButtonElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const cursorRef = useRef<HTMLDivElement | null>(null);
   const [activated, setActivated] = useState(false);
   const [soundOn, setSoundOn] = useState(true);
   const [videoVisible, setVideoVisible] = useState(false);
   const [showAudioNote, setShowAudioNote] = useState(false);
-  const [cursorVisible, setCursorVisible] = useState(false);
+  const endedRef = useRef(false);
+
+  const handleVideoEnded = () => {
+    if (endedRef.current) return;
+    endedRef.current = true;
+
+    const entry = entryRef.current;
+    const video = videoRef.current;
+    const audio = audioRef.current;
+
+    entry?.classList.add("is-gone");
+    try {
+      video?.pause();
+      audio?.pause();
+    } catch {
+      // ignore
+    }
+
+    window.dispatchEvent(
+      new CustomEvent("vishal:cinematic-complete", {
+        detail: { source: "cinematic-intro-video" },
+      }),
+    );
+
+    document.documentElement.classList.remove("vs-lock-scroll");
+    document.body.classList.remove("vs-lock-scroll");
+
+    setTimeout(() => {
+      setVideoVisible(false);
+      document.documentElement.classList.remove("vs-lock-scroll");
+      document.body.classList.remove("vs-lock-scroll");
+
+      const main = document.getElementById("main") || document.querySelector("main");
+      if (main instanceof HTMLElement) {
+        main.setAttribute("tabindex", "-1");
+        main.focus({ preventScroll: true });
+      }
+    }, 400);
+  };
+
+  const skipGate = () => {
+    handleVideoEnded();
+  };
 
   useEffect(() => {
     document.documentElement.classList.add("vs-lock-scroll");
     document.body.classList.add("vs-lock-scroll");
+    const audio = audioRef.current;
+    const video = videoRef.current;
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") handleOpen();
+      if (event.key === "Escape" || event.key === "Enter" || event.key === " ") {
+        handleVideoEnded();
+      }
     };
 
     document.addEventListener("keydown", handleKeyDown);
@@ -31,8 +76,8 @@ export default function CinematicStartGate() {
       document.removeEventListener("keydown", handleKeyDown);
       document.documentElement.classList.remove("vs-lock-scroll");
       document.body.classList.remove("vs-lock-scroll");
-      audioRef.current?.pause();
-      videoRef.current?.pause();
+      audio?.pause();
+      video?.pause();
     };
   }, []);
 
@@ -43,19 +88,12 @@ export default function CinematicStartGate() {
     const y = ((event.clientY - rect.top) / rect.height) * 100;
     gateRef.current.style.setProperty("--mx", `${x}%`);
     gateRef.current.style.setProperty("--my", `${y}%`);
-
-    if (cursorRef.current) {
-      cursorRef.current.style.left = `${event.clientX}px`;
-      cursorRef.current.style.top = `${event.clientY}px`;
-    }
-    setCursorVisible(true);
   };
 
   const handlePointerLeave = () => {
     if (!gateRef.current) return;
     gateRef.current.style.setProperty("--mx", "50%");
     gateRef.current.style.setProperty("--my", "50%");
-    setCursorVisible(false);
   };
 
   const handleOpen = async () => {
@@ -69,7 +107,6 @@ export default function CinematicStartGate() {
     const audio = audioRef.current;
 
     entry?.classList.add("is-opening");
-    setCursorVisible(false);
     setShowAudioNote(true);
     window.setTimeout(() => setShowAudioNote(false), 3000);
     window.dispatchEvent(
@@ -77,6 +114,11 @@ export default function CinematicStartGate() {
         detail: { source: "cinematic-start-gate" },
       }),
     );
+
+    // Fallback timer: Never lock user if video hangs or takes > 5s
+    const safetyTimeout = setTimeout(() => {
+      handleVideoEnded();
+    }, 4500);
 
     if (video) {
       video.currentTime = 0;
@@ -91,39 +133,14 @@ export default function CinematicStartGate() {
     }
 
     try {
-      await Promise.all([
-        video ? video.play() : Promise.resolve(),
-        audio && soundOn ? audio.play() : Promise.resolve(),
-      ]);
+      const p1 = video ? video.play().catch(() => handleVideoEnded()) : Promise.resolve();
+      const p2 = audio && soundOn ? audio.play().catch(() => {}) : Promise.resolve();
+      await Promise.all([p1, p2]);
     } catch (error) {
-      console.warn("Cinematic intro playback issue.", error);
+      console.warn("Cinematic intro playback issue, continuing.", error);
+      clearTimeout(safetyTimeout);
+      handleVideoEnded();
     }
-  };
-
-  const handleVideoEnded = () => {
-    const entry = entryRef.current;
-    const video = videoRef.current;
-
-    entry?.classList.add("is-gone");
-    video?.pause();
-
-    window.dispatchEvent(
-      new CustomEvent("vishal:cinematic-complete", {
-        detail: { source: "cinematic-intro-video" },
-      }),
-    );
-
-    setTimeout(() => {
-      setVideoVisible(false);
-      document.documentElement.classList.remove("vs-lock-scroll");
-      document.body.classList.remove("vs-lock-scroll");
-
-      const main = document.getElementById("main") || document.querySelector("main");
-      if (main instanceof HTMLElement) {
-        main.setAttribute("tabindex", "-1");
-        main.focus({ preventScroll: true });
-      }
-    }, 750);
   };
 
   const toggleSound = () => {
@@ -650,6 +667,30 @@ export default function CinematicStartGate() {
           }
         }
 
+        .vs-skip-button {
+          position: absolute;
+          bottom: 28px;
+          z-index: 60;
+          font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+          font-size: 11px;
+          text-transform: uppercase;
+          letter-spacing: 0.14em;
+          color: rgba(255, 255, 255, 0.75);
+          background: rgba(15, 15, 15, 0.85);
+          border: 1px solid rgba(255, 45, 71, 0.4);
+          padding: 8px 18px;
+          border-radius: 9999px;
+          cursor: pointer;
+          transition: all 0.25s ease;
+          backdrop-filter: blur(12px);
+        }
+        .vs-skip-button:hover {
+          color: #ffffff;
+          border-color: #ff2d47;
+          background: rgba(255, 45, 71, 0.25);
+          transform: translateY(-2px);
+        }
+
         @media (max-width: 560px) {
           .vs-gate { width: min(340px, 88vw); height: 202px; }
           .vs-gate__title { font-size: 26px; }
@@ -657,6 +698,7 @@ export default function CinematicStartGate() {
           .vs-gate__footer { font-size: 7.5px; }
           .vs-preview { inset: 54px 26px 50px; }
           .vs-sound { top: 14px; right: 14px; width: 34px; height: 34px; }
+          .vs-skip-button { bottom: 18px; font-size: 9.5px; padding: 6px 14px; }
         }
       `}</style>
 
@@ -667,6 +709,7 @@ export default function CinematicStartGate() {
         playsInline
         preload="auto"
         onEnded={handleVideoEnded}
+        onError={handleVideoEnded}
         aria-hidden={!videoVisible}
       />
 
@@ -683,6 +726,7 @@ export default function CinematicStartGate() {
         <button
           className="vs-sound"
           type="button"
+          data-magnetic
           aria-pressed={soundOn}
           aria-label={soundOn ? "Mute intro video" : "Unmute intro video"}
           onClick={toggleSound}
@@ -707,7 +751,8 @@ export default function CinematicStartGate() {
           ref={gateRef}
           className="vs-gate"
           type="button"
-          aria-label="Enter Vishal Sharma portfolio"
+          data-magnetic
+          aria-label="Enter VTECH STUDIOS portfolio"
           onClick={handleOpen}
           onPointerMove={handlePointerMove}
           onPointerLeave={handlePointerLeave}
@@ -715,7 +760,7 @@ export default function CinematicStartGate() {
           <span className="vs-gate__aura" aria-hidden="true" />
 
           <span className="vs-gate__surface">
-            <span className="vs-gate__badge">VS</span>
+            <span className="vs-gate__badge">VTECH</span>
 
             <span className="vs-gate__status">
               <span className="vs-gate__dot" />
@@ -732,21 +777,25 @@ export default function CinematicStartGate() {
 
             <span className="vs-gate__seam" aria-hidden="true" />
 
-            <span className="vs-gate__title">Vishal Sharma</span>
+            <span className="vs-gate__title">VTECH STUDIOS</span>
             <span className="vs-gate__rule" aria-hidden="true" />
 
             <span className="vs-gate__footer">
-              <span>Enter Portfolio</span>
+              <span>Enter Studio</span>
               <span className="vs-gate__arrow" aria-hidden="true">→</span>
             </span>
           </span>
         </button>
 
-        <div
-          ref={cursorRef}
-          className={`vs-pointer ${cursorVisible && !activated ? "is-visible" : ""}`}
-          aria-hidden="true"
-        />
+        <button
+          className="vs-skip-button"
+          type="button"
+          data-magnetic
+          onClick={skipGate}
+          aria-label="Direct Access / Skip Intro"
+        >
+          Direct Access / Skip Intro →
+        </button>
 
         <audio ref={audioRef} src={AUDIO_SRC} preload="auto" />
       </div>

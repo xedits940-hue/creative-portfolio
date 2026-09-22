@@ -131,6 +131,7 @@ const Navbar: React.FC = () => {
       >
         <div className="flex justify-between items-center min-h-[4.5rem] shrink-0 px-6">
           <motion.button
+            data-magnetic
             onClick={handleToggle}
             className="cursor-pointer relative h-7 w-7"
             aria-label={isOpen ? "Close menu" : "Open menu"}
@@ -164,6 +165,8 @@ const Navbar: React.FC = () => {
 
           <Link
             href={"/"}
+            data-magnetic
+            aria-label="VTECH STUDIOS Home"
             onClick={(e) => {
               e.preventDefault();
               window.scrollTo({ top: 0, behavior: "smooth" });
@@ -172,10 +175,12 @@ const Navbar: React.FC = () => {
           >
             <Image
               src="/logo.png"
-              alt="Md Logo"
+              alt="VTECH STUDIOS Logo"
               className="h-12 w-12 cursor-pointer object-contain"
               width={96}
               height={96}
+              priority
+              referrerPolicy="no-referrer"
             />
           </Link>
 
@@ -302,12 +307,12 @@ const Navbar: React.FC = () => {
                       Let&apos;s Talk
                     </span>
                     <motion.a
-                      href="mailto:vishal.builds09@gmail.com"
+                      href="mailto:contact@vtechstudios.com"
                       className="text-sm hover:text-primary transition-colors"
                       whileHover={{ x: 4 }}
                       transition={{ duration: 0.2 }}
                     >
-                      vishal.builds09@gmail.com
+                      contact@vtechstudios.com
                     </motion.a>
                   </div>
 

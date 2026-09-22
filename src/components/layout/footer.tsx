@@ -74,10 +74,10 @@ export default function CreativeFooter() {
   const currentYear = new Date().getFullYear();
 
   const handleLetsTalkClick = () => {
-    window.location.href = "mailto:vishal.builds09@gmail.com";
+    window.location.href = "mailto:contact@vtechstudios.com";
   };
 
-  const copyrightText = `© ${currentYear}–${currentYear + 1} VISHAL SHARMA — VIBE-CODED HEURISTIC ARCHITECTURE. ALL RIGHTS RESERVED.`;
+  const copyrightText = `© ${currentYear}–${currentYear + 1} VTECH STUDIOS. ALL RIGHTS RESERVED.`;
 
   return (
     <footer className="relative w-full overflow-hidden border-t pt-20 md:pt-32 pb-10">
@@ -131,27 +131,24 @@ export default function CreativeFooter() {
             transition={{ duration: 0.6, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
             className="col-span-1 md:col-span-5 flex flex-col gap-6"
           >
-            <Link href="/" className="flex w-fit items-center gap-3">
+            <Link href="/" aria-label="VTECH STUDIOS Home" className="flex w-fit items-center gap-3">
               <div className="relative size-12 overflow-hidden rounded-xl bg-linear-to-br from-background to-muted border border-border shadow-sm flex items-center justify-center">
-                
-                {/* Yahan changes kiye hain logo size ke liye 👇 */}
                 <Image
                   src="/logo.png"
-                  alt="Md Logo"
+                  alt="VTECH STUDIOS Logo"
                   width={100}
                   height={100}
+                  referrerPolicy="no-referrer"
                   className="object-contain w-full h-full scale-[1.5]"
                 />
-                {/* 👆 Changes End */}
-
               </div>
               <span className="text-xl font-bold tracking-tight">
-                VISHAL SHARMA PORTFOLIO
+                VTECH STUDIOS
               </span>
             </Link>
             <p className="max-w-xs text-muted-foreground text-sm leading-relaxed">
-              Turning ideas into working products through vibe coding — fast,
-              self-taught, and always shipping.
+              High-impact cinematic editing, motion direction, and visual brand
+              systems engineered to convert.
             </p>
           </motion.div>
 

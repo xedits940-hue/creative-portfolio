@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef } from "react";
 import Cal, { getCalApi } from "@calcom/embed-react";
-import { motion, useScroll, useTransform, useInView } from "framer-motion";
+import { motion, useInView } from "framer-motion";
 import PhraseAnimation from "@/components/common/phrase-reveal";
 
 const CalBooking = () => {
@@ -12,15 +12,6 @@ const CalBooking = () => {
     once: true,
     margin: "0px 0px -80px 0px",
   });
-
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start end", "end start"],
-  });
-
-  // Parallax Logic
-  const yImage = useTransform(scrollYProgress, [0, 1], [-50, 50]);
-  const yCalendar = useTransform(scrollYProgress, [0, 1], [100, -100]);
 
   useEffect(() => {
     (async function () {
@@ -89,53 +80,16 @@ const CalBooking = () => {
         </motion.div>
       </div>
 
-      {/* 2. Responsive Container: Flex Column on Mobile, Block on Desktop */}
-      <div className="relative flex flex-col items-center lg:block max-w-7xl mx-auto">
-        {/* --- LAYER 1: The Image --- */}
-        <motion.div
-          style={{ y: yImage }}
-          className="relative z-0 w-full max-w-[400px] lg:max-w-none lg:mx-auto"
-        >
-          <img
-            src={"/ichigo2.png"}
-            alt="Profile photo"
-            className="block mx-auto object-cover w-full h-auto"
+      {/* 2. Responsive Booking Container — Clean, centered studio presentation */}
+      <div className="relative max-w-2xl mx-auto z-20">
+        <div className="bg-card/70 backdrop-blur-md rounded-2xl border border-border p-4 md:p-8 shadow-xl">
+          <Cal
+            namespace="30min"
+            calLink="your-username/30min"
+            style={{ width: "100%", minHeight: "360px", overflowX: "auto" }}
+            config={{ layout: "month_view" }}
           />
-        </motion.div>
-
-        {/* --- LAYER 2: The Overlays --- */}
-        {/* Attached to yImage so they stick to the image during parallax */}
-        <motion.div
-          style={{ y: yImage }}
-          className="absolute -top-1 w-full h-32 md:h-60 bg-gradient-to-b from-background to-transparent pointer-events-none z-10"
-        />
-        <motion.div
-          style={{ y: yImage }}
-          className="absolute -bottom-1 w-full h-32 md:h-60 bg-gradient-to-t from-background to-transparent pointer-events-none z-10"
-        />
-
-        {/* --- LAYER 3: The Calendar --- */}
-        {/* 
-           Mobile: Relative position, margin-top, centered width 
-           Desktop (lg): Absolute position, right aligned
-        */}
-        <motion.div
-          style={{ y: yCalendar }}
-          className="
-            relative z-20 mt-4 w-full max-w-md 
-            lg:absolute lg:top-14 lg:right-0 lg:mt-0 lg:w-[450px]
-          "
-        >
-          <div className="bg-background/50 backdrop-blur-sm rounded-xl p-2 md:p-0">
-            <Cal
-              namespace="30min"
-              calLink="your-username/30min"
-              // Change fixed width to 100% so the parent div controls the size
-              style={{ width: "100%", height: "280px", overflowX: "scroll" }}
-              config={{ layout: "month_view" }}
-            />
-          </div>
-        </motion.div>
+        </div>
       </div>
     </div>
   );

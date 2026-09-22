@@ -106,8 +106,8 @@ const CollabSec: React.FC = () => {
             onMouseMove={(e) => {
               handleMagMove(
                 e,
-                leftMagX.set,
-                leftMagY.set,
+                (v) => leftMagX.set(v),
+                (v) => leftMagY.set(v),
                 leftRef as React.RefObject<HTMLDivElement>,
               );
               setHovered("left");
@@ -252,8 +252,8 @@ const CollabSec: React.FC = () => {
             onMouseMove={(e) => {
               handleMagMove(
                 e,
-                rightMagX.set,
-                rightMagY.set,
+                (v) => rightMagX.set(v),
+                (v) => rightMagY.set(v),
                 rightRef as React.RefObject<HTMLDivElement>,
               );
               setHovered("right");

@@ -283,7 +283,6 @@ const Preloader: React.FC<PreloaderProps> = ({
                 <motion.path
                   variants={lineCurve}
                   initial="initial"
-                  animate="initial"
                   exit="exit"
                   fill="none"
                   stroke={accentColor}

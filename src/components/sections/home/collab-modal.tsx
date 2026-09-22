@@ -319,7 +319,7 @@ export default function CollabModal({ isOpen, onClose }: Props) {
                     textTransform: "uppercase",
                   }}
                 >
-                  ✦ VISHAL SHARMA
+                  ✦ VTECH STUDIOS
                 </span>
 
                 <motion.button

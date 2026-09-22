@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Poppins, Cormorant_Garamond } from "next/font/google";
 import "./globals.css";
-import { BASE_URL, OG_IMAGE } from "@/lib/constants";
+import { BASE_URL } from "@/lib/constants";
 import LenisWrapper from "@/providers/lenis-provider";
 import { ThemeProvider } from "@/providers/theme-provider";
 import FooterSection from "@/components/layout/footer";
@@ -10,7 +10,8 @@ import StructuredData from "@/components/common/structured-data";
 import Analytics from "@/components/common/analytics";
 import ConsoleLog from "@/components/common/console-log";
 import CinematicStartGate from "@/components/common/CinematicStartGate";
-import CustomCursor from "@/components/ui/custom-cursor";
+import { MagneticCursor } from "@/components/ui/magnetic-cursor";
+import LiquidSilkBackground from "@/components/common/liquid-silk-background";
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -29,25 +30,26 @@ const cormorantGaramond = Cormorant_Garamond({
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
   title: {
-    default: "VISHAL SHARMA | NEXT-GEN VIBE CODER",
-    template: "%s | Vishal Sharma",
+    default: "VTECH STUDIOS",
+    template: "%s | VTECH STUDIOS",
   },
   description:
-    "PORTFOLIO OF VISHAL SHARMA, A SELF-TAUGHT VIBE CODER FROM CHANDIGARH, INDIA, TURNING IDEAS INTO IMMERSIVE DIGITAL EXPERIENCES THROUGH CREATIVITY, EXPERIMENTATION, AND AI.",
+    "OFFICIAL STUDIO PORTFOLIO OF VTECH STUDIOS — DIGITAL PRODUCTION, MOTION, AND HIGH-END CREATIVE ENGINEERING.",
   keywords: [
-    "Vibe Coding",
-    "Prompt Engineering",
+    "VTECH STUDIOS",
+    "Creative Direction",
+    "Digital Production",
+    "Motion Design",
+    "Web Engineering",
     "AI Prototyping",
-    "Web Development",
     "Portfolio",
-    "Digital Services",
     "Next.js",
     "React",
     "TypeScript",
   ],
-  authors: [{ name: "Vishal Sharma" }],
-  creator: "Vishal Sharma",
-  publisher: "Vishal Sharma",
+  authors: [{ name: "VTECH STUDIOS" }],
+  creator: "VTECH STUDIOS",
+  publisher: "VTECH STUDIOS",
   formatDetection: {
     email: false,
     address: false,
@@ -57,32 +59,32 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: BASE_URL,
-    title: "VISHAL SHARMA | NEXT-GEN VIBE CODER",
+    title: "VTECH STUDIOS",
     description:
-      "EXPLORE THE PORTFOLIO OF VISHAL SHARMA — A SELF-TAUGHT VIBE CODER CREATING IMMERSIVE DIGITAL EXPERIENCES THROUGH CREATIVITY, EXPERIMENTATION, AND AI.",
-    siteName: "Vishal Sharma Portfolio",
+      "OFFICIAL STUDIO PORTFOLIO OF VTECH STUDIOS — DIGITAL PRODUCTION, MOTION, AND HIGH-END CREATIVE ENGINEERING.",
+    siteName: "VTECH STUDIOS",
     images: [
       {
         url: "/logo.png",
         width: 1200,
         height: 630,
-        alt: "Vishal Sharma Portfolio",
+        alt: "VTECH STUDIOS",
         type: "image/png",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "VISHAL SHARMA | NEXT-GEN VIBE CODER",
+    title: "VTECH STUDIOS",
     description:
-      "EXPLORE THE PORTFOLIO OF VISHAL SHARMA — A SELF-TAUGHT VIBE CODER CREATING IMMERSIVE DIGITAL EXPERIENCES THROUGH CREATIVITY, EXPERIMENTATION, AND AI.",
-    creator: "@vishalcore07",
+      "OFFICIAL STUDIO PORTFOLIO OF VTECH STUDIOS — DIGITAL PRODUCTION, MOTION, AND HIGH-END CREATIVE ENGINEERING.",
+    creator: "@vtechstudios",
     images: [
       {
         url: "/logo.png",
         width: 1200,
         height: 630,
-        alt: "Vishal Sharma Portfolio",
+        alt: "VTECH STUDIOS",
       },
     ],
   },
@@ -104,7 +106,6 @@ export const metadata: Metadata = {
     shortcut: "/favicon.png",
     apple: [{ url: "/logo.png", type: "image/png" }],
   },
-  manifest: "/manifest.webmanifest",
   verification: {
     google: "your-google-verification-code",
   },
@@ -131,13 +132,12 @@ export default function RootLayout({
           crossOrigin="anonymous"
         />
         <link rel="dns-prefetch" href="https://ik.imagekit.io" />
-        <StructuredData />
-        <Analytics />
       </head>
       <body
         className={`${poppins.variable} ${cormorantGaramond.variable} antialiased mx-auto`}
       >
-        <CustomCursor />
+        <StructuredData />
+        <Analytics />
         <ConsoleLog />
         <ThemeProvider
           attribute="class"
@@ -145,12 +145,21 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <LenisWrapper>
-            <CinematicStartGate />
-            <Navbar />
-            {children}
-            <FooterSection />
-          </LenisWrapper>
+          <MagneticCursor
+            magneticFactor={0.4}
+            blendMode="exclusion"
+            cursorSize={28}
+            cursorColor="white"
+            contrastBoost={1.5}
+          >
+            <LenisWrapper>
+              <LiquidSilkBackground />
+              <CinematicStartGate />
+              <Navbar />
+              {children}
+              <FooterSection />
+            </LenisWrapper>
+          </MagneticCursor>
         </ThemeProvider>
       </body>
     </html>

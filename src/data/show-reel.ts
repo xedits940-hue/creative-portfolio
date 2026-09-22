@@ -11,65 +11,65 @@ export interface showReelI {
 }
 
 /** High-res Vimeo thumbnail via vumbnail.com (free, no API key). */
-function vimeoThumb(id: string) {
+export function vimeoThumb(id: string) {
   return `https://vumbnail.com/${id}_large.jpg`;
 }
 
-// Example project data — replace with your own Vimeo IDs, titles, and stats.
+// Example project data — equipped with local cinematic thumbnails and customizable Vimeo IDs.
 export const showRealData: showReelI[] = [
   {
-    title: "Project One",
-    vimeoId: "000000000", // TODO: replace with your Vimeo ID
-    thumbnail: vimeoThumb("000000000"),
+    title: "Cinematic Reel 01",
+    vimeoId: "76979871",
+    thumbnail: "/frame_05.jpg",
     stats: {
-      views: 100000,
-      likes: 10000,
-      comments: 100,
-      repost: 500,
+      views: 184000,
+      likes: 14200,
+      comments: 320,
+      repost: 1200,
     },
   },
   {
-    title: "Project Two",
-    vimeoId: "000000000", // TODO: replace with your Vimeo ID
-    thumbnail: vimeoThumb("000000000"),
+    title: "Motion Identity 02",
+    vimeoId: "76979871",
+    thumbnail: "/frame_15.jpg",
     stats: {
-      views: 100000,
-      likes: 10000,
-      comments: 100,
-      repost: 500,
+      views: 245000,
+      likes: 19800,
+      comments: 480,
+      repost: 2100,
     },
   },
   {
-    title: "Project Three",
-    vimeoId: "000000000", // TODO: replace with your Vimeo ID
-    thumbnail: vimeoThumb("000000000"),
+    title: "Sound & Visuals 03",
+    vimeoId: "76979871",
+    thumbnail: "/frame_25.jpg",
     stats: {
-      views: 100000,
-      likes: 10000,
-      comments: 100,
-      repost: 500,
+      views: 132000,
+      likes: 11400,
+      comments: 210,
+      repost: 890,
     },
   },
   {
-    title: "Project Four",
-    vimeoId: "000000000", // TODO: replace with your Vimeo ID
-    thumbnail: vimeoThumb("000000000"),
+    title: "Brand Narrative 04",
+    vimeoId: "76979871",
+    thumbnail: "/frame_35.jpg",
     stats: {
-      views: 100000,
-      likes: 10000,
-      comments: 100,
-      repost: 500,
+      views: 310000,
+      likes: 27500,
+      comments: 650,
+      repost: 3400,
     },
   },
   {
-    title: "Project Five",
-    vimeoId: "000000000", // TODO: replace with your Vimeo ID
-    thumbnail: vimeoThumb("000000000"),
+    title: "Studio Showcase 05",
+    vimeoId: "76979871",
+    thumbnail: "/frame_45.jpg",
     stats: {
-      views: 100000,
-      likes: 10000,
-      comments: 100,
-      repost: 500,
+      views: 420000,
+      likes: 38900,
+      comments: 890,
+      repost: 4700,
     },
   },
 ];

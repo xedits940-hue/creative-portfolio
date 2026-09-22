@@ -4,8 +4,6 @@ import { useRef, useState, useEffect, useCallback, useMemo } from "react";
 import {
   motion,
   AnimatePresence,
-  useMotionValue,
-  useSpring,
 } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { showRealData, type showReelI } from "@/data/show-reel";
@@ -76,7 +74,6 @@ export default function ShowReel() {
   const [dir, setDir] = useState(1);
   const [locked, setLocked] = useState(false);
   const [modal, setModal] = useState<showReelI | null>(null);
-  const [cursorVisible, setCursorVisible] = useState(false);
   const [lastNav, setLastNav] = useState(0);
   const [isTouch, setIsTouch] = useState(false);
 
@@ -85,7 +82,7 @@ export default function ShowReel() {
   const suppressClick = useRef(false);
   const total = showRealData.length;
 
-  // Detect touch / coarse-pointer devices → hide the custom play cursor
+  // Detect touch / coarse-pointer devices
   useEffect(() => {
     setIsTouch(window.matchMedia("(pointer: coarse)").matches);
   }, []);
@@ -98,12 +95,6 @@ export default function ShowReel() {
     set.add((active - 1 + total) % total);
     return set;
   }, [active, total]);
-
-  // Cursor spring
-  const cursorX = useMotionValue(-200);
-  const cursorY = useMotionValue(-200);
-  const springX = useSpring(cursorX, { stiffness: 500, damping: 40 });
-  const springY = useSpring(cursorY, { stiffness: 500, damping: 40 });
 
   // 10-second autoplay — pauses while modal is open, resets on manual nav
   useEffect(() => {
@@ -175,23 +166,11 @@ export default function ShowReel() {
       <VideoModal item={modal} onClose={() => setModal(null)} />
 
       <section
-        className={`relative h-dvh md:h-screen w-full select-none overflow-hidden bg-black ${
-          modal || isTouch ? "cursor-auto" : "cursor-none"
-        }`}
+        className="relative h-dvh md:h-screen w-full select-none overflow-hidden bg-black"
         style={{ touchAction: "pan-y" }}
         aria-label="Show Reel"
         onPointerDown={handleDragStart}
         onPointerUp={handleDragEnd}
-        onMouseMove={(e) => {
-          if (!modal) {
-            cursorX.set(e.clientX);
-            cursorY.set(e.clientY);
-          }
-        }}
-        onMouseEnter={() => {
-          if (!modal) setCursorVisible(true);
-        }}
-        onMouseLeave={() => setCursorVisible(false)}
       >
         {/* ── PERSISTENT VIDEO BACKDROPS ──
             Current + adjacent slides stay mounted so their iframes never reload.
@@ -211,30 +190,6 @@ export default function ShowReel() {
           );
         })}
 
-        {/* Custom play cursor — desktop / fine-pointer only */}
-        {!isTouch && (
-          <motion.div
-            style={{ x: springX, y: springY }}
-            animate={{
-              opacity: cursorVisible && !modal ? 1 : 0,
-              scale: cursorVisible && !modal ? 1 : 0.5,
-            }}
-            transition={{
-              opacity: { duration: 0.2 },
-              scale: { duration: 0.2 },
-            }}
-            className="pointer-events-none fixed left-0 top-0 z-9998 flex size-18 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/30 bg-white/10 backdrop-blur-sm"
-          >
-            <svg
-              viewBox="0 0 10 12"
-              className="h-4 w-3.5 translate-x-px fill-white"
-              aria-hidden
-            >
-              <polygon points="0,0 10,6 0,12" />
-            </svg>
-          </motion.div>
-        )}
-
         {/* Full-bleed cards */}
         <AnimatePresence custom={dir} mode="wait">
           <ReelCard
@@ -253,6 +208,7 @@ export default function ShowReel() {
         {/* Prev / Next + dot navigation */}
         <div className="absolute bottom-10 left-1/2 z-30 flex -translate-x-1/2 items-center gap-3">
           <motion.button
+            data-magnetic
             onClick={(e) => {
               e.stopPropagation();
               navigate(-1);
@@ -288,6 +244,7 @@ export default function ShowReel() {
           </div>
 
           <motion.button
+            data-magnetic
             onClick={(e) => {
               e.stopPropagation();
               navigate(1);
