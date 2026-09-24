@@ -174,9 +174,9 @@ const Navbar: React.FC = () => {
             }}
           >
             <Image
-              src="/logo.png"
+              src="/vtech-studios-logo.png"
               alt="VTECH STUDIOS Logo"
-              className="h-12 w-12 cursor-pointer object-contain"
+              className="h-10 w-10 sm:h-12 sm:w-12 cursor-pointer object-contain"
               width={96}
               height={96}
               priority

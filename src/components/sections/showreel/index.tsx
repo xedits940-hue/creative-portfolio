@@ -33,6 +33,8 @@ function VimeoBackdrop({
         zIndex: isActive ? 2 : 1,
         opacity: isActive ? 1 : 0,
         transition: "opacity 0.7s ease-in-out",
+        maskImage: "linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%)",
+        WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%)",
       }}
     >
       {/* Thumbnail fallback — visible instantly */}
@@ -62,9 +64,9 @@ function VimeoBackdrop({
         />
       )}
 
-      {/* Cinematic grade overlays */}
-      <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/10 to-black/50" />
-      <div className="absolute inset-0 bg-linear-to-r from-black/50 via-transparent to-black/20" />
+      {/* Cinematic grade overlays — subtle so global liquid silk continues naturally */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/30" />
+      <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-transparent to-black/20" />
     </div>
   );
 }
@@ -166,7 +168,7 @@ export default function ShowReel() {
       <VideoModal item={modal} onClose={() => setModal(null)} />
 
       <section
-        className="relative h-dvh md:h-screen w-full select-none overflow-hidden bg-black"
+        className="relative h-dvh md:h-screen w-full select-none overflow-hidden bg-transparent"
         style={{ touchAction: "pan-y" }}
         aria-label="Show Reel"
         onPointerDown={handleDragStart}

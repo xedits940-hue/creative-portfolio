@@ -22,7 +22,7 @@ const PhraseAnimation: React.FC<PhraseAnimationProps> = ({
   accent = false,
 }) => {
   const containerRef = useRef<HTMLSpanElement>(null);
-  const isInView = useInView(containerRef, { once: false, amount: 0.2 });
+  const isInView = useInView(containerRef, { once: true, amount: "some" });
 
   const slideUp: Variants = {
     initial: {

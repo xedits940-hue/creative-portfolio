@@ -50,7 +50,7 @@ export default function StructuredData() {
     "@context": "https://schema.org",
     "@type": "ProfessionalService",
     name: "VTECH STUDIOS",
-    image: `${BASE_URL}/logo.png`,
+    image: `${BASE_URL}/vtech-studios-logo.png`,
     "@id": BASE_URL,
     url: BASE_URL,
     telephone: "",

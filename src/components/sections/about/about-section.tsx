@@ -113,15 +113,14 @@ const AboutSection = () => {
   const imageY = useTransform(scrollYProgress, [0, 1], [50, -30]);
   const imageScale = useTransform(scrollYProgress, [0, 1], [0.94, 1.02]);
 
-  // Section-level entrance: panel slides up with subtle clip-path wipe
-  const sectionY = useTransform(scrollYProgress, [0, 0.25], [40, 0]);
-  const sectionOpacity = useTransform(scrollYProgress, [0, 0.2], [0, 1]);
+  // Section-level entrance: subtle elevation
+  const sectionY = useTransform(scrollYProgress, [0, 0.25], [30, 0]);
 
   return (
     <motion.section
       ref={sectionRef}
-      style={{ y: sectionY, opacity: sectionOpacity }}
-      className="relative w-full py-28 md:py-40 bg-background overflow-hidden"
+      style={{ y: sectionY }}
+      className="relative w-full py-28 md:py-40 bg-transparent overflow-hidden"
     >
       {/* Subtle dot-grid texture */}
       <div

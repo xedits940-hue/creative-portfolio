@@ -9,7 +9,6 @@ import Navbar from "@/components/layout/navbar";
 import StructuredData from "@/components/common/structured-data";
 import Analytics from "@/components/common/analytics";
 import ConsoleLog from "@/components/common/console-log";
-import CinematicStartGate from "@/components/common/CinematicStartGate";
 import { MagneticCursor } from "@/components/ui/magnetic-cursor";
 import LiquidSilkBackground from "@/components/common/liquid-silk-background";
 
@@ -65,10 +64,10 @@ export const metadata: Metadata = {
     siteName: "VTECH STUDIOS",
     images: [
       {
-        url: "/logo.png",
+        url: "/vtech-studios-logo.png",
         width: 1200,
-        height: 630,
-        alt: "VTECH STUDIOS",
+        height: 1200,
+        alt: "VTECH STUDIOS Logo",
         type: "image/png",
       },
     ],
@@ -81,10 +80,10 @@ export const metadata: Metadata = {
     creator: "@vtechstudios",
     images: [
       {
-        url: "/logo.png",
+        url: "/vtech-studios-logo.png",
         width: 1200,
-        height: 630,
-        alt: "VTECH STUDIOS",
+        height: 1200,
+        alt: "VTECH STUDIOS Logo",
       },
     ],
   },
@@ -102,9 +101,10 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: "/favicon.png", type: "image/png", sizes: "512x512" },
+      { url: "/vtech-studios-logo.png", type: "image/png" },
     ],
     shortcut: "/favicon.png",
-    apple: [{ url: "/logo.png", type: "image/png" }],
+    apple: [{ url: "/vtech-studios-logo.png", type: "image/png" }],
   },
   verification: {
     google: "your-google-verification-code",
@@ -145,6 +145,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <LiquidSilkBackground />
           <MagneticCursor
             magneticFactor={0.4}
             blendMode="exclusion"
@@ -153,8 +154,6 @@ export default function RootLayout({
             contrastBoost={1.5}
           >
             <LenisWrapper>
-              <LiquidSilkBackground />
-              <CinematicStartGate />
               <Navbar />
               {children}
               <FooterSection />

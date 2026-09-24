@@ -80,7 +80,7 @@ export default function CreativeFooter() {
   const copyrightText = `© ${currentYear}–${currentYear + 1} VTECH STUDIOS. ALL RIGHTS RESERVED.`;
 
   return (
-    <footer className="relative w-full overflow-hidden border-t pt-20 md:pt-32 pb-10">
+    <footer className="relative w-full overflow-hidden border-t pt-20 md:pt-32 pb-10 isolate bg-transparent">
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute inset-0 opacity-[0.03] mix-blend-hard-light"></div>
         <motion.div
@@ -132,14 +132,14 @@ export default function CreativeFooter() {
             className="col-span-1 md:col-span-5 flex flex-col gap-6"
           >
             <Link href="/" aria-label="VTECH STUDIOS Home" className="flex w-fit items-center gap-3">
-              <div className="relative size-12 overflow-hidden rounded-xl bg-linear-to-br from-background to-muted border border-border shadow-sm flex items-center justify-center">
+              <div className="relative size-12 overflow-hidden rounded-xl bg-linear-to-br from-background to-muted border border-border shadow-sm flex items-center justify-center p-1.5">
                 <Image
-                  src="/logo.png"
+                  src="/vtech-studios-logo.png"
                   alt="VTECH STUDIOS Logo"
-                  width={100}
-                  height={100}
+                  width={96}
+                  height={96}
                   referrerPolicy="no-referrer"
-                  className="object-contain w-full h-full scale-[1.5]"
+                  className="object-contain w-full h-full"
                 />
               </div>
               <span className="text-xl font-bold tracking-tight">

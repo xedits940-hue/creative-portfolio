@@ -43,6 +43,13 @@ export default function LiquidSilkBackground() {
       aria-hidden="true"
       tabIndex={-1}
       className="fixed inset-0 w-full h-full -z-10 pointer-events-none border-0 select-none"
+      style={{
+        zIndex: -10,
+        position: "fixed",
+        inset: 0,
+        width: "100%",
+        height: "100%",
+      }}
     />
   );
 }

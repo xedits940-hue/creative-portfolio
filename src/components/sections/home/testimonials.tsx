@@ -19,12 +19,9 @@ const Testimonials = () => {
   });
 
   return (
-    <motion.section
+    <section
       ref={sectionRef}
-      initial={{ opacity: 0 }}
-      animate={isInView ? { opacity: 1 } : {}}
-      transition={{ duration: 0.6 }}
-      className="relative flex w-full flex-col items-center justify-center py-24 overflow-hidden"
+      className="relative flex w-full flex-col items-center justify-center py-24 overflow-hidden isolate bg-transparent"
     >
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-primary/20 blur-[120px] rounded-full pointer-events-none -z-10 opacity-50" />
 
@@ -90,7 +87,7 @@ const Testimonials = () => {
       >
         <TestimonialCarousel users={userData} />
       </motion.div>
-    </motion.section>
+    </section>
   );
 };
 
