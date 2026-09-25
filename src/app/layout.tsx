@@ -11,6 +11,7 @@ import Analytics from "@/components/common/analytics";
 import ConsoleLog from "@/components/common/console-log";
 import { MagneticCursor } from "@/components/ui/magnetic-cursor";
 import LiquidSilkBackground from "@/components/common/liquid-silk-background";
+import CinematicStartGate from "@/components/common/CinematicStartGate";
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -146,6 +147,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <LiquidSilkBackground />
+          <CinematicStartGate />
           <MagneticCursor
             magneticFactor={0.4}
             blendMode="exclusion"

@@ -1,159 +1,164 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
+import { AnimatePresence } from "framer-motion";
+import Preloader from "./preloader";
 
-const VIDEO_SRC = "/intro-video.mp4";
-const AUDIO_SRC = "/intro-audio.mp3";
-
+/**
+ * CinematicStartGate
+ *
+ * 1. Initial State: Center hero card with ambient background and the
+ *    uploaded background video (/VID-20260924-WA0001.mp4) playing strictly within this screen area.
+ * 2. 3D Card Effect: Real-time mouse tracking smoothly tilts/perspectives the card
+ *    toward the cursor with floating Z-depth, keeping all content stable and perfectly aligned.
+ * 3. White Shimmer Effect: The shimmer runs ONLY along the 2px outer border/corners
+ *    of the card with a 3s white conic gradient orbit. No inner box or extra button.
+ * 4. Card Content: "ENTER STUDIO" text/button returns to its exact original position, alignment,
+ *    and size at the bottom of the card without independent distortion.
+ * 5. On Click: Smooth gate opening transition followed by the 0→100 Preloader sequence.
+ */
 export default function CinematicStartGate() {
   const entryRef = useRef<HTMLDivElement | null>(null);
   const gateRef = useRef<HTMLButtonElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const [phase, setPhase] = useState<"gate" | "loading" | "done">("gate");
   const [activated, setActivated] = useState(false);
-  const [soundOn, setSoundOn] = useState(true);
-  const [videoVisible, setVideoVisible] = useState(false);
-  const [showAudioNote, setShowAudioNote] = useState(false);
-  const endedRef = useRef(false);
+  const transitionStartedRef = useRef(false);
 
-  const handleVideoEnded = () => {
-    if (endedRef.current) return;
-    endedRef.current = true;
+  // Lock scroll while on gate or loading
+  useEffect(() => {
+    if (phase !== "done") {
+      document.documentElement.classList.add("vs-lock-scroll");
+      document.body.classList.add("vs-lock-scroll");
+    } else {
+      document.documentElement.classList.remove("vs-lock-scroll");
+      document.body.classList.remove("vs-lock-scroll");
+    }
 
-    const entry = entryRef.current;
-    const video = videoRef.current;
-    const audio = audioRef.current;
+    return () => {
+      document.documentElement.classList.remove("vs-lock-scroll");
+      document.body.classList.remove("vs-lock-scroll");
+    };
+  }, [phase]);
 
-    entry?.classList.add("is-gone");
+  // Handle click on the card to open and proceed to 0→100 loading
+  const handleOpen = useCallback(() => {
+    if (transitionStartedRef.current || phase !== "gate") return;
+    transitionStartedRef.current = true;
+    setActivated(true);
+
+    window.dispatchEvent(
+      new CustomEvent("vishal:start-intro", {
+        detail: { source: "cinematic-start-gate" },
+      })
+    );
+
+    // Let the gate opening animation play briefly (~450ms), then switch to 0→100 loading
+    setTimeout(() => {
+      try {
+        videoRef.current?.pause();
+      } catch {
+        // ignore
+      }
+      setPhase("loading");
+    }, 450);
+  }, [phase]);
+
+  const handleSkip = () => {
+    if (transitionStartedRef.current || phase !== "gate") return;
+    transitionStartedRef.current = true;
     try {
-      video?.pause();
-      audio?.pause();
+      videoRef.current?.pause();
     } catch {
       // ignore
     }
+    setPhase("loading");
+  };
 
-    window.dispatchEvent(
-      new CustomEvent("vishal:cinematic-complete", {
-        detail: { source: "cinematic-intro-video" },
-      }),
-    );
-
+  // Preloader finished (0→100 done) -> reveal main website
+  const handlePreloaderComplete = () => {
+    setPhase("done");
     document.documentElement.classList.remove("vs-lock-scroll");
     document.body.classList.remove("vs-lock-scroll");
 
-    setTimeout(() => {
-      setVideoVisible(false);
-      document.documentElement.classList.remove("vs-lock-scroll");
-      document.body.classList.remove("vs-lock-scroll");
+    window.dispatchEvent(
+      new CustomEvent("vishal:cinematic-complete", {
+        detail: { source: "cinematic-start-gate" },
+      })
+    );
 
-      const main = document.getElementById("main") || document.querySelector("main");
+    setTimeout(() => {
+      const main =
+        document.getElementById("main") || document.querySelector("main");
       if (main instanceof HTMLElement) {
         main.setAttribute("tabindex", "-1");
         main.focus({ preventScroll: true });
       }
-    }, 400);
+    }, 600);
   };
 
-  const skipGate = () => {
-    handleVideoEnded();
-  };
-
+  // Keyboard accessibility on gate
   useEffect(() => {
-    document.documentElement.classList.add("vs-lock-scroll");
-    document.body.classList.add("vs-lock-scroll");
-    const audio = audioRef.current;
-    const video = videoRef.current;
-
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape" || event.key === "Enter" || event.key === " ") {
-        handleVideoEnded();
+      if (phase === "gate") {
+        if (
+          event.key === "Escape" ||
+          event.key === "Enter" ||
+          event.key === " "
+        ) {
+          handleOpen();
+        }
       }
     };
 
     document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [phase, handleOpen]);
 
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      document.documentElement.classList.remove("vs-lock-scroll");
-      document.body.classList.remove("vs-lock-scroll");
-      audio?.pause();
-      video?.pause();
-    };
-  }, []);
-
-  const handlePointerMove = (event: React.PointerEvent<HTMLButtonElement>) => {
+  // High-precision 3D tilt tracking that follows mouse movement smoothly
+  const handlePointerMove = (
+    event: React.PointerEvent<HTMLElement> | React.MouseEvent<HTMLElement>
+  ) => {
     if (!gateRef.current) return;
     const rect = gateRef.current.getBoundingClientRect();
-    const x = ((event.clientX - rect.left) / rect.width) * 100;
-    const y = ((event.clientY - rect.top) / rect.height) * 100;
-    gateRef.current.style.setProperty("--mx", `${x}%`);
-    gateRef.current.style.setProperty("--my", `${y}%`);
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+
+    const mouseX = event.clientX - centerX;
+    const mouseY = event.clientY - centerY;
+
+    const normX = mouseX / (rect.width / 2);
+    const normY = mouseY / (rect.height / 2);
+
+    const clampedX = Math.max(-1.5, Math.min(1.5, normX));
+    const clampedY = Math.max(-1.5, Math.min(1.5, normY));
+
+    // Smooth tilt angles
+    const maxTilt = 12;
+    const rotY = clampedX * maxTilt;
+    const rotX = -clampedY * maxTilt;
+
+    gateRef.current.style.transform = `perspective(1000px) rotateX(${rotX.toFixed(2)}deg) rotateY(${rotY.toFixed(2)}deg) scale3d(1.025, 1.025, 1.025)`;
+
+    // Specular light coordinates
+    const mx = ((event.clientX - rect.left) / rect.width) * 100;
+    const my = ((event.clientY - rect.top) / rect.height) * 100;
+    gateRef.current.style.setProperty(
+      "--mx",
+      `${Math.max(0, Math.min(100, mx)).toFixed(1)}%`
+    );
+    gateRef.current.style.setProperty(
+      "--my",
+      `${Math.max(0, Math.min(100, my)).toFixed(1)}%`
+    );
   };
 
   const handlePointerLeave = () => {
     if (!gateRef.current) return;
+    gateRef.current.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`;
     gateRef.current.style.setProperty("--mx", "50%");
     gateRef.current.style.setProperty("--my", "50%");
-  };
-
-  const handleOpen = async () => {
-    if (activated) return;
-
-    setActivated(true);
-    setVideoVisible(true);
-
-    const entry = entryRef.current;
-    const video = videoRef.current;
-    const audio = audioRef.current;
-
-    entry?.classList.add("is-opening");
-    setShowAudioNote(true);
-    window.setTimeout(() => setShowAudioNote(false), 3000);
-    window.dispatchEvent(
-      new CustomEvent("vishal:start-intro", {
-        detail: { source: "cinematic-start-gate" },
-      }),
-    );
-
-    // Fallback timer: Never lock user if video hangs or takes > 5s
-    const safetyTimeout = setTimeout(() => {
-      handleVideoEnded();
-    }, 4500);
-
-    if (video) {
-      video.currentTime = 0;
-      video.muted = true;
-      video.volume = 0;
-    }
-
-    if (audio) {
-      audio.currentTime = 0;
-      audio.volume = 1;
-      audio.muted = !soundOn;
-    }
-
-    try {
-      const p1 = video ? video.play().catch(() => handleVideoEnded()) : Promise.resolve();
-      const p2 = audio && soundOn ? audio.play().catch(() => {}) : Promise.resolve();
-      await Promise.all([p1, p2]);
-    } catch (error) {
-      console.warn("Cinematic intro playback issue, continuing.", error);
-      clearTimeout(safetyTimeout);
-      handleVideoEnded();
-    }
-  };
-
-  const toggleSound = () => {
-    const next = !soundOn;
-    const audio = audioRef.current;
-    setSoundOn(next);
-
-    if (audio) {
-      audio.muted = !next;
-      if (next && activated && audio.paused) {
-        audio.play().catch(() => {});
-      }
-    }
   };
 
   return (
@@ -161,8 +166,8 @@ export default function CinematicStartGate() {
       <style jsx global>{`
         html.vs-lock-scroll,
         body.vs-lock-scroll {
-          overflow: hidden;
-          height: 100%;
+          overflow: hidden !important;
+          height: 100% !important;
         }
 
         .vs-entry {
@@ -174,21 +179,62 @@ export default function CinematicStartGate() {
           overflow: hidden;
           isolation: isolate;
           background:
-            radial-gradient(circle at 50% 55%, rgba(179, 19, 46, 0.22), transparent 34%),
-            radial-gradient(circle at 20% 84%, rgba(179, 19, 46, 0.07), transparent 34%),
-            radial-gradient(circle at 82% 16%, rgba(255, 45, 71, 0.05), transparent 36%),
+            radial-gradient(
+              circle at 50% 55%,
+              rgba(179, 19, 46, 0.22),
+              transparent 34%
+            ),
+            radial-gradient(
+              circle at 20% 84%,
+              rgba(179, 19, 46, 0.07),
+              transparent 34%
+            ),
+            radial-gradient(
+              circle at 82% 16%,
+              rgba(255, 45, 71, 0.05),
+              transparent 36%
+            ),
             #050505;
-          transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
-            visibility 0.7s cubic-bezier(0.16, 1, 0.3, 1),
-            transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+          transition:
+            opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+            visibility 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+            transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
           will-change: opacity, transform;
         }
 
-        .vs-entry.is-gone {
-          opacity: 0;
-          visibility: hidden;
+        .vs-gate-bg-video {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          z-index: 1;
           pointer-events: none;
-          transform: scale(1.045);
+          opacity: 0.58;
+          filter: saturate(1.15) contrast(1.1);
+          transform: scale(1.02);
+          will-change: transform;
+        }
+
+        .vs-entry__video-overlay {
+          position: absolute;
+          inset: 0;
+          z-index: 2;
+          pointer-events: none;
+          background:
+            radial-gradient(
+              circle at 50% 50%,
+              rgba(5, 5, 5, 0.3) 0%,
+              rgba(5, 5, 5, 0.65) 60%,
+              #050505 100%
+            ),
+            linear-gradient(
+              180deg,
+              rgba(5, 5, 5, 0.45) 0%,
+              transparent 35%,
+              transparent 65%,
+              rgba(5, 5, 5, 0.75) 100%
+            );
         }
 
         .vs-entry::before {
@@ -198,16 +244,31 @@ export default function CinematicStartGate() {
           z-index: 0;
           pointer-events: none;
           background:
-            radial-gradient(circle at 50% 50%, rgba(255, 45, 71, 0.14), transparent 22%),
-            radial-gradient(circle at 50% 50%, rgba(179, 19, 46, 0.18), transparent 38%);
+            radial-gradient(
+              circle at 50% 50%,
+              rgba(255, 45, 71, 0.14),
+              transparent 22%
+            ),
+            radial-gradient(
+              circle at 50% 50%,
+              rgba(179, 19, 46, 0.18),
+              transparent 38%
+            );
           filter: blur(28px);
           opacity: 0.65;
           animation: vsAmbient 6s ease-in-out infinite;
         }
 
         @keyframes vsAmbient {
-          0%, 100% { transform: scale(0.92); opacity: 0.42; }
-          50% { transform: scale(1.06); opacity: 0.78; }
+          0%,
+          100% {
+            transform: scale(0.92);
+            opacity: 0.42;
+          }
+          50% {
+            transform: scale(1.06);
+            opacity: 0.78;
+          }
         }
 
         .vs-entry::after {
@@ -216,7 +277,12 @@ export default function CinematicStartGate() {
           inset: 0;
           z-index: 4;
           pointer-events: none;
-          background: radial-gradient(circle at center, transparent 32%, rgba(0,0,0,0.34) 67%, rgba(0,0,0,0.9) 100%);
+          background: radial-gradient(
+            circle at center,
+            transparent 32%,
+            rgba(0, 0, 0, 0.34) 67%,
+            rgba(0, 0, 0, 0.9) 100%
+          );
         }
 
         .vs-entry__grain {
@@ -225,7 +291,13 @@ export default function CinematicStartGate() {
           z-index: 3;
           pointer-events: none;
           opacity: 0.045;
-          background-image: repeating-linear-gradient(0deg, rgba(255,255,255,0.12) 0px, rgba(255,255,255,0.12) 1px, transparent 1px, transparent 3px);
+          background-image: repeating-linear-gradient(
+            0deg,
+            rgba(255, 255, 255, 0.12) 0px,
+            rgba(255, 255, 255, 0.12) 1px,
+            transparent 1px,
+            transparent 3px
+          );
           transform: rotate(8deg);
         }
 
@@ -236,10 +308,14 @@ export default function CinematicStartGate() {
           pointer-events: none;
           opacity: 0.05;
           background-image:
-            linear-gradient(rgba(255,255,255,0.2) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255,255,255,0.2) 1px, transparent 1px);
+            linear-gradient(rgba(255, 255, 255, 0.2) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255, 255, 255, 0.2) 1px, transparent 1px);
           background-size: 82px 82px;
-          mask-image: radial-gradient(circle at center, black 0%, transparent 72%);
+          mask-image: radial-gradient(
+            circle at center,
+            black 0%,
+            transparent 72%
+          );
         }
 
         .vs-entry__flash {
@@ -248,12 +324,13 @@ export default function CinematicStartGate() {
           z-index: 40;
           pointer-events: none;
           opacity: 0;
-          background:
-            radial-gradient(circle at center,
-              rgba(255, 90, 110, 0.5) 0%,
-              rgba(255, 45, 71, 0.36) 28%,
-              rgba(179, 19, 46, 0.2) 52%,
-              transparent 74%);
+          background: radial-gradient(
+            circle at center,
+            rgba(255, 90, 110, 0.5) 0%,
+            rgba(255, 45, 71, 0.36) 28%,
+            rgba(179, 19, 46, 0.2) 52%,
+            transparent 74%
+          );
           mix-blend-mode: screen;
         }
 
@@ -262,43 +339,45 @@ export default function CinematicStartGate() {
         }
 
         @keyframes vsEntryFlash {
-          0% { opacity: 0; transform: scale(0.6); }
-          24% { opacity: 0.8; transform: scale(1); }
-          100% { opacity: 0; transform: scale(1.5); }
+          0% {
+            opacity: 0;
+            transform: scale(0.6);
+          }
+          24% {
+            opacity: 0.8;
+            transform: scale(1);
+          }
+          100% {
+            opacity: 0;
+            transform: scale(1.5);
+          }
         }
 
-        .vs-sound {
-          position: absolute;
-          top: 22px;
-          right: 24px;
-          z-index: 30;
-          width: 38px;
-          height: 38px;
-          display: grid;
-          place-items: center;
-          background: rgba(255,255,255,0.02);
-          border: 1px solid rgba(243, 238, 232, 0.14);
-          border-radius: 50%;
-          color: rgba(243, 238, 232, 0.55);
-          cursor: pointer;
-          transition: border-color 0.3s cubic-bezier(0.16, 1, 0.3, 1), color 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-          opacity: 0;
-          animation: vsFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.5s both;
+        /* 3D Perspective Card Wrapper */
+        .vs-gate-wrap {
+          position: relative;
+          z-index: 20;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          perspective: 1000px;
+          animation: vsGateIn 1.1s cubic-bezier(0.16, 1, 0.3, 1) both;
         }
 
-        .vs-sound:hover {
-          border-color: rgba(255,45,71,0.5);
-          color: #ff2d47;
-          transform: scale(1.06);
+        @keyframes vsGateIn {
+          from {
+            opacity: 0;
+            transform: translateY(22px) scale(0.96);
+            filter: blur(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            filter: blur(0);
+          }
         }
 
-        .vs-sound svg { width: 15px; height: 15px; }
-
-        @keyframes vsFadeIn {
-          from { opacity: 0; transform: translateY(-6px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-
+        /* Center Card Element */
         .vs-gate {
           --mx: 50%;
           --my: 50%;
@@ -306,20 +385,20 @@ export default function CinematicStartGate() {
           z-index: 20;
           width: min(420px, 88vw);
           height: 232px;
-          padding: 0;
+          padding: 2px;
           border: 0;
           outline: 0;
+          border-radius: 6px;
           background: transparent;
           color: inherit;
-          cursor: none;
+          cursor: pointer;
           transform-style: preserve-3d;
-          will-change: transform, opacity, filter;
-          animation: vsGateIn 1.1s cubic-bezier(0.16, 1, 0.3, 1) both;
+          will-change: transform;
+          transition: transform 0.15s cubic-bezier(0.22, 0.61, 0.36, 1);
         }
 
-        @keyframes vsGateIn {
-          from { opacity: 0; transform: translateY(22px) scale(0.96); filter: blur(10px); }
-          to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+        .vs-gate:not(:hover) {
+          transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .vs-gate__aura {
@@ -328,8 +407,16 @@ export default function CinematicStartGate() {
           z-index: -2;
           pointer-events: none;
           background:
-            radial-gradient(circle at center, rgba(255,45,71,0.2), transparent 34%),
-            radial-gradient(circle at center, rgba(179,19,46,0.18), transparent 52%);
+            radial-gradient(
+              circle at center,
+              rgba(255, 45, 71, 0.2),
+              transparent 34%
+            ),
+            radial-gradient(
+              circle at center,
+              rgba(179, 19, 46, 0.18),
+              transparent 52%
+            );
           filter: blur(24px);
           opacity: 0.68;
           transform: scale(0.9);
@@ -337,28 +424,121 @@ export default function CinematicStartGate() {
         }
 
         @keyframes vsGateAura {
-          0%, 100% { opacity: 0.4; transform: scale(0.88); }
-          50% { opacity: 0.85; transform: scale(1.04); }
+          0%,
+          100% {
+            opacity: 0.4;
+            transform: scale(0.88);
+          }
+          50% {
+            opacity: 0.85;
+            transform: scale(1.04);
+          }
         }
 
-        .vs-gate__surface {
+        /* EXACT PREMIUM CORNER/BORDER WHITE SHIMMER (Matching user screenshot: small, soft, elegant white glint) */
+        .vs-card-border-beam {
           position: absolute;
           inset: 0;
+          border-radius: 6px;
+          padding: 1.5px;
+          pointer-events: none;
+          z-index: 10;
+          overflow: hidden;
+          -webkit-mask:
+            linear-gradient(#fff 0 0) content-box,
+            linear-gradient(#fff 0 0);
+          -webkit-mask-composite: xor;
+          mask:
+            linear-gradient(#fff 0 0) content-box,
+            linear-gradient(#fff 0 0);
+          mask-composite: exclude;
+        }
+
+        .vs-card-beam-light {
+          position: absolute;
+          width: 65px;
+          height: 65px;
+          offset-anchor: 50% 50%;
+          offset-path: rect(0 auto auto 0 round 6px);
+          animation: vsCardBeamOrbit 4s linear infinite;
+          background: radial-gradient(
+            circle at center,
+            #ffffff 0%,
+            rgba(255, 255, 255, 0.95) 25%,
+            rgba(255, 255, 255, 0.45) 50%,
+            transparent 75%
+          );
+          filter: drop-shadow(0 0 4px #ffffff) drop-shadow(0 0 8px rgba(255, 255, 255, 0.9));
+          will-change: offset-distance;
+        }
+
+        @keyframes vsCardBeamOrbit {
+          0% {
+            offset-distance: 0%;
+          }
+          100% {
+            offset-distance: 100%;
+          }
+        }
+
+        @supports not (offset-path: rect(0 auto auto 0 round 6px)) {
+          .vs-card-beam-light {
+            position: absolute;
+            top: -100%;
+            left: -100%;
+            width: 300%;
+            height: 300%;
+            background: conic-gradient(
+              from 0deg,
+              transparent 0deg,
+              transparent 346deg,
+              rgba(255, 255, 255, 0.5) 354deg,
+              #ffffff 357deg,
+              rgba(255, 255, 255, 0.5) 360deg
+            );
+            animation: vsCardBeamFallback 4s linear infinite;
+          }
+
+          @keyframes vsCardBeamFallback {
+            0% {
+              transform: rotate(0deg);
+            }
+            100% {
+              transform: rotate(360deg);
+            }
+          }
+        }
+
+        /* CARD MAIN SURFACE (Inside 2px Shimmer Border, Covers Interior) */
+        .vs-gate__surface {
+          position: absolute;
+          inset: 2px;
+          z-index: 2;
           display: block;
           overflow: hidden;
-          border-radius: 2px;
-          border: 1px solid rgba(255,45,71,0.28);
+          border-radius: 4px;
           background:
-            radial-gradient(280px circle at var(--mx) var(--my), rgba(255,45,71,0.14), transparent 48%),
-            linear-gradient(180deg, rgba(255,255,255,0.055), rgba(255,255,255,0.01)),
-            rgba(8,8,8,0.64);
+            radial-gradient(
+              280px circle at var(--mx) var(--my),
+              rgba(255, 45, 71, 0.16),
+              transparent 48%
+            ),
+            linear-gradient(
+              180deg,
+              rgba(255, 255, 255, 0.055),
+              rgba(255, 255, 255, 0.01)
+            ),
+            #080808;
           box-shadow:
-            0 0 0 1px rgba(179,19,46,0.05),
-            0 26px 100px rgba(0,0,0,0.64),
-            0 0 90px rgba(179,19,46,0.24),
-            inset 0 0 46px rgba(255,45,71,0.035);
+            0 0 0 1px rgba(255, 255, 255, 0.1),
+            0 26px 100px rgba(0, 0, 0, 0.72),
+            0 0 90px rgba(179, 19, 46, 0.24),
+            inset 0 0 46px rgba(255, 45, 71, 0.035);
           backdrop-filter: blur(16px) saturate(1.1);
-          transition: border-color 0.45s cubic-bezier(0.16,1,0.3,1), box-shadow 0.45s cubic-bezier(0.16,1,0.3,1), transform 0.45s cubic-bezier(0.16,1,0.3,1);
+          transform-style: preserve-3d;
+          transition:
+            box-shadow 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+            border-color 0.45s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .vs-gate__surface::before {
@@ -366,58 +546,85 @@ export default function CinematicStartGate() {
           position: absolute;
           inset: 0;
           pointer-events: none;
-          background: linear-gradient(90deg, transparent, rgba(255,45,71,0.18), transparent);
+          background: linear-gradient(
+            90deg,
+            transparent,
+            rgba(255, 45, 71, 0.18),
+            transparent
+          );
           transform: translateX(-120%);
           opacity: 0;
         }
 
-        .vs-gate:hover .vs-gate__surface::before { animation: vsSurfaceSweep 1.1s cubic-bezier(0.76,0,0.24,1) both; }
+        .vs-gate:hover .vs-gate__surface::before {
+          animation: vsSurfaceSweep 1.1s cubic-bezier(0.76, 0, 0.24, 1) both;
+        }
 
         @keyframes vsSurfaceSweep {
-          0% { opacity: 0; transform: translateX(-120%); }
-          20% { opacity: 1; }
-          100% { opacity: 0; transform: translateX(120%); }
+          0% {
+            opacity: 0;
+            transform: translateX(-120%);
+          }
+          20% {
+            opacity: 1;
+          }
+          100% {
+            opacity: 0;
+            transform: translateX(120%);
+          }
         }
 
         .vs-gate:hover .vs-gate__surface {
-          border-color: rgba(255,45,71,0.55);
           box-shadow:
-            0 0 0 1px rgba(179,19,46,0.1),
-            0 30px 120px rgba(0,0,0,0.68),
-            0 0 130px rgba(179,19,46,0.38),
-            inset 0 0 54px rgba(255,45,71,0.05);
-          transform: translateY(-3px);
+            0 0 0 1px rgba(255, 45, 71, 0.3),
+            0 30px 120px rgba(0, 0, 0, 0.68),
+            0 0 130px rgba(179, 19, 46, 0.38),
+            inset 0 0 54px rgba(255, 45, 71, 0.05);
         }
 
         .vs-gate:focus-visible .vs-gate__surface {
-          outline: 1px solid rgba(255,45,71,0.75);
+          outline: 1px solid rgba(255, 45, 71, 0.75);
           outline-offset: 8px;
         }
 
+        /* CARD CONTENT: STABLE, CORRECTLY ALIGNED, WITH PARALLAX Z-DEPTH */
         .vs-gate__badge {
           position: absolute;
           top: 20px;
           left: 20px;
           z-index: 6;
-          width: 34px;
-          height: 34px;
+          width: 36px;
+          height: 36px;
           border-radius: 50%;
           display: grid;
           place-items: center;
-          border: 1px solid rgba(255,45,71,0.42);
-          background: radial-gradient(circle at 32% 30%, rgba(179,19,46,0.22), rgba(0,0,0,0.4));
-          box-shadow: 0 0 18px rgba(179,19,46,0.3), inset 0 0 10px rgba(255,45,71,0.15);
-          font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+          border: 1px solid rgba(255, 45, 71, 0.42);
+          background: radial-gradient(
+            circle at 32% 30%,
+            rgba(179, 19, 46, 0.22),
+            rgba(0, 0, 0, 0.4)
+          );
+          box-shadow:
+            0 0 18px rgba(179, 19, 46, 0.3),
+            inset 0 0 10px rgba(255, 45, 71, 0.15);
+          font-family:
+            var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Monaco,
+            Consolas, monospace;
           font-size: 10px;
           font-weight: 700;
           letter-spacing: 0.03em;
           color: #ff2d47;
-          transition: transform 0.4s cubic-bezier(0.16,1,0.3,1), box-shadow 0.4s cubic-bezier(0.16,1,0.3,1);
+          transform: translateZ(26px);
+          pointer-events: none;
+          transition:
+            transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+            box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .vs-gate:hover .vs-gate__badge {
-          transform: rotate(10deg) scale(1.06);
-          box-shadow: 0 0 26px rgba(179,19,46,0.44), inset 0 0 12px rgba(255,45,71,0.22);
+          box-shadow:
+            0 0 26px rgba(179, 19, 46, 0.44),
+            inset 0 0 12px rgba(255, 45, 71, 0.22);
         }
 
         .vs-gate__status {
@@ -428,12 +635,16 @@ export default function CinematicStartGate() {
           display: flex;
           align-items: center;
           gap: 7px;
-          font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-          font-size: 8px;
+          font-family:
+            var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Monaco,
+            Consolas, monospace;
+          font-size: 8.5px;
           font-weight: 600;
           letter-spacing: 0.2em;
           text-transform: uppercase;
-          color: rgba(243,238,232,0.48);
+          color: rgba(243, 238, 232, 0.6);
+          transform: translateZ(20px);
+          pointer-events: none;
         }
 
         .vs-gate__dot {
@@ -441,13 +652,22 @@ export default function CinematicStartGate() {
           height: 5px;
           border-radius: 999px;
           background: #ff2d47;
-          box-shadow: 0 0 10px rgba(255,45,71,0.9), 0 0 24px rgba(179,19,46,0.6);
+          box-shadow:
+            0 0 10px rgba(255, 45, 71, 0.9),
+            0 0 24px rgba(179, 19, 46, 0.6);
           animation: vsDot 2.4s ease-in-out infinite;
         }
 
         @keyframes vsDot {
-          0%,100% { transform: scale(0.7); opacity: 0.55; }
-          50% { transform: scale(1.15); opacity: 1; }
+          0%,
+          100% {
+            transform: scale(0.7);
+            opacity: 0.55;
+          }
+          50% {
+            transform: scale(1.15);
+            opacity: 1;
+          }
         }
 
         .vs-gate__title {
@@ -455,23 +675,32 @@ export default function CinematicStartGate() {
           left: 50%;
           top: 46%;
           z-index: 6;
-          transform: translate(-50%, -50%);
+          transform: translate(-50%, -50%) translateZ(32px);
           width: 100%;
           text-align: center;
-          font-family: "Playfair Display", Georgia, serif;
+          pointer-events: none;
+          font-family:
+            var(--font-accent), "Playfair Display", Georgia, serif;
           font-style: italic;
           font-weight: 600;
           font-size: clamp(27px, 6.2vw, 36px);
           letter-spacing: 0.008em;
-          background: linear-gradient(180deg, #ffffff 5%, #f3eee8 42%, #ff2d47 130%);
+          background: linear-gradient(
+            180deg,
+            #ffffff 5%,
+            #f3eee8 42%,
+            #ff2d47 130%
+          );
           -webkit-background-clip: text;
           background-clip: text;
           color: transparent;
-          filter: drop-shadow(0 0 22px rgba(255,45,71,0.22));
-          transition: filter 0.4s cubic-bezier(0.16,1,0.3,1);
+          filter: drop-shadow(0 0 22px rgba(255, 45, 71, 0.22));
+          transition: filter 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        .vs-gate:hover .vs-gate__title { filter: drop-shadow(0 0 32px rgba(255,45,71,0.36)); }
+        .vs-gate:hover .vs-gate__title {
+          filter: drop-shadow(0 0 32px rgba(255, 45, 71, 0.36));
+        }
 
         .vs-gate__rule {
           position: absolute;
@@ -480,13 +709,23 @@ export default function CinematicStartGate() {
           z-index: 6;
           width: 46px;
           height: 1px;
-          transform: translateX(-50%);
-          background: linear-gradient(90deg, transparent, rgba(255,45,71,0.85), transparent);
-          box-shadow: 0 0 10px rgba(179,19,46,0.55);
-          transition: width 0.45s cubic-bezier(0.16,1,0.3,1), opacity 0.45s cubic-bezier(0.16,1,0.3,1);
+          transform: translateX(-50%) translateZ(26px);
+          background: linear-gradient(
+            90deg,
+            transparent,
+            rgba(255, 45, 71, 0.85),
+            transparent
+          );
+          box-shadow: 0 0 10px rgba(179, 19, 46, 0.55);
+          pointer-events: none;
+          transition:
+            width 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+            opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        .vs-gate:hover .vs-gate__rule { width: 74px; }
+        .vs-gate:hover .vs-gate__rule {
+          width: 74px;
+        }
 
         .vs-gate__seam {
           position: absolute;
@@ -495,17 +734,33 @@ export default function CinematicStartGate() {
           bottom: 28px;
           z-index: 1;
           width: 1px;
-          transform: translateX(-50%);
+          transform: translateX(-50%) translateZ(12px);
           opacity: 0.3;
-          background: linear-gradient(to bottom, transparent, rgba(179,19,46,0.3), rgba(255,45,71,0.78), rgba(179,19,46,0.3), transparent);
+          pointer-events: none;
+          background: linear-gradient(
+            to bottom,
+            transparent,
+            rgba(179, 19, 46, 0.3),
+            rgba(255, 45, 71, 0.78),
+            rgba(179, 19, 46, 0.3),
+            transparent
+          );
           animation: vsSeam 3.4s ease-in-out infinite;
         }
 
         @keyframes vsSeam {
-          0%,100% { opacity: 0.22; transform: translateX(-50%) scaleY(0.7); }
-          50% { opacity: 0.55; transform: translateX(-50%) scaleY(1.05); }
+          0%,
+          100% {
+            opacity: 0.22;
+            transform: translateX(-50%) scaleY(0.7) translateZ(12px);
+          }
+          50% {
+            opacity: 0.55;
+            transform: translateX(-50%) scaleY(1.05) translateZ(12px);
+          }
         }
 
+        /* ENTER STUDIO BUTTON/TEXT: ORIGINAL POSITION, ALIGNMENT & SIZE */
         .vs-gate__footer {
           position: absolute;
           left: 22px;
@@ -516,20 +771,26 @@ export default function CinematicStartGate() {
           align-items: center;
           justify-content: center;
           gap: 9px;
-          font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+          font-family:
+            var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Monaco,
+            Consolas, monospace;
           font-size: 9.5px;
           font-weight: 700;
           letter-spacing: 0.26em;
           text-transform: uppercase;
-          color: rgba(255,45,71,0.82);
+          color: rgba(255, 45, 71, 0.88);
+          transform: translateZ(24px);
+          pointer-events: none;
         }
 
         .vs-gate__arrow {
           display: inline-block;
-          transition: transform 0.4s cubic-bezier(0.76,0,0.24,1);
+          transition: transform 0.4s cubic-bezier(0.76, 0, 0.24, 1);
         }
 
-        .vs-gate:hover .vs-gate__arrow { transform: translateX(5px); }
+        .vs-gate:hover .vs-gate__arrow {
+          transform: translateX(5px);
+        }
 
         .vs-preview {
           position: absolute;
@@ -537,125 +798,82 @@ export default function CinematicStartGate() {
           z-index: 2;
           display: block;
           opacity: 0.28;
-          transform: scale(0.98);
-          transition: opacity 0.5s cubic-bezier(0.16,1,0.3,1), transform 0.5s cubic-bezier(0.16,1,0.3,1);
+          transform: scale(0.98) translateZ(10px);
+          pointer-events: none;
+          transition:
+            opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+            transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        .vs-gate:hover .vs-preview { opacity: 0.48; transform: scale(1.01); }
+        .vs-gate:hover .vs-preview {
+          opacity: 0.48;
+          transform: scale(1.01) translateZ(10px);
+        }
 
-        .vs-preview__nav { position: absolute; top: 0; left: 0; right: 0; display: flex; justify-content: space-between; }
-        .vs-preview__nav i { display: block; width: 44px; height: 1px; background: rgba(243,238,232,0.3); }
+        .vs-preview__nav {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          display: flex;
+          justify-content: space-between;
+        }
+        .vs-preview__nav i {
+          display: block;
+          width: 44px;
+          height: 1px;
+          background: rgba(243, 238, 232, 0.3);
+        }
 
         .vs-entry.is-opening .vs-gate {
           pointer-events: none;
-          animation: vsGateOpen 0.78s cubic-bezier(0.76,0,0.24,1) both;
+          animation: vsGateOpen 0.78s cubic-bezier(0.76, 0, 0.24, 1) both;
         }
 
         @keyframes vsGateOpen {
-          0% { opacity: 1; transform: scale(1); }
-          30% { opacity: 1; transform: scale(1.045); }
-          100% { opacity: 0; transform: scale(0.94); }
+          0% {
+            opacity: 1;
+            transform: scale(1);
+          }
+          30% {
+            opacity: 1;
+            transform: scale(1.045);
+          }
+          100% {
+            opacity: 0;
+            transform: scale(0.94);
+          }
         }
 
-        .vs-entry.is-opening .vs-gate__seam { animation: vsSeamOpen 0.68s cubic-bezier(0.76,0,0.24,1) both; }
+        .vs-entry.is-opening .vs-gate__seam {
+          animation: vsSeamOpen 0.68s cubic-bezier(0.76, 0, 0.24, 1) both;
+        }
 
         @keyframes vsSeamOpen {
-          0% { opacity: 0.3; transform: translateX(-50%) scaleY(1); width: 1px; }
-          40% { opacity: 0.8; transform: translateX(-50%) scaleY(1.3); width: 2px; }
-          100% { opacity: 0; transform: translateX(-50%) scaleY(4.5); width: 2px; }
+          0% {
+            opacity: 0.3;
+            transform: translateX(-50%) scaleY(1);
+            width: 1px;
+          }
+          40% {
+            opacity: 0.8;
+            transform: translateX(-50%) scaleY(1.3);
+            width: 2px;
+          }
+          100% {
+            opacity: 0;
+            transform: translateX(-50%) scaleY(4.5);
+            width: 2px;
+          }
         }
 
         .vs-entry.is-opening .vs-gate__surface {
-          border-color: rgba(255,45,71,0.75);
+          border-color: rgba(255, 45, 71, 0.75);
           box-shadow:
-            0 0 0 1px rgba(255,45,71,0.2),
-            0 0 100px rgba(179,19,46,0.4),
-            inset 0 0 60px rgba(255,45,71,0.12);
+            0 0 0 1px rgba(255, 45, 71, 0.2),
+            0 0 100px rgba(179, 19, 46, 0.4),
+            inset 0 0 60px rgba(255, 45, 71, 0.12);
         }
-
-        .vs-entry.is-opening .vs-sound { opacity: 0; pointer-events: none; }
-
-        .vs-pointer {
-          position: fixed;
-          z-index: 10002;
-          width: 30px;
-          height: 30px;
-          border: 1px solid rgba(255,45,71,.72);
-          border-radius: 50%;
-          pointer-events: none;
-          transform: translate(-50%, -50%);
-          box-shadow: 0 0 18px rgba(255,45,71,.22), inset 0 0 10px rgba(255,45,71,.08);
-          opacity: 0;
-          transition: opacity .2s ease, transform .18s ease;
-        }
-
-        .vs-pointer::after {
-          content: "";
-          position: absolute;
-          left: 50%;
-          top: 50%;
-          width: 4px;
-          height: 4px;
-          border-radius: 50%;
-          background: #ff2d47;
-          transform: translate(-50%, -50%);
-          box-shadow: 0 0 12px rgba(255,45,71,.95);
-        }
-
-        .vs-pointer.is-visible { opacity: 1; }
-
-        .vs-audio-note {
-          position: fixed;
-          left: 50%;
-          bottom: 48px;
-          z-index: 10003;
-          transform: translateX(-50%) translateY(10px);
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          padding: 10px 16px;
-          border: 1px solid rgba(255,255,255,.12);
-          background: rgba(5,5,5,.68);
-          backdrop-filter: blur(14px);
-          color: rgba(243,238,232,.68);
-          font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-          font-size: 9px;
-          letter-spacing: .18em;
-          text-transform: uppercase;
-          opacity: 0;
-          pointer-events: none;
-          transition: opacity .45s cubic-bezier(.16,1,.3,1), transform .45s cubic-bezier(.16,1,.3,1);
-        }
-
-        .vs-audio-note.is-visible {
-          opacity: 1;
-          transform: translateX(-50%) translateY(0);
-        }
-
-        .vs-audio-note__line {
-          width: 28px;
-          height: 1px;
-          background: linear-gradient(90deg, transparent, rgba(255,45,71,.9), transparent);
-        }
-
-        .vs-video {
-          position: fixed;
-          inset: 0;
-          z-index: 10001;
-          width: 100vw;
-          height: 100vh;
-          display: block;
-          object-fit: cover;
-          background: #000;
-          pointer-events: none;
-          opacity: 0;
-          transition: opacity 0.25s ease;
-          will-change: opacity;
-        }
-
-        .vs-video.is-visible { opacity: 1; }
-
-        .vs-video.is-hidden { opacity: 0; visibility: hidden; }
 
         @media (prefers-reduced-motion: reduce) {
           .vs-entry,
@@ -671,7 +889,9 @@ export default function CinematicStartGate() {
           position: absolute;
           bottom: 28px;
           z-index: 60;
-          font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+          font-family:
+            var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Monaco,
+            Consolas, monospace;
           font-size: 11px;
           text-transform: uppercase;
           letter-spacing: 0.14em;
@@ -692,122 +912,129 @@ export default function CinematicStartGate() {
         }
 
         @media (max-width: 560px) {
-          .vs-gate { width: min(340px, 88vw); height: 202px; }
-          .vs-gate__title { font-size: 26px; }
+          .vs-gate {
+            width: min(340px, 88vw);
+            height: 202px;
+          }
+          .vs-gate__title {
+            font-size: 26px;
+          }
           .vs-gate__status,
-          .vs-gate__footer { font-size: 7.5px; }
-          .vs-preview { inset: 54px 26px 50px; }
-          .vs-sound { top: 14px; right: 14px; width: 34px; height: 34px; }
-          .vs-skip-button { bottom: 18px; font-size: 9.5px; padding: 6px 14px; }
+          .vs-gate__footer {
+            font-size: 7.5px;
+          }
+          .vs-preview {
+            inset: 54px 26px 50px;
+          }
+          .vs-skip-button {
+            bottom: 18px;
+            font-size: 9.5px;
+            padding: 6px 14px;
+          }
         }
       `}</style>
 
-      <video
-        ref={videoRef}
-        className={`vs-video ${videoVisible ? "is-visible" : "is-hidden"}`}
-        src={VIDEO_SRC}
-        playsInline
-        preload="auto"
-        onEnded={handleVideoEnded}
-        onError={handleVideoEnded}
-        aria-hidden={!videoVisible}
-      />
-
-      <div
-        ref={entryRef}
-        className={`vs-entry ${activated ? "is-opening" : ""}`}
-        role="dialog"
-        aria-label="Portfolio intro screen"
-      >
-        <div className="vs-entry__grain" />
-        <div className="vs-entry__grid" />
-        <div className="vs-entry__flash" />
-
-        <button
-          className="vs-sound"
-          type="button"
-          data-magnetic
-          aria-pressed={soundOn}
-          aria-label={soundOn ? "Mute intro video" : "Unmute intro video"}
-          onClick={toggleSound}
+      {/* STAGE 1: FIRST SCREEN CENTER CARD WITH VIDEO BACKGROUND */}
+      {phase === "gate" && (
+        <div
+          ref={entryRef}
+          className={`vs-entry ${activated ? "is-opening" : ""}`}
+          role="dialog"
+          aria-label="Portfolio intro screen"
+          onMouseMove={handlePointerMove}
+          onMouseLeave={handlePointerLeave}
         >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
-            <path d="M4 9v6h4l5 5V4L8 9H4z" />
-            {soundOn ? (
-              <>
-                <path d="M15.5 8.5a5 5 0 0 1 0 7" />
-                <path d="M18 6a9 9 0 0 1 0 12" />
-              </>
-            ) : (
-              <>
-                <line x1="16" y1="9" x2="21" y2="15" />
-                <line x1="21" y1="9" x2="16" y2="15" />
-              </>
-            )}
-          </svg>
-        </button>
+          {/* Background video playing strictly inside the first screen card area */}
+          <video
+            ref={videoRef}
+            className="vs-gate-bg-video"
+            src="/VID-20260924-WA0001.mp4"
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="auto"
+            aria-hidden="true"
+          />
+          <div className="vs-entry__video-overlay" />
+          <div className="vs-entry__grain" />
+          <div className="vs-entry__grid" />
+          <div className="vs-entry__flash" />
 
-        <button
-          ref={gateRef}
-          className="vs-gate"
-          type="button"
-          data-magnetic
-          aria-label="Enter VTECH STUDIOS portfolio"
-          onClick={handleOpen}
-          onPointerMove={handlePointerMove}
-          onPointerLeave={handlePointerLeave}
-        >
-          <span className="vs-gate__aura" aria-hidden="true" />
+          {/* 3D Perspective Card Wrapper */}
+          <div className="vs-gate-wrap">
+            <button
+              ref={gateRef}
+              className="vs-gate"
+              type="button"
+              data-magnetic
+              aria-label="Enter VTECH STUDIOS portfolio"
+              onClick={handleOpen}
+              onPointerMove={handlePointerMove}
+              onPointerLeave={handlePointerLeave}
+            >
+              {/* Crimson ambient aura behind card */}
+              <span className="vs-gate__aura" aria-hidden="true" />
 
-          <span className="vs-gate__surface">
-            <span className="vs-gate__badge">VTECH</span>
+              {/* Exact White Corner/Border Shimmer (matching user screenshot) */}
+              <div className="vs-card-border-beam" aria-hidden="true">
+                <div className="vs-card-beam-light" />
+              </div>
 
-            <span className="vs-gate__status">
-              <span className="vs-gate__dot" />
-              Chandigarh, India
-            </span>
+              {/* Card surface: covers interior, housing stable 3D content */}
+              <span className="vs-gate__surface">
+                <span className="vs-gate__badge">VTECH</span>
 
-            <span className="vs-preview" aria-hidden="true">
-              <span className="vs-preview__nav">
-                <i />
-                <i />
-                <i />
+                <span className="vs-gate__status">
+                  <span className="vs-gate__dot" />
+                  Chandigarh, India
+                </span>
+
+                <span className="vs-preview" aria-hidden="true">
+                  <span className="vs-preview__nav">
+                    <i />
+                    <i />
+                    <i />
+                  </span>
+                </span>
+
+                <span className="vs-gate__seam" aria-hidden="true" />
+
+                <span className="vs-gate__title">VTECH STUDIOS</span>
+                <span className="vs-gate__rule" aria-hidden="true" />
+
+                {/* Original ENTER STUDIO text/button in exact position and alignment */}
+                <span className="vs-gate__footer">
+                  <span>Enter Studio</span>
+                  <span className="vs-gate__arrow" aria-hidden="true">
+                    →
+                  </span>
+                </span>
               </span>
-            </span>
+            </button>
+          </div>
 
-            <span className="vs-gate__seam" aria-hidden="true" />
+          <button
+            className="vs-skip-button"
+            type="button"
+            data-magnetic
+            onClick={handleSkip}
+            aria-label="Direct Access / Skip Intro"
+          >
+            Direct Access / Skip Intro →
+          </button>
+        </div>
+      )}
 
-            <span className="vs-gate__title">VTECH STUDIOS</span>
-            <span className="vs-gate__rule" aria-hidden="true" />
-
-            <span className="vs-gate__footer">
-              <span>Enter Studio</span>
-              <span className="vs-gate__arrow" aria-hidden="true">→</span>
-            </span>
-          </span>
-        </button>
-
-        <button
-          className="vs-skip-button"
-          type="button"
-          data-magnetic
-          onClick={skipGate}
-          aria-label="Direct Access / Skip Intro"
-        >
-          Direct Access / Skip Intro →
-        </button>
-
-        <audio ref={audioRef} src={AUDIO_SRC} preload="auto" />
-      </div>
-
-      <div
-        className={`vs-audio-note ${showAudioNote ? "is-visible" : ""}`}
-        aria-hidden="true"
-      >
-        <span className="vs-audio-note__line" />
-        <span>Audio continues</span>
-        <span className="vs-audio-note__line" />
-      </div>
+      {/* STAGE 2: 0→100 PRELOADER SEQUENCE (APPEARS AFTER CLICKING CARD) */}
+      <AnimatePresence mode="wait">
+        {phase === "loading" && (
+          <Preloader
+            key="gate-preloader"
+            onComplete={handlePreloaderComplete}
+          />
+        )}
+      </AnimatePresence>
     </>
   );
 }

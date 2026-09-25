@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { ShimmerButton } from "@/components/ui/shimmer-button";
 
 const schema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -767,66 +768,22 @@ export default function CollabModal({ isOpen, onClose }: Props) {
                             ease: [0.16, 1, 0.3, 1],
                           }}
                         >
-                          <motion.button
+                          <ShimmerButton
                             type="submit"
                             disabled={isSubmitting}
-                            className="relative overflow-hidden w-full"
-                            style={{
-                              border: `1px solid ${RED}`,
-                              padding: "22px 28px",
-                              background: "transparent",
-                              cursor: isSubmitting ? "wait" : "pointer",
-                            }}
-                            initial="rest"
-                            whileHover={!isSubmitting ? "hov" : undefined}
+                            shimmerColor="#ff2d47"
+                            shimmerSize="2px"
+                            borderRadius="6px"
+                            shimmerDuration="3s"
+                            background="rgba(15, 15, 15, 0.95)"
+                            className="relative overflow-hidden w-full border border-[oklch(59.71%_0.23_23.86/0.5)] py-4 px-6 cursor-pointer"
                           >
-                            <motion.div
-                              aria-hidden="true"
-                              variants={{
-                                rest: { scaleX: 0 },
-                                hov: {
-                                  scaleX: 1,
-                                  transition: {
-                                    duration: 0.45,
-                                    ease: [0.16, 1, 0.3, 1],
-                                  },
-                                },
-                              }}
-                              style={{
-                                position: "absolute",
-                                inset: 0,
-                                backgroundColor: RED,
-                                transformOrigin: "left",
-                              }}
-                            />
-                            <motion.div
-                              aria-hidden="true"
-                              variants={{
-                                rest: { scaleX: 0 },
-                                hov: {
-                                  scaleX: 1,
-                                  transition: {
-                                    duration: 0.45,
-                                    ease: [0.16, 1, 0.3, 1],
-                                  },
-                                },
-                              }}
-                              style={{
-                                position: "absolute",
-                                top: 0,
-                                left: 0,
-                                right: 0,
-                                height: "1px",
-                                background: "rgba(255,255,255,0.3)",
-                                transformOrigin: "left",
-                              }}
-                            />
                             <span
                               style={{
                                 position: "relative",
                                 zIndex: 1,
                                 fontFamily: "var(--font-poppins)",
-                                fontSize: "10px",
+                                fontSize: "11px",
                                 letterSpacing: "0.38em",
                                 textTransform: "uppercase",
                                 color: "white",
@@ -858,7 +815,7 @@ export default function CollabModal({ isOpen, onClose }: Props) {
                                 "TRANSMIT →"
                               )}
                             </span>
-                          </motion.button>
+                          </ShimmerButton>
                         </motion.div>
                       </motion.form>
                     )}
