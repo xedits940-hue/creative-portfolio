@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useRef, useEffect, useState } from "react";
-import Image from "next/image";
 import { motion, useScroll, useTransform, useInView } from "motion/react";
 
 // ─── Animated counter hook ────────────────────────────────────────────────────
@@ -162,41 +161,125 @@ const AboutSection = () => {
               About
             </motion.div>
 
-            {/* Profile image with parallax */}
+            {/* VTECH Interactive Studio Core Visual (Award-Winning Engineering Matrix) */}
             <motion.div
               style={{ y: imageY, scale: imageScale }}
-              className="relative w-full aspect-3/4 max-w-85 mx-auto lg:mx-0 overflow-hidden rounded-3xl"
+              className="relative w-full aspect-[4/4.6] max-w-[380px] mx-auto lg:mx-0 overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-[#141417]/90 via-[#0c0c0e]/95 to-[#060607] shadow-2xl backdrop-blur-xl group transition-all duration-700 hover:border-primary/40"
             >
-              {/* Border frame */}
-              <div className="absolute -inset-px rounded-3xl border border-primary/15 z-20 pointer-events-none" />
+              {/* Corner crosshairs and technical markings */}
+              <div className="absolute top-3 left-3 text-[10px] font-mono text-white/30 select-none z-20">+</div>
+              <div className="absolute top-3 right-3 text-[10px] font-mono text-white/30 select-none z-20">+</div>
+              <div className="absolute bottom-3 left-3 text-[10px] font-mono text-white/30 select-none z-20">+</div>
+              <div className="absolute bottom-3 right-3 text-[10px] font-mono text-white/30 select-none z-20">+</div>
 
-              <Image
-                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=1200&auto=format&fit=crop"
-                alt="VTECH STUDIOS — Creative Direction"
-                fill
-                priority
-                referrerPolicy="no-referrer"
-                className="object-cover object-top transition-transform duration-700 group-hover:scale-105"
-                sizes="(max-width: 1024px) 340px, 28vw"
-              />
+              {/* Ambient radial glow backdrop */}
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(255,31,61,0.18)_0%,rgba(0,243,255,0.06)_45%,transparent_75%)] pointer-events-none group-hover:opacity-100 transition-opacity duration-700" />
 
-              {/* Bottom fade */}
-              <div className="absolute bottom-0 left-0 right-0 h-2/5 bg-linear-to-t from-background via-background/50 to-transparent z-10" />
-
-              {/* Availability pill */}
-              <motion.div
-                initial={{ opacity: 0, y: 12 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.5, duration: 0.5 }}
-                className="absolute bottom-5 left-5 right-5 z-20 flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-background/85 backdrop-blur-md border border-border text-sm font-medium"
-              >
-                <span className="relative flex h-2 w-2 shrink-0">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75" />
-                  <span className="relative flex h-2 w-2 rounded-full bg-green-500" />
+              {/* Top Telemetry Header Bar */}
+              <div className="relative z-20 flex items-center justify-between px-5 pt-4 pb-2 border-b border-white/5 font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
+                <span className="flex items-center gap-1.5 text-white/80">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                  CORE // VTECH-01
                 </span>
-                Available for Projects
-              </motion.div>
+                <span className="text-[10px] text-primary/80 tracking-widest">
+                  120 FPS // ACTIVE
+                </span>
+              </div>
+
+              {/* Central Kinetic Gyroscope & Holographic Monogram */}
+              <div className="relative z-10 flex flex-col items-center justify-center py-6 px-4">
+                <div className="relative w-44 h-44 flex items-center justify-center">
+                  {/* Outer Orbit Ring */}
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 24, repeat: Infinity, ease: "linear" }}
+                    className="absolute inset-0 rounded-full border border-dashed border-white/15"
+                  >
+                    <span className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_#ff1f3d]" />
+                    <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-[#00f3ff] shadow-[0_0_8px_#00f3ff]" />
+                  </motion.div>
+
+                  {/* Mid Counter-Rotating Radar Ring */}
+                  <motion.div
+                    animate={{ rotate: -360 }}
+                    transition={{ duration: 16, repeat: Infinity, ease: "linear" }}
+                    className="absolute inset-4 rounded-full border border-white/10"
+                    style={{
+                      borderTopColor: "rgba(255,31,61,0.6)",
+                      borderRightColor: "rgba(0,243,255,0.4)",
+                    }}
+                  />
+
+                  {/* Inner Glowing Core Ring */}
+                  <motion.div
+                    animate={{ scale: [1, 1.06, 1], opacity: [0.7, 1, 0.7] }}
+                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                    className="absolute inset-10 rounded-full border border-primary/40 bg-gradient-to-tr from-primary/10 via-transparent to-[#00f3ff]/10 shadow-[0_0_24px_rgba(255,31,61,0.25)]"
+                  />
+
+                  {/* Stylized VTECH Center Monogram / Vector Emblem */}
+                  <div className="relative z-10 flex flex-col items-center justify-center select-none">
+                    <span className="text-2xl font-black tracking-tighter text-white drop-shadow-[0_0_12px_rgba(255,255,255,0.5)]">
+                      V<span className="text-primary">T</span>
+                    </span>
+                    <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-white/50 -mt-0.5">
+                      STUDIO
+                    </span>
+                  </div>
+                </div>
+
+                {/* Live Equalizer / Waveform Frequency Bars */}
+                <div className="flex items-center gap-1.5 mt-2 h-5">
+                  {[18, 32, 14, 28, 40, 22, 36, 16, 30, 24, 38, 20].map((h, i) => (
+                    <motion.div
+                      key={i}
+                      animate={{
+                        height: [
+                          `${Math.max(4, h * 0.25)}px`,
+                          `${h * 0.45}px`,
+                          `${Math.max(4, h * 0.25)}px`,
+                        ],
+                        opacity: [0.35, 0.9, 0.35],
+                      }}
+                      transition={{
+                        duration: 1.2 + (i % 4) * 0.25,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                        delay: i * 0.08,
+                      }}
+                      className="w-[2px] rounded-full bg-gradient-to-t from-primary/40 via-white/80 to-[#00f3ff]"
+                    />
+                  ))}
+                </div>
+
+                {/* Micro Telemetry Spec Grid */}
+                <div className="w-full grid grid-cols-2 gap-2 mt-4 px-2">
+                  <div className="p-2 rounded-lg bg-white/[0.03] border border-white/5">
+                    <span className="block font-mono text-[8px] uppercase tracking-widest text-muted-foreground/70">SPEC 01</span>
+                    <span className="block font-mono text-[10px] font-bold text-white/90">3D MOTION / CGI</span>
+                  </div>
+                  <div className="p-2 rounded-lg bg-white/[0.03] border border-white/5">
+                    <span className="block font-mono text-[8px] uppercase tracking-widest text-muted-foreground/70">SPEC 02</span>
+                    <span className="block font-mono text-[10px] font-bold text-white/90">WEB ARCHITECTURE</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom Availability Pill */}
+              <div className="relative z-20 px-4 pb-4">
+                <div className="flex items-center justify-between px-3.5 py-2 rounded-xl bg-background/80 backdrop-blur-md border border-white/10 text-xs font-medium">
+                  <span className="flex items-center gap-2 text-white/90 font-mono text-[11px] tracking-wide">
+                    <span className="relative flex h-2 w-2 shrink-0">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75" />
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                    </span>
+                    Available for Projects
+                  </span>
+                  <span className="font-mono text-[9px] uppercase tracking-widest text-emerald-400/90 font-bold">
+                    Q3 / Q4 OPEN
+                  </span>
+                </div>
+              </div>
             </motion.div>
 
             {/* Name & designation */}
