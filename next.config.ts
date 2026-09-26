@@ -1,6 +1,15 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  webpack: (config, { dev }) => {
+    if (dev) {
+      // Use memory cache during development in containers/cloud environments to prevent PackFileCacheStrategy ENOENT race conditions
+      config.cache = {
+        type: "memory",
+      };
+    }
+    return config;
+  },
   images: {
     remotePatterns: [
       {

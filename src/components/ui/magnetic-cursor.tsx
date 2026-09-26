@@ -11,6 +11,7 @@ export interface MagneticCursorProps {
   disableOnTouch?: boolean;
   magneticFactor?: number;
   contrastBoost?: number;
+  enabled?: boolean;
 }
 
 /**
@@ -33,6 +34,7 @@ export const MagneticCursor: FC<MagneticCursorProps> = ({
   blendMode = "exclusion",
   cursorClassName = "",
   disableOnTouch = true,
+  enabled = true,
 }) => {
   const dotRef = useRef<HTMLDivElement>(null);
   const ringRef = useRef<HTMLDivElement>(null);
@@ -55,15 +57,17 @@ export const MagneticCursor: FC<MagneticCursorProps> = ({
 
   // Detect touch capability
   useEffect(() => {
+    if (!enabled) return;
     const isTouch =
       typeof window !== "undefined" &&
       ("ontouchstart" in window ||
         navigator.maxTouchPoints > 0 ||
         window.matchMedia("(pointer: coarse)").matches);
     setIsTouchDevice(isTouch);
-  }, []);
+  }, [enabled]);
 
   useEffect(() => {
+    if (!enabled) return;
     if (disableOnTouch && isTouchDevice) return;
 
     const dotEl = dotRef.current;
@@ -215,9 +219,9 @@ export const MagneticCursor: FC<MagneticCursorProps> = ({
       const existing = document.getElementById(styleId);
       if (existing) existing.remove();
     };
-  }, [disableOnTouch, isTouchDevice, cursorVisible]);
+  }, [enabled, disableOnTouch, isTouchDevice, cursorVisible]);
 
-  if (disableOnTouch && isTouchDevice) {
+  if (!enabled || (disableOnTouch && isTouchDevice)) {
     return <>{children}</>;
   }
 

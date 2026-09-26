@@ -10,6 +10,7 @@ import StructuredData from "@/components/common/structured-data";
 import Analytics from "@/components/common/analytics";
 import ConsoleLog from "@/components/common/console-log";
 import { MagneticCursor } from "@/components/ui/magnetic-cursor";
+import { SmoothCursor } from "@/components/ui/smooth-cursor";
 import LiquidSilkBackground from "@/components/common/liquid-silk-background";
 import CinematicStartGate from "@/components/common/CinematicStartGate";
 
@@ -148,7 +149,9 @@ export default function RootLayout({
         >
           <LiquidSilkBackground />
           <CinematicStartGate />
+          <SmoothCursor />
           <MagneticCursor
+            enabled={false}
             magneticFactor={0.4}
             blendMode="exclusion"
             cursorSize={28}
