@@ -11,6 +11,52 @@ import {
 } from "framer-motion";
 import CollabModal from "./collab-modal";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { TextAnimate } from "@/registry/magicui/text-animate";
+
+const wavyTextVariants = {
+  hidden: {
+    opacity: 0,
+    y: 30,
+    rotate: 45,
+    scale: 0.5,
+  },
+  show: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    rotate: 0,
+    scale: 1,
+    transition: {
+      delay: i * 0.1,
+      duration: 0.4,
+      y: {
+        type: "spring",
+        damping: 12,
+        stiffness: 200,
+        mass: 0.8,
+      },
+      rotate: {
+        type: "spring",
+        damping: 8,
+        stiffness: 150,
+      },
+      scale: {
+        type: "spring",
+        damping: 10,
+        stiffness: 300,
+      },
+    },
+  }),
+  exit: (i: number) => ({
+    opacity: 0,
+    y: 30,
+    rotate: 45,
+    scale: 0.5,
+    transition: {
+      delay: i * 0.1,
+      duration: 0.4,
+    },
+  }),
+};
 
 const CollabSec: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -148,52 +194,50 @@ const CollabSec: React.FC = () => {
               transition={{ duration: 0.4 }}
             />
 
-            {/* Center text - brand name */}
-            {/* <AnimatePresence>
-            {animationComplete && (
-              <motion.div
-                className="absolute inset-0 flex items-center justify-center z-30 pointer-events-none"
-                initial={{ opacity: 0, y: 20, scale: 0.9 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{
-                  duration: 0.8,
-                  ease: [0.16, 1, 0.3, 1],
-                  delay: 0.2,
-                }}
-              >
-                <div className="relative">
-                  <motion.h2
-                    className="text-white text-3xl md:text-5xl mr-5 lg:text-6xl font-semibold tracking-wider"
-                    style={{
-                      textShadow: "0 4px 30px rgba(0,0,0,0.5)",
-                    }}
-                    initial={{ opacity: 0, letterSpacing: "0.3em" }}
-                    animate={{ opacity: 1, letterSpacing: "0.08em" }}
-                    transition={{
-                      duration: 1.2,
-                      ease: [0.16, 1, 0.3, 1],
-                      delay: 0.3,
-                    }}
-                  >
-                    <motion.img src="/md-red-logo.svg" alt="Logo" />
-                  </motion.h2>
-                  <motion.div
-                    className="h-px mt-3"
-                    style={{
-                      backgroundImage: `linear-gradient(to right, transparent, ${redColor}, transparent)`,
-                    }}
-                    initial={{ scaleX: 0 }}
-                    animate={{ scaleX: 1 }}
-                    transition={{
-                      duration: 1,
-                      ease: [0.16, 1, 0.3, 1],
-                      delay: 0.6,
-                    }}
-                  />
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence> */}
+            {/* Center text - VTECH with exact wavy animation */}
+            <AnimatePresence>
+              {animationComplete && (
+                <motion.div
+                  className="absolute inset-0 flex items-center justify-center z-30 pointer-events-none"
+                  initial={{ opacity: 0, y: 20, scale: 0.9 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{
+                    duration: 0.8,
+                    ease: [0.16, 1, 0.3, 1],
+                    delay: 0.2,
+                  }}
+                >
+                  <div className="relative text-center">
+                    <h2
+                      className="text-white text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-wider"
+                      style={{
+                        textShadow: "0 4px 30px rgba(0,0,0,0.5)",
+                      }}
+                    >
+                      <TextAnimate
+                        variants={wavyTextVariants}
+                        by="character"
+                      >
+                        VTECH
+                      </TextAnimate>
+                    </h2>
+                    <motion.div
+                      className="h-px mt-3"
+                      style={{
+                        backgroundImage: `linear-gradient(to right, transparent, ${redColor}, transparent)`,
+                      }}
+                      initial={{ scaleX: 0 }}
+                      animate={{ scaleX: 1 }}
+                      transition={{
+                        duration: 1,
+                        ease: [0.16, 1, 0.3, 1],
+                        delay: 0.6,
+                      }}
+                    />
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Hover cursor */}
             <AnimatePresence>
@@ -290,52 +334,50 @@ const CollabSec: React.FC = () => {
               transition={{ duration: 0.4 }}
             />
 
-            {/* Center text - "you." */}
-            {/* <AnimatePresence>
-            {animationComplete && (
-              <motion.div
-                className="absolute inset-0 flex items-center justify-center z-30 pointer-events-none"
-                initial={{ opacity: 0, y: 20, scale: 0.9 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{
-                  duration: 0.8,
-                  ease: [0.16, 1, 0.3, 1],
-                  delay: 0.4,
-                }}
-              >
-                <div className="relative">
-                  <motion.h2
-                    className="text-white text-3xl md:text-5xl lg:text-6xl font-semibold tracking-wider"
-                    style={{
-                      textShadow: "0 4px 30px rgba(0,0,0,0.5)",
-                    }}
-                    initial={{ opacity: 0, letterSpacing: "0.3em" }}
-                    animate={{ opacity: 1, letterSpacing: "0.08em" }}
-                    transition={{
-                      duration: 1.2,
-                      ease: [0.16, 1, 0.3, 1],
-                      delay: 0.5,
-                    }}
-                  >
-                    you.
-                  </motion.h2>
-                  <motion.div
-                    className="h-px mt-3"
-                    style={{
-                      backgroundImage: `linear-gradient(to right, transparent, ${redColor}, transparent)`,
-                    }}
-                    initial={{ scaleX: 0 }}
-                    animate={{ scaleX: 1 }}
-                    transition={{
-                      duration: 1,
-                      ease: [0.16, 1, 0.3, 1],
-                      delay: 0.8,
-                    }}
-                  />
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence> */}
+            {/* Center text - CLIENT with exact wavy animation */}
+            <AnimatePresence>
+              {animationComplete && (
+                <motion.div
+                  className="absolute inset-0 flex items-center justify-center z-30 pointer-events-none"
+                  initial={{ opacity: 0, y: 20, scale: 0.9 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{
+                    duration: 0.8,
+                    ease: [0.16, 1, 0.3, 1],
+                    delay: 0.3,
+                  }}
+                >
+                  <div className="relative text-center">
+                    <h2
+                      className="text-white text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-wider"
+                      style={{
+                        textShadow: "0 4px 30px rgba(0,0,0,0.5)",
+                      }}
+                    >
+                      <TextAnimate
+                        variants={wavyTextVariants}
+                        by="character"
+                      >
+                        CLIENT
+                      </TextAnimate>
+                    </h2>
+                    <motion.div
+                      className="h-px mt-3"
+                      style={{
+                        backgroundImage: `linear-gradient(to right, transparent, ${redColor}, transparent)`,
+                      }}
+                      initial={{ scaleX: 0 }}
+                      animate={{ scaleX: 1 }}
+                      transition={{
+                        duration: 1,
+                        ease: [0.16, 1, 0.3, 1],
+                        delay: 0.7,
+                      }}
+                    />
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             <AnimatePresence>
               {hovered === "right" && (

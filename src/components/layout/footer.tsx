@@ -4,11 +4,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRef } from "react";
 import {
-  FaBehance,
   FaInstagram,
-  FaYoutube,
   FaArrowRight,
-  FaDiscord,
 } from "react-icons/fa6";
 import { motion, useMotionValue, useSpring } from "framer-motion";
 
@@ -73,8 +70,12 @@ const MagneticButton = ({ children }: { children: React.ReactNode }) => {
 export default function CreativeFooter() {
   const currentYear = new Date().getFullYear();
 
-  const handleLetsTalkClick = () => {
-    window.location.href = "mailto:contact@vtechstudios.com";
+  const handleConnectClick = () => {
+    window.open(
+      "https://www.instagram.com/vtechstudio.dev/",
+      "_blank",
+      "noopener,noreferrer"
+    );
   };
 
   const copyrightText = `© ${currentYear}–${currentYear + 1} VTECH STUDIOS. ALL RIGHTS RESERVED.`;
@@ -112,11 +113,12 @@ export default function CreativeFooter() {
 
           <MagneticButton>
             <button
-              onClick={handleLetsTalkClick}
-              className="group relative cursor-pointer flex h-32 w-32 items-center justify-center rounded-full bg-foreground text-background transition-colors hover:bg-primary md:h-40 md:w-40"
+              onClick={handleConnectClick}
+              aria-label="Let's Connect on Instagram"
+              className="group relative cursor-pointer flex h-32 w-32 items-center justify-center rounded-full bg-foreground text-background transition-colors hover:bg-primary md:h-40 md:w-40 text-center p-2"
             >
-              <span className="absolute z-10 text-lg font-medium group-hover:opacity-0 transition-opacity duration-300">
-                Let&apos;s Talk
+              <span className="absolute z-10 text-base md:text-lg font-medium group-hover:opacity-0 transition-opacity duration-300">
+                Let&apos;s Connect
               </span>
               <FaArrowRight className="absolute z-10 size-8 -translate-x-10 opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100 text-white" />
             </button>
@@ -196,10 +198,11 @@ export default function CreativeFooter() {
               Socials
             </h3>
             <div className="flex flex-wrap gap-2">
-              <SocialLink href="https://www.youtube.com/@yourusername" icon={FaYoutube} label="YouTube" />
-              <SocialLink href="https://www.behance.net/yourusername" icon={FaBehance} label="Behance" />
-              <SocialLink href="https://www.instagram.com/yourusername" icon={FaInstagram} label="Instagram" />
-              <SocialLink href="https://discord.gg/yourinvite" icon={FaDiscord} label="Discord" />
+              <SocialLink
+                href="https://www.instagram.com/vtechstudio.dev/"
+                icon={FaInstagram}
+                label="Instagram"
+              />
             </div>
           </motion.div>
         </div>

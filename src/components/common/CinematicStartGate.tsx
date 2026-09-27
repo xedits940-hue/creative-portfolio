@@ -1,30 +1,58 @@
 "use client";
 
 import React, { useEffect, useRef, useState, useCallback } from "react";
+import Image from "next/image";
 import { AnimatePresence } from "framer-motion";
 import Preloader from "./preloader";
 
 /**
- * CinematicStartGate
+ * CinematicStartGate & Intro Sequence
  *
- * 1. Initial State: Center hero card with ambient background and the
- *    uploaded background video (/VID-20260924-WA0001.mp4) playing strictly within this screen area.
- * 2. 3D Card Effect: Real-time mouse tracking smoothly tilts/perspectives the card
- *    toward the cursor with floating Z-depth, keeping all content stable and perfectly aligned.
- * 3. White Shimmer Effect: The shimmer runs ONLY along the 2px outer border/corners
- *    of the card with a 3s white conic gradient orbit. No inner box or extra button.
- * 4. Card Content: "ENTER STUDIO" text/button returns to its exact original position, alignment,
- *    and size at the bottom of the card without independent distortion.
- * 5. On Click: Smooth gate opening transition followed by the 0→100 Preloader sequence.
+ * Flow:
+ * 1. Website opens → NEW 0–100 loader immediately active with multilingual greetings
+ *    and bottom-right percentage counter.
+ * 2. Center VTECH STUDIO logo appears during loading with ambient crimson pulse.
+ * 3. On 100% completion: Floating logo smoothly glides/docks into the navbar logo's
+ *    intended position using the reference 2.0s cubic-bezier(.16, 1, .3, 1) transition.
+ * 4. Preloader exits smoothly with curved slide-up; floating logo settles seamlessly into navbar.
+ * 5. Main VTECH STUDIO website is revealed with all 3D effects, cards, text, and interactions intact.
  */
 export default function CinematicStartGate() {
   const entryRef = useRef<HTMLDivElement | null>(null);
   const gateRef = useRef<HTMLButtonElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
-  const [phase, setPhase] = useState<"gate" | "loading" | "done">("gate");
+  // Flow: Website opens → NEW 0–100 loader → VTECH logo intro animation → intro finishes → website appears
+  const [phase, setPhase] = useState<"loading" | "gate" | "done">("loading");
+  const [showPreloader, setShowPreloader] = useState(true);
+  const [isDocked, setIsDocked] = useState(false);
+  const [isSettled, setIsSettled] = useState(false);
   const [activated, setActivated] = useState(false);
   const transitionStartedRef = useRef(false);
+
+  const [logoCoords, setLogoCoords] = useState<{
+    left: string;
+    top: string;
+    width: string;
+    height: string;
+    transform: string;
+  }>({
+    left: "50%",
+    top: "calc(50% - 24px)",
+    width: "76px",
+    height: "76px",
+    transform: "translate(-50%, -50%)",
+  });
+
+  // Support ?gate=1 if manual gate is explicitly tested
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("gate") === "1") {
+        setPhase("gate");
+      }
+    }
+  }, []);
 
   // Lock scroll while on gate or loading
   useEffect(() => {
@@ -54,7 +82,6 @@ export default function CinematicStartGate() {
       })
     );
 
-    // Let the gate opening animation play briefly (~450ms), then switch to 0→100 loading
     setTimeout(() => {
       try {
         videoRef.current?.pause();
@@ -76,27 +103,60 @@ export default function CinematicStartGate() {
     setPhase("loading");
   };
 
-  // Preloader finished (0→100 done) -> reveal main website
-  const handlePreloaderComplete = () => {
-    setPhase("done");
-    document.documentElement.classList.remove("vs-lock-scroll");
-    document.body.classList.remove("vs-lock-scroll");
+  // Preloader finished (0→100 done):
+  // 1. Floating logo smoothly glides/docks into the navbar position (2s cubic-bezier(.16, 1, .3, 1))
+  // 2. Preloader executes its curved slide-up exit
+  // 3. Intro finishes after 2000ms, seamlessly revealing the full website
+  const handlePreloaderComplete = useCallback(() => {
+    setShowPreloader(false);
+    setIsDocked(true);
 
-    window.dispatchEvent(
-      new CustomEvent("vishal:cinematic-complete", {
-        detail: { source: "cinematic-start-gate" },
-      })
-    );
+    const navLogo =
+      document.getElementById("navbar-logo-container") ||
+      document.getElementById("navbar-logo-img");
+
+    if (navLogo) {
+      const rect = navLogo.getBoundingClientRect();
+      setLogoCoords({
+        left: `${rect.left + rect.width / 2}px`,
+        top: `${rect.top + rect.height / 2}px`,
+        width: `${Math.max(38, rect.width)}px`,
+        height: `${Math.max(38, rect.height)}px`,
+        transform: "translate(-50%, -50%)",
+      });
+    } else {
+      setLogoCoords({
+        left: "50%",
+        top: "56px",
+        width: "48px",
+        height: "48px",
+        transform: "translate(-50%, -50%)",
+      });
+    }
 
     setTimeout(() => {
-      const main =
-        document.getElementById("main") || document.querySelector("main");
-      if (main instanceof HTMLElement) {
-        main.setAttribute("tabindex", "-1");
-        main.focus({ preventScroll: true });
-      }
-    }, 600);
-  };
+      setIsSettled(true);
+      setPhase("done");
+      document.documentElement.classList.remove("vs-lock-scroll");
+      document.body.classList.remove("vs-lock-scroll");
+      document.body.classList.add("preload-complete", "intro-ready");
+
+      window.dispatchEvent(
+        new CustomEvent("vishal:cinematic-complete", {
+          detail: { source: "cinematic-start-gate" },
+        })
+      );
+
+      setTimeout(() => {
+        const main =
+          document.getElementById("main") || document.querySelector("main");
+        if (main instanceof HTMLElement) {
+          main.setAttribute("tabindex", "-1");
+          main.focus({ preventScroll: true });
+        }
+      }, 300);
+    }, 2000);
+  }, []);
 
   // Keyboard accessibility on gate
   useEffect(() => {
@@ -932,9 +992,90 @@ export default function CinematicStartGate() {
             padding: 6px 14px;
           }
         }
+
+        /* Floating VTECH Studio Logo (Planet Jumping Intro Behavior) */
+        .vs-floating-logo {
+          position: fixed;
+          z-index: 999999;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          pointer-events: none;
+          user-select: none;
+          will-change: left, top, width, height, transform, filter, opacity;
+          transition:
+            left 2s cubic-bezier(0.16, 1, 0.3, 1),
+            top 2s cubic-bezier(0.16, 1, 0.3, 1),
+            width 2s cubic-bezier(0.16, 1, 0.3, 1),
+            height 2s cubic-bezier(0.16, 1, 0.3, 1),
+            transform 2s cubic-bezier(0.16, 1, 0.3, 1),
+            filter 2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .vs-floating-logo.is-loading-pulse {
+          filter: drop-shadow(0 0 32px rgba(225, 29, 42, 0.55));
+          animation: vsLogoPulse 3s ease-in-out infinite;
+        }
+
+        .vs-floating-logo.is-docked {
+          filter: drop-shadow(0 0 8px rgba(225, 29, 42, 0.25));
+          animation: none;
+        }
+
+        .vs-floating-logo.is-settled {
+          opacity: 0 !important;
+          visibility: hidden !important;
+          pointer-events: none !important;
+        }
+
+        /* Hide static navbar logo until floating logo has docked and settled */
+        body:not(.preload-complete) #navbar-logo-container {
+          opacity: 0;
+        }
+        body.preload-complete #navbar-logo-container {
+          opacity: 1;
+          transition: opacity 0.35s ease;
+        }
+
+        @keyframes vsLogoPulse {
+          0%, 100% {
+            transform: translate(-50%, -50%) scale(1);
+            filter: drop-shadow(0 0 26px rgba(225, 29, 42, 0.45));
+          }
+          50% {
+            transform: translate(-50%, -50%) scale(1.05);
+            filter: drop-shadow(0 0 42px rgba(225, 29, 42, 0.7));
+          }
+        }
       `}</style>
 
-      {/* STAGE 1: FIRST SCREEN CENTER CARD WITH VIDEO BACKGROUND */}
+      {/* VTECH FLOATING INTRO LOGO (Reference Planet Jumping behavior) */}
+      {!isSettled && (
+        <div
+          id="vtech-floating-logo"
+          className={`vs-floating-logo ${isDocked ? "is-docked" : "is-loading-pulse"}`}
+          style={{
+            left: logoCoords.left,
+            top: logoCoords.top,
+            width: logoCoords.width,
+            height: logoCoords.height,
+            transform: logoCoords.transform,
+          }}
+          aria-hidden="true"
+        >
+          <Image
+            src="/vtech-studios-logo.png"
+            alt="VTECH STUDIOS"
+            width={96}
+            height={96}
+            priority
+            referrerPolicy="no-referrer"
+            className="w-full h-full object-contain pointer-events-none select-none"
+          />
+        </div>
+      )}
+
+      {/* STAGE 1: FIRST SCREEN CENTER CARD WITH VIDEO BACKGROUND (Shown if ?gate=1) */}
       {phase === "gate" && (
         <div
           ref={entryRef}
@@ -1026,9 +1167,9 @@ export default function CinematicStartGate() {
         </div>
       )}
 
-      {/* STAGE 2: 0→100 PRELOADER SEQUENCE (APPEARS AFTER CLICKING CARD) */}
+      {/* STAGE 2: 0→100 PRELOADER SEQUENCE */}
       <AnimatePresence mode="wait">
-        {phase === "loading" && (
+        {showPreloader && phase === "loading" && (
           <Preloader
             key="gate-preloader"
             onComplete={handlePreloaderComplete}

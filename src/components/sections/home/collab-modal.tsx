@@ -174,6 +174,23 @@ export default function CollabModal({ isOpen, onClose }: Props) {
     setIsSubmitting(true);
     setSubmitError(false);
     try {
+      const igDmMessage = `Hey VTECH STUDIOS!\n\nNew collaboration inquiry:\n• Name: ${data.name}\n• Email: ${data.email}\n• Project: ${
+        selectedType || "Custom Project"
+      }\n• Budget: ${selectedTier || "Flexible"}\n\nBrief:\n${data.message}`;
+
+      // Copy clean Instagram DM message to clipboard for direct handoff
+      if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+        navigator.clipboard.writeText(igDmMessage).catch(() => {});
+      }
+
+      // Open VTECH Studio Instagram profile in new tab
+      window.open(
+        "https://www.instagram.com/vtechstudio.dev/",
+        "_blank",
+        "noopener,noreferrer"
+      );
+
+      // Keep existing email fallback flow
       const subject = `New Project Inquiry — ${data.name}`;
       const body = `Name: ${data.name}\nEmail: ${data.email}\nProject Type: ${
         selectedType || "Not specified"
@@ -185,7 +202,12 @@ export default function CollabModal({ isOpen, onClose }: Props) {
         "vishal.builds09@gmail.com",
       )}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 
-      window.open(gmailUrl, "_blank", "noopener,noreferrer");
+      try {
+        window.open(gmailUrl, "_blank", "noopener,noreferrer");
+      } catch {
+        // ignore popup blockers
+      }
+
       setIsSuccess(true);
     } catch {
       setSubmitError(true);
@@ -879,13 +901,13 @@ export default function CollabModal({ isOpen, onClose }: Props) {
                             fontFamily: "var(--font-poppins)",
                             fontSize: "12px",
                             lineHeight: "1.85",
-                            color: "rgba(255,255,255,0.32)",
+                            color: "rgba(255,255,255,0.4)",
                             marginBottom: "32px",
                           }}
                         >
                           We&apos;ve received your transmission.
                           <br />
-                          Expect a reply within 24–48 hours.
+                          Your project brief has been copied to your clipboard &amp; Instagram opened (@vtechstudio.dev) so you can directly DM us!
                         </motion.p>
 
                         <motion.button

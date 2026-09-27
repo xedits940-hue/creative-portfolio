@@ -14,10 +14,7 @@ const navLinks = [
 ];
 
 const socialLinks = [
-  { name: "YouTube", href: "https://www.youtube.com/@yourusername" },
-  { name: "Behance", href: "https://www.behance.net/yourusername" },
-  { name: "Instagram", href: "https://www.instagram.com/yourusername" },
-  { name: "Discord", href: "https://discord.gg/yourinvite" },
+  { name: "Instagram", href: "https://www.instagram.com/vtechstudio.dev/" },
 ];
 
 const EASE_OPEN: [number, number, number, number] = [0.76, 0, 0.24, 1];
@@ -164,6 +161,7 @@ const Navbar: React.FC = () => {
           </motion.button>
 
           <Link
+            id="navbar-logo-container"
             href={"/"}
             data-magnetic
             aria-label="VTECH STUDIOS Home"
@@ -174,6 +172,7 @@ const Navbar: React.FC = () => {
             }}
           >
             <Image
+              id="navbar-logo-img"
               src="/vtech-studios-logo.png"
               alt="VTECH STUDIOS Logo"
               className="h-10 w-10 sm:h-12 sm:w-12 cursor-pointer object-contain"

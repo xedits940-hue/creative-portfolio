@@ -157,7 +157,7 @@ const Preloader: React.FC<PreloaderProps> = ({
             />
           )}
 
-          <div className="absolute inset-0 z-[2] flex items-center justify-center">
+          <div className="absolute inset-0 z-[2] flex flex-col items-center justify-center pt-28 pointer-events-none">
             <div className="flex items-center overflow-hidden">
               <span
                 className="mr-3 block h-2.5 w-2.5 shrink-0 rounded-full"
@@ -175,13 +175,13 @@ const Preloader: React.FC<PreloaderProps> = ({
                   }}
                   animate={{
                     y: "0%",
-                    opacity: 1,
+                    opacity: isComplete ? 0 : 1,
                   }}
                   transition={{
                     duration: 0.4,
                     ease: [0.33, 1, 0.68, 1],
                   }}
-                  className="block whitespace-nowrap text-4xl font-light leading-[1.6] md:text-5xl"
+                  className="block whitespace-nowrap text-3xl font-light leading-[1.6] md:text-5xl"
                   style={{
                     color: textColor,
                   }}

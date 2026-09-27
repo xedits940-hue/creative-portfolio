@@ -73,33 +73,9 @@ const AboutMe = () => {
         style={{
           y: yImage,
         }}
-        className="relative z-20 flex items-end group"
+        className="relative z-20 flex items-end justify-center group pointer-events-none"
       >
-        <div className="absolute inset-0 bg-primary/20 blur-[100px] rounded-full group-hover:bg-primary/30 transition-all duration-500" />
-
-        {/* Mobile image — forced via inline style so it ALWAYS applies, no caching/purge issues */}
-        <img
-          src="/profile.png"
-          alt="VTECH STUDIOS"
-          className="relative md:hidden object-contain object-bottom rounded-3xl"
-          style={{
-            width: "260vw",
-            height: "130vh",
-            maxWidth: "none",
-          }}
-        />
-
-        {/* Desktop / Laptop image — slightly reduced from before */}
-        <img
-          src="/profile.png"
-          alt="VTECH STUDIOS"
-          className="relative hidden md:block object-contain object-bottom rounded-3xl"
-          style={{
-            width: "88vw",
-            height: "104dvh",
-            maxWidth: "none",
-          }}
-        />
+        <div className="w-[60vw] max-w-[500px] h-[30vh] bg-primary/20 blur-[100px] rounded-full group-hover:bg-primary/30 transition-all duration-500" />
       </motion.div>
 
       <motion.div
