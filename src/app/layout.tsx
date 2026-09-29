@@ -108,6 +108,7 @@ export const metadata: Metadata = {
     shortcut: "/favicon.png",
     apple: [{ url: "/vtech-studios-logo.png", type: "image/png" }],
   },
+  manifest: "/manifest.json",
   verification: {
     google: "your-google-verification-code",
   },

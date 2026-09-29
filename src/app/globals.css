@@ -190,3 +190,16 @@ iframe {
 .cursor-hidden iframe {
   cursor: none;
 }
+
+@font-face {
+  font-family: 'Stranger back in the Night';
+  src: url('/fonts/StrangerBackInTheNight.ttf') format('truetype'),
+       url('https://fonts.cdnfonts.com/s/22706/Stranger%20back%20in%20the%20Night.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+.font-stranger, .font-stranger * {
+  font-family: 'Stranger back in the Night', 'Playfair Display', cursive, sans-serif;
+}

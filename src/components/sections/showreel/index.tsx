@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, useEffect, useCallback, useMemo } from "react";
+import Image from "next/image";
 import {
   motion,
   AnimatePresence,
@@ -38,11 +39,14 @@ function VimeoBackdrop({
       }}
     >
       {/* Thumbnail fallback — visible instantly */}
-      <img
+      <Image
         src={item.thumbnail}
         alt=""
-        className="absolute inset-0 h-full w-full object-cover"
+        fill
+        sizes="100vw"
+        className="object-cover"
         draggable={false}
+        referrerPolicy="no-referrer"
       />
 
       {/* Vimeo background player — autoplays muted, no UI */}

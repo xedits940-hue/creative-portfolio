@@ -40,6 +40,14 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "ik.imagekit.io",
       },
+      {
+        protocol: "https",
+        hostname: "images.higgs.ai",
+      },
+      {
+        protocol: "https",
+        hostname: "d8j0ntlcm91z4.cloudfront.net",
+      },
     ],
   },
 };

@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { Quote } from "lucide-react";
 
@@ -83,10 +84,13 @@ export const MessageCard = ({
           {/* --- Header: Avatar & Name --- */}
           <div className="relative z-10 flex flex-row items-center gap-3">
             <div className="relative size-10 overflow-hidden rounded-full border border-border/50">
-              <img
+              <Image
                 src={avatar}
                 alt={name}
-                className="h-full w-full object-cover"
+                fill
+                sizes="40px"
+                className="object-cover"
+                referrerPolicy="no-referrer"
               />
             </div>
             <div className="flex flex-col">

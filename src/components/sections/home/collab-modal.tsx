@@ -132,6 +132,9 @@ export default function CollabModal({ isOpen, onClose }: Props) {
   const [isSuccess, setIsSuccess] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState(false);
+  const [copiedMessage, setCopiedMessage] = useState("");
+  const [hasCopiedAgain, setHasCopiedAgain] = useState(false);
+  const [showToast, setShowToast] = useState(false);
 
   const {
     register,
@@ -165,48 +168,75 @@ export default function CollabModal({ isOpen, onClose }: Props) {
         setSelectedType("");
         setSelectedTier("");
         setIsSubmitting(false);
+        setCopiedMessage("");
+        setHasCopiedAgain(false);
       }, 900);
       return () => clearTimeout(t);
     }
   }, [isOpen, reset]);
 
-  const onSubmit = (data: FormData) => {
+  const copyToClipboard = async (text: string) => {
+    if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch {
+        // Fallback below
+      }
+    }
+    try {
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      textArea.style.position = "fixed";
+      textArea.style.left = "-9999px";
+      textArea.style.top = "-9999px";
+      textArea.setAttribute("readonly", "");
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      const res = document.execCommand("copy");
+      document.body.removeChild(textArea);
+      return res;
+    } catch {
+      return false;
+    }
+  };
+
+  const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
     setSubmitError(false);
-    try {
-      const igDmMessage = `Hey VTECH STUDIOS!\n\nNew collaboration inquiry:\n• Name: ${data.name}\n• Email: ${data.email}\n• Project: ${
-        selectedType || "Custom Project"
-      }\n• Budget: ${selectedTier || "Flexible"}\n\nBrief:\n${data.message}`;
 
-      // Copy clean Instagram DM message to clipboard for direct handoff
-      if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
-        navigator.clipboard.writeText(igDmMessage).catch(() => {});
+    try {
+      // 1. Collect all entered information & format clean Instagram DM message
+      const lines = [
+        "New Collaboration Request",
+        "",
+        `Name: ${data.name.trim()}`,
+        `Email: ${data.email.trim()}`,
+      ];
+
+      if (selectedType) {
+        lines.push(`Project: ${selectedType}`);
+      }
+      if (selectedTier) {
+        lines.push(`Budget: ${selectedTier}`);
       }
 
-      // Open VTECH Studio Instagram profile in new tab
+      lines.push("", "Message:", data.message.trim());
+
+      const fullMessage = lines.join("\n");
+      setCopiedMessage(fullMessage);
+
+      // 2. Automatically copy complete generated message to clipboard
+      await copyToClipboard(fullMessage);
+      setShowToast(true);
+
+      // 3. Immediately open official VTECH Studio Instagram destination
       window.open(
         "https://www.instagram.com/vtechstudio.dev/",
         "_blank",
         "noopener,noreferrer"
       );
-
-      // Keep existing email fallback flow
-      const subject = `New Project Inquiry — ${data.name}`;
-      const body = `Name: ${data.name}\nEmail: ${data.email}\nProject Type: ${
-        selectedType || "Not specified"
-      }\nBudget Tier: ${
-        selectedTier || "Not specified"
-      }\n\nMessage:\n${data.message}`;
-
-      const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(
-        "vishal.builds09@gmail.com",
-      )}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-
-      try {
-        window.open(gmailUrl, "_blank", "noopener,noreferrer");
-      } catch {
-        // ignore popup blockers
-      }
 
       setIsSuccess(true);
     } catch {
@@ -893,28 +923,74 @@ export default function CollabModal({ isOpen, onClose }: Props) {
                           }}
                         />
 
-                        <motion.p
+                        <motion.div
                           initial={{ opacity: 0, y: 8 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.5, duration: 0.6 }}
-                          style={{
-                            fontFamily: "var(--font-poppins)",
-                            fontSize: "12px",
-                            lineHeight: "1.85",
-                            color: "rgba(255,255,255,0.4)",
-                            marginBottom: "32px",
-                          }}
+                          style={{ marginBottom: "28px" }}
                         >
-                          We&apos;ve received your transmission.
-                          <br />
-                          Your project brief has been copied to your clipboard &amp; Instagram opened (@vtechstudio.dev) so you can directly DM us!
-                        </motion.p>
+                          <p
+                            style={{
+                              fontFamily: "var(--font-poppins)",
+                              fontSize: "13px",
+                              lineHeight: "1.8",
+                              color: "rgba(255,255,255,0.75)",
+                              marginBottom: "12px",
+                            }}
+                          >
+                            Transmission generated. Your message has been copied to your clipboard, and Instagram (@vtechstudio.dev) has opened in a new tab.
+                          </p>
+                          <p
+                            style={{
+                              fontFamily: "var(--font-poppins)",
+                              fontSize: "11px",
+                              lineHeight: "1.6",
+                              color: RED,
+                              letterSpacing: "0.08em",
+                              textTransform: "uppercase",
+                            }}
+                          >
+                            ↳ Simply paste (Ctrl+V / Cmd+V) into the chat to send your DM!
+                          </p>
+                        </motion.div>
+
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: 0.65, duration: 0.5 }}
+                          className="flex flex-wrap items-center gap-4 mb-8"
+                        >
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              if (copiedMessage) {
+                                await copyToClipboard(copiedMessage);
+                                setHasCopiedAgain(true);
+                                setTimeout(() => setHasCopiedAgain(false), 2000);
+                              }
+                            }}
+                            className="inline-flex items-center gap-2 px-3 py-1.5 rounded border border-white/20 text-white/80 hover:text-white hover:border-white/40 transition-colors text-[10px] tracking-wider uppercase cursor-pointer"
+                            style={{ fontFamily: "var(--font-poppins)" }}
+                          >
+                            {hasCopiedAgain ? "✓ COPIED TO CLIPBOARD" : "📋 RE-COPY MESSAGE"}
+                          </button>
+
+                          <a
+                            href="https://www.instagram.com/vtechstudio.dev/"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded border border-[oklch(59.71%_0.23_23.86/0.5)] text-white hover:border-[oklch(59.71%_0.23_23.86)] transition-colors text-[10px] tracking-wider uppercase"
+                            style={{ fontFamily: "var(--font-poppins)" }}
+                          >
+                            ↗ OPEN INSTAGRAM
+                          </a>
+                        </motion.div>
 
                         <motion.button
                           onClick={onClose}
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
-                          transition={{ delay: 0.7, duration: 0.6 }}
+                          transition={{ delay: 0.75, duration: 0.6 }}
                           whileHover={{ x: -5 }}
                           style={{
                             fontFamily: "var(--font-poppins)",
@@ -938,6 +1014,45 @@ export default function CollabModal({ isOpen, onClose }: Props) {
                 </div>
               </div>
             </div>
+
+            {/* Popup Notification Banner when Message is Copied */}
+            <AnimatePresence>
+              {showToast && (
+                <motion.div
+                  initial={{ opacity: 0, y: -25, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -20, scale: 0.95 }}
+                  transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                  className="fixed top-6 left-1/2 -translate-x-1/2 z-[100] max-w-lg w-[92%] bg-neutral-950/95 border-2 border-[oklch(59.71%_0.23_23.86)] text-white p-4 sm:p-5 rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.8)] backdrop-blur-xl flex items-start gap-3.5"
+                >
+                  <div className="size-9 rounded-xl bg-[oklch(59.71%_0.23_23.86)]/25 border border-[oklch(59.71%_0.23_23.86)] flex items-center justify-center shrink-0 text-base">
+                    📋
+                  </div>
+                  <div className="flex-1 pr-1">
+                    <div className="flex items-center justify-between">
+                      <p className="font-bold text-xs tracking-wider uppercase text-[oklch(59.71%_0.23_23.86)] font-mono">
+                        COPIED TO CLIPBOARD!
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setShowToast(false)}
+                        className="text-white/50 hover:text-white text-xs px-1 cursor-pointer transition-colors"
+                        aria-label="Close notification"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                    <p className="text-xs sm:text-sm text-white/95 mt-1 leading-relaxed">
+                      You just copied the message! Just paste it in the Instagram message to the{" "}
+                      <strong className="text-white underline decoration-[oklch(59.71%_0.23_23.86)]">
+                        @vtechstudio.dev
+                      </strong>{" "}
+                      account.
+                    </p>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
         )}
       </AnimatePresence>
