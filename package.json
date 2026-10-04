@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3000 -H 0.0.0.0",
-    "build": "next build",
+    "build": "NODE_ENV=production next build",
     "start": "next start -p 3000 -H 0.0.0.0",
     "lint": "eslint"
   },
@@ -71,7 +71,7 @@
     "three": "^0.181.0",
     "vaul": "^1.1.2",
     "vecteur": "^0.3.0",
-    "zod": "^4.1.8"
+    "zod": "^3.24.2"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

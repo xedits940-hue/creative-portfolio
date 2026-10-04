@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState, type FC, type ReactNode } from "react";
-import { motion, useSpring } from "motion/react";
+import { motion, useSpring } from "framer-motion";
 
 export interface SpringConfig {
   damping: number;

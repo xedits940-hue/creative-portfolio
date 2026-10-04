@@ -3,10 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useRef } from "react";
-import {
-  FaInstagram,
-  FaArrowRight,
-} from "react-icons/fa6";
+import { Instagram, ArrowRight } from "lucide-react";
 import { motion, useMotionValue, useSpring } from "framer-motion";
 
 const SocialLink = ({
@@ -120,7 +117,7 @@ export default function CreativeFooter() {
               <span className="absolute z-10 text-base md:text-lg font-medium group-hover:opacity-0 transition-opacity duration-300">
                 Let&apos;s Connect
               </span>
-              <FaArrowRight className="absolute z-10 size-8 -translate-x-10 opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100 text-white" />
+              <ArrowRight className="absolute z-10 size-8 -translate-x-10 opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100 text-white" />
             </button>
           </MagneticButton>
         </div>
@@ -200,7 +197,7 @@ export default function CreativeFooter() {
             <div className="flex flex-wrap gap-2">
               <SocialLink
                 href="https://www.instagram.com/vtechstudio.dev/"
-                icon={FaInstagram}
+                icon={Instagram}
                 label="Instagram"
               />
             </div>

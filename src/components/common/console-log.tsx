@@ -20,6 +20,31 @@ export default function ConsoleLog() {
     ].join(";");
 
     console.log("%cBuilt with Next.js", style);
+
+    const handleWindowError = (e: ErrorEvent) => {
+      if (
+        e.message &&
+        (e.message.includes("ResizeObserver loop") ||
+          e.message.includes("ResizeObserver"))
+      ) {
+        e.stopImmediatePropagation();
+        e.preventDefault();
+      }
+    };
+
+    const handleRejection = (e: PromiseRejectionEvent) => {
+      if (!e.reason || e.reason instanceof Event) {
+        e.preventDefault();
+      }
+    };
+
+    window.addEventListener("error", handleWindowError);
+    window.addEventListener("unhandledrejection", handleRejection);
+
+    return () => {
+      window.removeEventListener("error", handleWindowError);
+      window.removeEventListener("unhandledrejection", handleRejection);
+    };
   }, []);
 
   return null;

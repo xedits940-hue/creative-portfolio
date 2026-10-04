@@ -1,5 +1,5 @@
 "use client";
-import { useScroll, useTransform, motion, useInView } from "motion/react";
+import { useScroll, useTransform, motion, useInView } from "framer-motion";
 import React, { useEffect, useRef, useState } from "react";
 import PhraseAnimation from "@/components/common/phrase-reveal";
 

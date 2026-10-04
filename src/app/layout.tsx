@@ -9,10 +9,9 @@ import Navbar from "@/components/layout/navbar";
 import StructuredData from "@/components/common/structured-data";
 import Analytics from "@/components/common/analytics";
 import ConsoleLog from "@/components/common/console-log";
-import { MagneticCursor } from "@/components/ui/magnetic-cursor";
 import { SmoothCursor } from "@/components/ui/smooth-cursor";
 import LiquidSilkBackground from "@/components/common/liquid-silk-background";
-import CinematicStartGate from "@/components/common/CinematicStartGate";
+import { BackgroundProvider } from "@/providers/background-provider";
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -126,15 +125,28 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="preconnect" href="https://player.vimeo.com" />
-        <link rel="preconnect" href="https://i.vimeocdn.com" />
-        <link rel="preconnect" href="https://f.vimeocdn.com" />
-        <link
-          rel="preconnect"
-          href="https://ik.imagekit.io"
-          crossOrigin="anonymous"
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){
+              if(typeof window==='undefined')return;
+              window.addEventListener('error',function(e){
+                if(!e.error||(e.target&&e.target!==window)){
+                  e.stopImmediatePropagation();
+                }
+                if(e.message&&(e.message.indexOf('ResizeObserver')!==-1||e.message.indexOf('isTrusted')!==-1)){
+                  e.stopImmediatePropagation();
+                  e.preventDefault();
+                }
+              },true);
+              window.addEventListener('unhandledrejection',function(e){
+                if(!e.reason||e.reason instanceof Event||(typeof e.reason==='object'&&e.reason&&'isTrusted' in e.reason)){
+                  e.stopImmediatePropagation();
+                  e.preventDefault();
+                }
+              },true);
+            })();`,
+          }}
         />
-        <link rel="dns-prefetch" href="https://ik.imagekit.io" />
       </head>
       <body
         className={`${poppins.variable} ${cormorantGaramond.variable} antialiased mx-auto`}
@@ -145,26 +157,19 @@ export default function RootLayout({
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
-          enableSystem
+          forcedTheme="dark"
+          enableSystem={false}
           disableTransitionOnChange
         >
-          <LiquidSilkBackground />
-          <CinematicStartGate />
-          <SmoothCursor />
-          <MagneticCursor
-            enabled={false}
-            magneticFactor={0.4}
-            blendMode="exclusion"
-            cursorSize={28}
-            cursorColor="white"
-            contrastBoost={1.5}
-          >
+          <BackgroundProvider>
+            <LiquidSilkBackground />
+            <SmoothCursor />
             <LenisWrapper>
               <Navbar />
               {children}
               <FooterSection />
             </LenisWrapper>
-          </MagneticCursor>
+          </BackgroundProvider>
         </ThemeProvider>
       </body>
     </html>

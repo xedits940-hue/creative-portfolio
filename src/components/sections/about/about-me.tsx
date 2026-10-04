@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useRef } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
 import Link from "next/link";
 import { Anton } from "next/font/google";
+import TrueFocus from "@/components/ui/TrueFocus";
+import TechText from "@/components/ui/TechText";
 
 const anton = Anton({
   subsets: ["latin"],
@@ -11,14 +12,13 @@ const anton = Anton({
   display: "swap",
 });
 
-// Small neon "shine" accent — a thin glowing bar, not a full box.
 const ShineBar = () => (
   <span
     aria-hidden="true"
-    className="inline-block w-[3px] h-4 rounded-full mr-1"
+    className="inline-block w-[3px] h-4 rounded-full mr-1.5"
     style={{
-      backgroundColor: "#00f3ff",
-      boxShadow: "0 0 6px 1.5px rgba(0, 243, 255, 0.6)",
+      backgroundColor: "#ff1f3d",
+      boxShadow: "0 0 8px 2px rgba(255, 31, 61, 0.6)",
     }}
   />
 );
@@ -26,127 +26,88 @@ const ShineBar = () => (
 const AboutMe = () => {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end start"],
-  });
-
-  const yImage = useTransform(scrollYProgress, [0, 1], [0, -100]);
-
   return (
     <section
       ref={containerRef}
-      className="relative h-dvh md:h-screen w-full overflow-hidden flex flex-col items-center justify-end bg-transparent"
+      className="relative min-h-[92vh] w-full overflow-hidden flex flex-col items-center justify-between pt-24 pb-12 bg-transparent select-none"
     >
-      {/* Giant stacked name — sits behind the character */}
+      {/* Giant typography background with interactive TechText effect */}
       <div
-        aria-hidden="true"
-        className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-0 pointer-events-none select-none overflow-hidden"
+        className="absolute inset-0 z-0 flex flex-col items-center justify-center gap-0 pointer-events-auto select-none overflow-hidden opacity-90"
       >
-        <span
-          className={`${anton.className} uppercase leading-[0.82] tracking-tight text-transparent bg-clip-text`}
-          style={{
-            fontSize: "clamp(70px, 19vw, 270px)",
-            backgroundImage:
-              "linear-gradient(to bottom, #ff1f3d 0%, #ef1230 20%, #b8081f 45%, #5c0210 70%, #150005 92%, transparent 100%)",
-            WebkitFontSmoothing: "antialiased",
-            textRendering: "optimizeLegibility",
-          }}
-        >
-          VTECH
-        </span>
-        <span
-          className={`${anton.className} uppercase leading-[0.82] tracking-tight text-transparent bg-clip-text`}
-          style={{
-            fontSize: "clamp(70px, 19vw, 270px)",
-            backgroundImage:
-              "linear-gradient(to bottom, #ff1f3d 0%, #ef1230 20%, #b8081f 45%, #5c0210 70%, #150005 92%, transparent 100%)",
-            WebkitFontSmoothing: "antialiased",
-            textRendering: "optimizeLegibility",
-          }}
-        >
-          STUDIOS
-        </span>
+        <div className="w-full max-w-6xl h-[26vh] max-h-[190px] flex items-center justify-center">
+          <TechText
+            text="VTECH"
+            fontFamily={anton.style.fontFamily}
+            fontWeight={400}
+            fontSize={200}
+            color="#ff1f3d"
+            accentColor="#ff1f3d"
+            reveal="letter"
+            dashLength={4}
+            dashGap={2}
+            specks={15}
+            selection={true}
+            labels={true}
+            draggable={true}
+            sweep={true}
+          />
+        </div>
+        <div className="w-full max-w-6xl h-[26vh] max-h-[190px] flex items-center justify-center">
+          <TechText
+            text="STUDIOS"
+            fontFamily={anton.style.fontFamily}
+            fontWeight={400}
+            fontSize={200}
+            color="#ff1f3d"
+            accentColor="#ff1f3d"
+            reveal="letter"
+            dashLength={4}
+            dashGap={2}
+            specks={15}
+            selection={true}
+            labels={true}
+            draggable={true}
+            sweep={true}
+          />
+        </div>
       </div>
 
-      <motion.div
-        style={{
-          y: yImage,
-        }}
-        className="relative z-20 flex items-end justify-center group pointer-events-none"
-      >
-        <div className="w-[60vw] max-w-[500px] h-[30vh] bg-primary/20 blur-[100px] rounded-full group-hover:bg-primary/30 transition-all duration-500" />
-      </motion.div>
-
-      <motion.div
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 0.5, duration: 0.8 }}
-        className="md:hidden absolute left-3 top-1/2 -translate-y-1/2 z-30 text-foreground"
-      >
-        <div className="flex items-center gap-4 [writing-mode:vertical-rl] rotate-180">
-          <ShineBar />
-          <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-gray-500 dark:text-gray-400">
-            Studio Capabilities
-          </span>
-          <span className="w-1 h-1 bg-foreground rounded-full" />
-          <span className="text-sm font-bold">CREATIVE DIRECTION</span>
-          <span className="w-1 h-1 bg-foreground rounded-full" />
-          <span className="text-sm font-bold">CINEMATIC MOTION</span>
-          <span className="w-1 h-1 bg-foreground rounded-full" />
-          <span className="text-sm font-bold">DIGITAL PRODUCTION</span>
-        </div>
-      </motion.div>
-
-      <motion.div
-        initial={{ opacity: 0, y: 50 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5, duration: 0.8 }}
-        className="hidden md:flex absolute bottom-10 z-30 w-full px-10 flex-row justify-between items-center text-foreground"
-      >
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center">
+      {/* Studio Capabilities & CTAs */}
+      <div className="relative z-20 w-full max-w-7xl px-8 flex flex-col md:flex-row justify-between items-center gap-4 text-foreground mt-auto">
+        <div className="flex flex-col gap-1.5 text-center md:text-left">
+          <div className="flex items-center justify-center md:justify-start">
             <ShineBar />
-            <p className="text-xs font-mono uppercase text-gray-500 dark:text-gray-400">
+            <p className="text-xs font-mono uppercase tracking-widest text-muted-foreground">
               Studio Capabilities
             </p>
           </div>
-          <div className="flex items-center gap-4 text-sm font-bold">
-            <span className="hover:text-primary transition-colors cursor-pointer">
-              CREATIVE DIRECTION
-            </span>
-            <span className="w-1 h-1 bg-foreground rounded-full" />
-            <span className="hover:text-primary transition-colors cursor-pointer">
-              CINEMATIC MOTION
-            </span>
-            <span className="w-1 h-1 bg-foreground rounded-full" />
-            <span className="hover:text-primary transition-colors cursor-pointer">
-              DIGITAL PRODUCTION
-            </span>
-          </div>
+          <TrueFocus
+            sentence="CREATIVE DIRECTION CINEMATIC MOTION DIGITAL PRODUCTION"
+            manualMode={false}
+            blurAmount={3}
+            borderColor="#ff1f3d"
+            glowColor="rgba(255, 31, 61, 0.6)"
+            animationDuration={0.6}
+            pauseBetweenAnimations={1.2}
+          />
         </div>
 
-        <div className="hidden md:block">
-          <div className="flex items-center justify-end">
-            <p className="text-xs font-mono text-right text-gray-500 dark:text-gray-400">
-              Social
-            </p>
-            <span className="ml-1">
-              <ShineBar />
-            </span>
-          </div>
-          <div className="flex items-center gap-4 text-sm font-bold">
-            <Link
-              href={"https://www.instagram.com/yourusername"}
-              target="_blank"
-            >
-              <span className="hover:text-primary transition-colors cursor-pointer">
-                INSTAGRAM
-              </span>
-            </Link>
-          </div>
+        <div className="flex items-center gap-4">
+          <Link
+            href="#projects"
+            className="px-5 py-2 rounded-full text-xs font-mono uppercase tracking-wider bg-white/10 hover:bg-white/20 text-white border border-white/20 transition-all backdrop-blur-md"
+          >
+            View Projects ↓
+          </Link>
+          <Link
+            href="#contact"
+            className="px-5 py-2 rounded-full text-xs font-mono uppercase tracking-wider bg-primary hover:bg-primary/90 text-white shadow-[0_0_20px_rgba(255,31,61,0.4)] transition-all"
+          >
+            Start Project ✦
+          </Link>
         </div>
-      </motion.div>
+      </div>
     </section>
   );
 };

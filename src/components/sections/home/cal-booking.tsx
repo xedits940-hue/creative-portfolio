@@ -16,8 +16,14 @@ const CalBooking = () => {
 
   useEffect(() => {
     (async function () {
-      const cal = await getCalApi({ namespace: "30min" });
-      cal("ui", { hideEventTypeDetails: false, layout: "month_view" });
+      try {
+        const cal = await getCalApi({ namespace: "30min" });
+        if (cal) {
+          cal("ui", { hideEventTypeDetails: false, layout: "month_view" });
+        }
+      } catch {
+        // Safe fallback if Cal network/cross-origin api is unavailable
+      }
     })();
   }, []);
 

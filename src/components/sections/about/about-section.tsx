@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef, useEffect, useState } from "react";
-import { motion, useScroll, useTransform, useInView } from "motion/react";
+import { motion, useScroll, useTransform, useInView } from "framer-motion";
 
 // ─── Animated counter hook ────────────────────────────────────────────────────
 function useCountUp(target: number, inView: boolean, duration = 1800) {
