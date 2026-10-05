@@ -78,7 +78,10 @@ export default function CreativeFooter() {
   const copyrightText = `© ${currentYear}–${currentYear + 1} VTECH STUDIOS. ALL RIGHTS RESERVED.`;
 
   return (
-    <footer className="relative w-full overflow-hidden border-t pt-20 md:pt-32 pb-10 isolate bg-transparent">
+    <footer
+      id="contact"
+      className="relative w-full overflow-hidden border-t pt-20 md:pt-32 pb-10 isolate bg-transparent scroll-mt-12"
+    >
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute inset-0 opacity-[0.03] mix-blend-hard-light"></div>
         <motion.div

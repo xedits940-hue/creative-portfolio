@@ -20,7 +20,7 @@ export const showRealData: showReelI[] = [
   {
     title: "Cinematic Reel 01",
     vimeoId: "76979871",
-    thumbnail: "/frame_05.jpg",
+    thumbnail: "https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?auto=format&fit=crop&w=1200&q=80",
     stats: {
       views: 184000,
       likes: 14200,
@@ -31,7 +31,7 @@ export const showRealData: showReelI[] = [
   {
     title: "Motion Identity 02",
     vimeoId: "76979871",
-    thumbnail: "/frame_15.jpg",
+    thumbnail: "https://images.unsplash.com/photo-1536240478700-b869070f9279?auto=format&fit=crop&w=1200&q=80",
     stats: {
       views: 245000,
       likes: 19800,
@@ -42,7 +42,7 @@ export const showRealData: showReelI[] = [
   {
     title: "Sound & Visuals 03",
     vimeoId: "76979871",
-    thumbnail: "/frame_25.jpg",
+    thumbnail: "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?auto=format&fit=crop&w=1200&q=80",
     stats: {
       views: 132000,
       likes: 11400,
@@ -53,7 +53,7 @@ export const showRealData: showReelI[] = [
   {
     title: "Brand Narrative 04",
     vimeoId: "76979871",
-    thumbnail: "/frame_35.jpg",
+    thumbnail: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1200&q=80",
     stats: {
       views: 310000,
       likes: 27500,
@@ -64,7 +64,7 @@ export const showRealData: showReelI[] = [
   {
     title: "Studio Showcase 05",
     vimeoId: "76979871",
-    thumbnail: "/frame_45.jpg",
+    thumbnail: "https://images.unsplash.com/photo-1518133910546-b6c2fb7d79e3?auto=format&fit=crop&w=1200&q=80",
     stats: {
       views: 420000,
       likes: 38900,

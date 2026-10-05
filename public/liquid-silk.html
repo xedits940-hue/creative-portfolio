@@ -245,9 +245,10 @@
       const uT = gl.getUniformLocation(prog, "uT");
       const uM = gl.getUniformLocation(prog, "uM");
 
-      let isLowPower = (navigator.hardwareConcurrency || 4) <= 4;
-      let dpr = Math.min(window.devicePixelRatio || 1, isLowPower ? 1.5 : 2.5);
-      let quality = isLowPower ? 0.75 : 1;
+      let isMobile = window.matchMedia("(max-width: 768px)").matches || coarse;
+      let isLowPower = (navigator.hardwareConcurrency || 4) <= 4 || isMobile;
+      let dpr = Math.min(window.devicePixelRatio || 1, isLowPower ? 1.0 : 1.75);
+      let quality = isLowPower ? 0.65 : 1;
 
       function resize() {
         if (!cvs) return;
@@ -282,16 +283,17 @@
       let last = start;
       let ftAvg = 16;
       let degraded = false;
-      let rafId;
+      let rafId = 0;
 
-      // 60FPS Render Loop with auto-performance scaling
+      // Render Loop with auto-performance scaling and low-power throttling
       function frame(now) {
         rafId = requestAnimationFrame(frame);
         ftAvg += ((now - last) - ftAvg) * 0.05;
         last = now;
 
-        if (!degraded && ftAvg > 26) {
-          quality = 0.85;
+        if (!degraded && ftAvg > 24) {
+          quality = isLowPower ? 0.5 : 0.75;
+          dpr = 1.0;
           resize();
           degraded = true;
         }
@@ -304,6 +306,21 @@
         gl.uniform2f(uM, mx, my);
         gl.drawArrays(gl.TRIANGLES, 0, 3);
       }
+
+      // Pause WebGL rendering entirely when tab is hidden to save GPU & battery
+      document.addEventListener("visibilitychange", function() {
+        if (document.hidden) {
+          if (rafId) {
+            cancelAnimationFrame(rafId);
+            rafId = 0;
+          }
+        } else {
+          if (!rafId) {
+            last = performance.now();
+            rafId = requestAnimationFrame(frame);
+          }
+        }
+      });
 
       rafId = requestAnimationFrame(frame);
     })();

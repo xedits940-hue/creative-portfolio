@@ -22,8 +22,8 @@ const BackgroundContext = createContext<BackgroundContextType>({
 const STORAGE_KEY = "vtech_bg_theme_preference_v1";
 
 export function BackgroundProvider({ children }: { children: React.ReactNode }) {
-  // Default is "video" (the dark cinematic background)
-  const [bgMode, setBgMode] = useState<BackgroundMode>("video");
+  // Default is "silk" (the vibrant interactive red WebGL fluid silk)
+  const [bgMode, setBgMode] = useState<BackgroundMode>("silk");
 
   useEffect(() => {
     try {
@@ -31,8 +31,7 @@ export function BackgroundProvider({ children }: { children: React.ReactNode }) 
       if (saved === "silk" || saved === "video") {
         setBgMode(saved);
       } else {
-        // Default when first visiting is the black video background
-        setBgMode("video");
+        setBgMode("silk");
       }
     } catch {
       // safe fallback if storage is restricted

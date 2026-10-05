@@ -1,242 +1,206 @@
 "use client";
 
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect } from "react";
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, Variants } from "framer-motion";
+import { useAssetLoader } from "@/hooks/use-asset-loader";
 import { playSound } from "@/lib/sound";
+
+const slideUp: Variants = {
+  initial: {
+    y: "0%",
+  },
+  exit: {
+    y: "-100%",
+    transition: {
+      duration: 1.0,
+      ease: [0.76, 0, 0.24, 1] as const,
+      delay: 0.05,
+    },
+  },
+};
 
 interface PreloaderProps {
   onComplete?: () => void;
   words?: string[];
+  backgroundColor?: string;
   textColor?: string;
   accentColor?: string;
 }
 
-const DEFAULT_WORDS = [
-  "नमस्ते",
-  "Hello",
-  "Bonjour",
-  "स्वागत",
-  "Ciao",
-  "Olà",
-  "やあ",
-  "Hallå",
-  "Guten tag",
-  "प्रणाम",
-  "Hallo",
-  "आपका स्वागत है",
-];
-
-export default function Preloader({
+const Preloader: React.FC<PreloaderProps> = ({
   onComplete,
-  words = DEFAULT_WORDS,
+  words = [
+    "नमस्ते",
+    "Hello",
+    "Bonjour",
+    "स्वागत",
+    "Ciao",
+    "Olà",
+    "やあ",
+    "Hallå",
+    "Guten tag",
+    "प्रणाम",
+    "Hallo",
+    "आपका स्वागत है",
+  ],
+  backgroundColor = "#0b0c0e",
   textColor = "#ffffff",
-  accentColor = "#e11d2a",
-}: PreloaderProps) {
-  const [progress, setProgress] = useState(0);
-  const [isLifting, setIsLifting] = useState(false);
-  const [dimension, setDimension] = useState({
-    width: typeof window !== "undefined" ? window.innerWidth : 1920,
-    height: typeof window !== "undefined" ? window.innerHeight : 1080,
-  });
+  accentColor = "#ff1f3d",
+}) => {
+  const { progress, isComplete } = useAssetLoader(2000);
 
-  const completedRef = useRef(false);
-
-  // Measure screen dimensions reliably
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      setDimension({
-        width: window.innerWidth,
-        height: window.innerHeight,
-      });
-
-      const onResize = () => {
-        setDimension({
-          width: window.innerWidth,
-          height: window.innerHeight,
-        });
-      };
-
-      window.addEventListener("resize", onResize, { passive: true });
-      return () => window.removeEventListener("resize", onResize);
+    if (!isComplete) return;
+    try {
+      playSound("/universfield-swoosh-07-351043.mp3", 0.18);
+    } catch {
+      // Audio playback safe fallback
     }
-  }, []);
 
-  const handleFinish = React.useCallback(() => {
-    if (completedRef.current) return;
-    completedRef.current = true;
-
-    playSound("/universfield-swoosh-07-351043.mp3", 0.2);
-
-    // Start curtain lifting animation
-    setIsLifting(true);
-
-    // Signal completion to page once curtain lifts off-screen
-    setTimeout(() => {
+    // Brief 250ms hold at 100% so the user sees completion before the curtain lifts
+    const timer = setTimeout(() => {
       onComplete?.();
-    }, 850);
-  }, [onComplete]);
-
-  // Self-contained, snappy counter: 0% to 100% in exactly 900ms
-  useEffect(() => {
-    const startTime = performance.now();
-    const DURATION = 900;
-    let animId = 0;
-
-    const updateCounter = (now: number) => {
-      const elapsed = now - startTime;
-      const t = Math.min(1, elapsed / DURATION);
-      // Smooth ease-out quad
-      const eased = 1 - Math.pow(1 - t, 2.2);
-      const val = Math.min(100, Math.round(eased * 100));
-
-      setProgress(val);
-
-      if (t < 1) {
-        animId = requestAnimationFrame(updateCounter);
-      } else {
-        setProgress(100);
-        handleFinish();
-      }
-    };
-
-    animId = requestAnimationFrame(updateCounter);
-
-    // Hard fallback: never stay past 1400ms under any circumstances
-    const fallbackTimer = setTimeout(() => {
-      setProgress(100);
-      handleFinish();
-    }, 1400);
-
-    return () => {
-      cancelAnimationFrame(animId);
-      clearTimeout(fallbackTimer);
-    };
-  }, [handleFinish]);
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [isComplete, onComplete]);
 
   const clamped = Math.min(100, Math.max(0, progress));
-  const wordIndex = Math.min(
+
+  const index = Math.min(
     words.length - 1,
-    Math.floor((clamped / 100) * words.length)
+    Math.floor((clamped / 100) * words.length),
   );
 
-  // The iconic curved SVG arch (Dennis Snellenberg style)
-  const initialArchPath = `M0 0 L${dimension.width} 0 L${dimension.width} ${
-    dimension.height
-  } Q${dimension.width / 2} ${dimension.height + 280} 0 ${
-    dimension.height
-  } L0 0`;
+  // SVG curtain paths in 1000x1000 normalized coordinates:
+  // Initial: covers 100% of screen completely with zero leaks
+  // Exit: bottom edge curves UPWARD into a deep arch (y=660) as the curtain lifts
+  const curtainCurve: Variants = {
+    initial: {
+      d: "M 0 0 L 1000 0 L 1000 1000 Q 500 1000 0 1000 Z",
+    },
+    exit: {
+      d: "M 0 0 L 1000 0 L 1000 1000 Q 500 660 0 1000 Z",
+      transition: {
+        duration: 1.0,
+        ease: [0.76, 0, 0.24, 1],
+      },
+    },
+  };
 
-  const targetArchPath = `M0 0 L${dimension.width} 0 L${dimension.width} ${
-    dimension.height
-  } Q${dimension.width / 2} ${dimension.height} 0 ${dimension.height} L0 0`;
-
-  const initialLinePath = `M0 ${dimension.height} Q${dimension.width / 2} ${
-    dimension.height + 280
-  } ${dimension.width} ${dimension.height}`;
-
-  const targetLinePath = `M0 ${dimension.height} Q${dimension.width / 2} ${
-    dimension.height
-  } ${dimension.width} ${dimension.height}`;
-
-  // Direct vertical translation to land directly at the navbar logo position
-  const targetLogoY = dimension.height > 0 ? -(dimension.height / 2 - 56) : -320;
+  // Line paths in 1000x1000 coordinates:
+  // Initial: resting across the bottom edge with a gentle visible curve (y=982)
+  // Exit: arches deeply UPWARDS (y=660) in exact sync with the curtain bottom
+  const lineCurve: Variants = {
+    initial: (progressRatio: number = 0) => ({
+      d: "M 0 998 Q 500 982 1000 998",
+      strokeDashoffset: 1 - progressRatio,
+      transition: {
+        d: { duration: 1.0, ease: [0.76, 0, 0.24, 1] },
+        strokeDashoffset: { ease: "easeOut", duration: 0.12 },
+      },
+    }),
+    exit: {
+      d: "M 0 998 Q 500 660 1000 998",
+      strokeDashoffset: 0,
+      transition: {
+        duration: 1.0,
+        ease: [0.76, 0, 0.24, 1],
+      },
+    },
+  };
 
   return (
     <motion.div
-      initial={{ y: 0 }}
-      animate={{
-        y: isLifting ? "-100vh" : 0,
-      }}
-      transition={{
-        duration: 0.85,
-        ease: [0.76, 0, 0.24, 1],
-      }}
-      className={`fixed inset-0 z-[99999] h-screen w-screen select-none ${
-        isLifting ? "pointer-events-none" : "pointer-events-auto"
-      }`}
+      variants={slideUp}
+      initial="initial"
+      animate="initial"
+      exit="exit"
+      className="fixed inset-0 h-screen w-screen z-[99999] select-none pointer-events-auto bg-transparent overflow-hidden"
       style={{
-        backgroundColor: "transparent",
         willChange: "transform",
       }}
     >
-      {/* 1. Theatrical Deep Black Curved SVG Curtain */}
+      {/* 1. Underlying SVG Curtain & Animated Curved Lines */}
       <svg
-        className="absolute top-0 left-0 z-0 w-full pointer-events-none"
-        style={{
-          height: "calc(100% + 280px)",
-        }}
+        viewBox="0 0 1000 1000"
+        preserveAspectRatio="none"
+        className="absolute inset-0 w-full h-full pointer-events-none"
+        style={{ zIndex: 0 }}
       >
+        {/* The SVG curtain filling the entire screen */}
         <motion.path
-          initial={{ d: initialArchPath }}
-          animate={{
-            d: isLifting ? targetArchPath : initialArchPath,
+          variants={curtainCurve}
+          initial="initial"
+          animate="initial"
+          exit="exit"
+          style={{
+            fill: backgroundColor,
           }}
-          transition={{
-            duration: 0.85,
-            ease: [0.76, 0, 0.24, 1],
-          }}
-          fill="#070707"
         />
-      </svg>
 
-      {/* 2. Glowing Red Curved Arch Line */}
-      <svg
-        className="absolute top-0 left-0 z-[1] w-full pointer-events-none"
-        style={{
-          height: "calc(100% + 280px)",
-        }}
-      >
-        {/* Subtle white guide line */}
+        {/* Base Track Line along the curve */}
         <motion.path
-          initial={{ d: initialLinePath }}
-          animate={{
-            d: isLifting ? targetLinePath : initialLinePath,
-          }}
-          transition={{
-            duration: 0.85,
-            ease: [0.76, 0, 0.24, 1],
-          }}
+          variants={lineCurve}
+          initial="initial"
+          animate="initial"
+          exit="exit"
           fill="none"
-          stroke="rgba(255,255,255,0.1)"
-          strokeWidth={3}
+          stroke="rgba(255, 255, 255, 0.15)"
+          strokeWidth={4}
           vectorEffect="non-scaling-stroke"
         />
 
-        {/* Vibrant Red Animated Stroke */}
+        {/* Active Glowing Crimson Line that fills 0 -> 100%, then curves UP */}
         <motion.path
-          initial={{ d: initialLinePath }}
-          animate={{
-            d: isLifting ? targetLinePath : initialLinePath,
-          }}
-          transition={{
-            duration: 0.85,
-            ease: [0.76, 0, 0.24, 1],
-          }}
+          variants={lineCurve}
+          custom={clamped / 100}
+          initial="initial"
+          animate="initial"
+          exit="exit"
           fill="none"
           stroke={accentColor}
-          strokeWidth={3.5}
+          strokeWidth={5}
           strokeLinecap="round"
           vectorEffect="non-scaling-stroke"
           pathLength={1}
           strokeDasharray="1 1"
           style={{
-            strokeDashoffset: 1 - clamped / 100,
+            filter: "drop-shadow(0 0 12px rgba(255, 31, 61, 0.9))",
           }}
         />
       </svg>
 
-      {/* 3. Central Content: Logo + Multilingual Greeting */}
-      <div className="absolute inset-0 z-10 flex flex-col items-center justify-center pointer-events-none px-4">
-        {/* VTECH STUDIOS Logo: Smoothly scales down and glides into navbar position */}
+      {/* 2. Ambient blurred crimson glow in background center */}
+      <motion.div
+        aria-hidden
+        className="pointer-events-none absolute left-1/2 top-1/2 z-[1] h-[340px] w-[340px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-[130px]"
+        style={{
+          backgroundColor: accentColor,
+          willChange: "transform, opacity",
+        }}
+        animate={{
+          scale: [1, 1.25, 1],
+          opacity: [0.12, 0.25, 0.12],
+        }}
+        transition={{
+          duration: 3.5,
+          repeat: Infinity,
+          ease: "easeInOut",
+        }}
+      />
+
+      {/* 3. Central Showcase: Studio Logo & Multilingual Greetings */}
+      <div className="absolute inset-0 z-[2] flex flex-col items-center justify-center pointer-events-none">
+        {/* Signature VTECH STUDIOS Logo */}
         <motion.div
           initial={{ y: 20, opacity: 0, scale: 0.9 }}
           animate={
-            isLifting
+            isComplete
               ? {
-                  y: targetLogoY,
-                  scale: 0.48,
-                  opacity: 1,
+                  y: -140,
+                  scale: 0.65,
+                  opacity: 0.8,
                   transition: {
                     duration: 0.65,
                     ease: [0.76, 0, 0.24, 1],
@@ -247,30 +211,35 @@ export default function Preloader({
                   scale: 1,
                   opacity: 1,
                   transition: {
-                    duration: 0.4,
+                    duration: 0.6,
                     ease: [0.22, 1, 0.36, 1],
                   },
                 }
           }
-          className="relative mb-5 flex flex-col items-center"
+          exit={{
+            y: -240,
+            scale: 0.5,
+            opacity: 0,
+            transition: {
+              duration: 0.75,
+              ease: [0.76, 0, 0.24, 1],
+            },
+          }}
+          className="relative mb-7 flex flex-col items-center"
         >
-          {/* Subtle red aura behind logo */}
+          {/* Radial glowing pulse behind logo */}
           <motion.div
-            className="absolute -inset-4 rounded-full blur-xl pointer-events-none"
+            className="absolute -inset-5 rounded-full blur-xl pointer-events-none"
             style={{
               background:
-                "radial-gradient(circle, rgba(225,29,42,0.5) 0%, rgba(225,29,42,0) 70%)",
+                "radial-gradient(circle, rgba(255,31,61,0.55) 0%, rgba(255,31,61,0) 70%)",
             }}
-            animate={
-              isLifting
-                ? { opacity: 0, scale: 0.7 }
-                : {
-                    scale: [0.95, 1.2, 0.95],
-                    opacity: [0.35, 0.75, 0.35],
-                  }
-            }
+            animate={{
+              scale: [0.92, 1.22, 0.92],
+              opacity: [0.45, 0.85, 0.45],
+            }}
             transition={{
-              duration: 2,
+              duration: 2.2,
               repeat: Infinity,
               ease: "easeInOut",
             }}
@@ -282,114 +251,104 @@ export default function Preloader({
             width={110}
             height={110}
             priority
-            className="relative z-10 h-20 w-20 sm:h-24 sm:w-24 object-contain filter drop-shadow-[0_0_20px_rgba(225,29,42,0.6)]"
+            className="relative z-10 h-20 w-20 sm:h-24 sm:w-24 object-contain filter drop-shadow-[0_0_24px_rgba(255,31,61,0.65)]"
           />
         </motion.div>
 
-        {/* Multilingual Greeting & Accent Dot: Both fade out together smoothly */}
-        <motion.div
-          animate={{
-            opacity: isLifting ? 0 : 1,
-            y: isLifting ? 10 : 0,
-          }}
-          transition={{
-            duration: 0.25,
-            ease: "easeInOut",
-          }}
-          className="flex items-center overflow-hidden"
-        >
+        {/* Multilingual greeting text with accent dot */}
+        <div className="flex items-center overflow-hidden">
           <span
-            className="mr-3 block h-2.5 w-2.5 shrink-0 rounded-full"
+            className="mr-3 block h-2.5 w-2.5 shrink-0 rounded-full shadow-[0_0_10px_#ff1f3d]"
             style={{
               backgroundColor: accentColor,
             }}
           />
 
-          <div className="relative overflow-hidden h-12 flex items-center">
-            <AnimatePresence mode="popLayout">
-              <motion.span
-                key={wordIndex}
-                initial={{
-                  y: "40%",
-                  opacity: 0,
-                }}
-                animate={{
-                  y: "0%",
-                  opacity: 1,
-                }}
-                exit={{
-                  y: "-40%",
-                  opacity: 0,
-                }}
-                transition={{
-                  duration: 0.22,
-                  ease: [0.33, 1, 0.68, 1],
-                }}
-                className="block whitespace-nowrap text-3xl font-light leading-none md:text-5xl"
-                style={{
-                  color: textColor,
-                }}
-              >
-                {words[wordIndex]}
-              </motion.span>
-            </AnimatePresence>
+          <div className="relative overflow-hidden h-[54px] flex items-center">
+            <motion.span
+              key={index}
+              initial={{
+                y: "60%",
+                opacity: 0,
+                filter: "blur(4px)",
+              }}
+              animate={{
+                y: "0%",
+                opacity: 1,
+                filter: "blur(0px)",
+              }}
+              exit={{
+                y: "-60%",
+                opacity: 0,
+                filter: "blur(4px)",
+              }}
+              transition={{
+                duration: 0.28,
+                ease: [0.22, 1, 0.36, 1],
+              }}
+              className="block whitespace-nowrap text-3xl font-light leading-none md:text-5xl"
+              style={{
+                color: textColor,
+                letterSpacing: "-0.02em",
+              }}
+            >
+              {words[index]}
+            </motion.span>
           </div>
-        </motion.div>
+        </div>
       </div>
 
-      {/* 4. Bottom Left Status Indicator */}
-      <motion.div
-        animate={{
-          opacity: isLifting ? 0 : 1,
-          y: isLifting ? 8 : 0,
-        }}
-        transition={{ duration: 0.25, ease: "easeInOut" }}
-        className="absolute bottom-8 left-6 sm:left-8 z-10 flex items-center gap-2.5 pointer-events-none"
-      >
-        <span
-          className="block h-1.5 w-1.5 rounded-full animate-pulse"
+      {/* 4. Bottom Left: Status badge */}
+      <div className="absolute bottom-8 left-8 z-[2] flex items-center gap-3 pointer-events-none">
+        <motion.span
+          className="block h-2 w-2 rounded-full shadow-[0_0_8px_#ff1f3d]"
           style={{
             backgroundColor: accentColor,
+          }}
+          animate={{
+            opacity: [0.4, 1, 0.4],
+            scale: [0.85, 1.2, 0.85],
+          }}
+          transition={{
+            duration: 1.4,
+            repeat: Infinity,
+            ease: "easeInOut",
           }}
         />
 
         <span
-          className="text-[10px] font-mono uppercase tracking-[0.3em] opacity-60"
+          className="text-[11px] font-mono font-medium uppercase tracking-[0.35em] opacity-70"
           style={{
             color: textColor,
           }}
         >
-          Studio Experience
+          Loading experience
         </span>
-      </motion.div>
+      </div>
 
-      {/* 5. Bottom Right Percentage Counter */}
-      <motion.div
-        animate={{
-          opacity: isLifting ? 0 : 1,
-          y: isLifting ? 8 : 0,
-        }}
-        transition={{ duration: 0.25, ease: "easeInOut" }}
-        className="absolute bottom-5 right-5 sm:right-8 md:right-10 z-10 flex items-end tabular-nums pointer-events-none"
-      >
+      {/* 5. Bottom Right: High-impact editorial percentage */}
+      <div className="absolute bottom-5 right-4 z-[2] flex items-end tabular-nums sm:right-8 md:right-12 pointer-events-none">
         <span
-          className="font-[var(--font-accent)] text-[12vw] leading-none tracking-tighter sm:text-[9vw] md:text-[5.5vw]"
+          className="font-[var(--font-accent)] text-[13vw] leading-none tracking-tighter sm:text-[11vw] md:text-[6.5vw] font-bold"
           style={{
             color: textColor,
+            textShadow: "0 4px 30px rgba(0,0,0,0.8)",
           }}
         >
           {String(Math.round(clamped)).padStart(2, "0")}
         </span>
 
         <span
-          className="mb-[1vw] ml-1 text-[2.5vw] font-light sm:mb-[1vw] sm:text-[1.8vw] md:mb-[0.6vw] md:text-[1.2vw]"
+          className="mb-[1.5vw] ml-1.5 text-[3vw] font-light sm:mb-[1.2vw] sm:text-[2.2vw] md:mb-[0.8vw] md:text-[1.5vw] font-mono"
           style={{
             color: accentColor,
           }}
         >
           %
         </span>
-      </motion.div>
+      </div>
     </motion.div>
   );
-}
+};
+
+export default Preloader;

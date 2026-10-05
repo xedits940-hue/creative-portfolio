@@ -4,7 +4,6 @@ import React, { useEffect, useRef } from "react";
 import Cal, { getCalApi } from "@calcom/embed-react";
 import { motion, useInView } from "framer-motion";
 import PhraseAnimation from "@/components/common/phrase-reveal";
-import { WoodStoryRevealSection } from "@/components/wood-story-reveal-section";
 
 const CalBooking = () => {
   const containerRef = useRef(null);
@@ -87,13 +86,8 @@ const CalBooking = () => {
         </motion.div>
       </div>
 
-      {/* 2. Interactive Wood Cutout Cursor-Reveal Storytelling Component */}
-      <div className="relative max-w-5xl mx-auto z-20 rounded-2xl md:rounded-3xl overflow-hidden border border-white/10 shadow-2xl shadow-black/80">
-        <WoodStoryRevealSection />
-      </div>
-
-      {/* 3. Schedule Meeting Cal Widget */}
-      <div className="relative max-w-4xl mx-auto z-20 mt-10">
+      {/* 2. Schedule Meeting Cal Widget */}
+      <div className="relative max-w-4xl mx-auto z-20 mt-6">
         <div className="bg-card/70 backdrop-blur-md rounded-2xl border border-border p-4 md:p-8 shadow-xl">
           <Cal
             namespace="30min"
@@ -108,5 +102,3 @@ const CalBooking = () => {
 };
 
 export default CalBooking;
-
-

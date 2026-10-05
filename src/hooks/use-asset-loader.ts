@@ -3,58 +3,49 @@
 import { useEffect, useState } from "react";
 
 /**
- * Deterministic, smooth, and robust asset loader.
- * Guarantees a swift, elegant 0 -> 100 progression in ~1.4 seconds.
- * Includes absolute safety caps so it CANNOT hang under any network,
- * iframe, or browser lifecycle condition.
+ * Drives a silky smooth 0 to 100% counter for the signature studio preloader.
+ * Guarantees steady, continuous progression so all multilingual greetings
+ * cycle legibly, the curved line fills steadily, and finishes cleanly at 100%.
  */
-export function useAssetLoader() {
+export function useAssetLoader(targetDurationMs = 2200) {
   const [progress, setProgress] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
 
   useEffect(() => {
-    const TOTAL_DURATION_MS = 1400; // Fast, snappy, cinematic counter
     const start = performance.now();
-    let rafId = 0;
-    let finished = false;
+    let raf = 0;
+    let lastShown = -1;
 
-    // Hard fallback timeout: guarantees 100% completion in 1.8 seconds max
-    const hardSafetyTimer = setTimeout(() => {
-      if (!finished) {
-        finished = true;
-        setProgress(100);
-        setIsComplete(true);
-      }
-    }, 1800);
-
-    const tick = (now: number) => {
-      if (finished) return;
-
+    const loop = (now: number) => {
       const elapsed = now - start;
-      const progressRatio = Math.min(1, elapsed / TOTAL_DURATION_MS);
-      // Smooth cubic ease-out
-      const eased = 1 - Math.pow(1 - progressRatio, 2.8);
-      const current = Math.min(100, Math.round(eased * 100));
+      const raw = Math.min(1, elapsed / targetDurationMs);
 
-      setProgress(current);
+      // Smooth custom easing: starts gently, advances fluidly, smoothly settles into 100%
+      const eased = raw < 0.5
+        ? 2 * raw * raw
+        : -1 + (4 - 2 * raw) * raw;
 
-      if (progressRatio >= 1 || current >= 100) {
-        finished = true;
+      const current = Math.min(100, Math.max(0, eased * 100));
+      const shown = Math.round(current);
+
+      if (shown !== lastShown) {
+        lastShown = shown;
+        setProgress(shown);
+      }
+
+      if (raw >= 1) {
         setProgress(100);
         setIsComplete(true);
         return;
       }
 
-      rafId = requestAnimationFrame(tick);
+      raf = requestAnimationFrame(loop);
     };
 
-    rafId = requestAnimationFrame(tick);
+    raf = requestAnimationFrame(loop);
 
-    return () => {
-      cancelAnimationFrame(rafId);
-      clearTimeout(hardSafetyTimer);
-    };
-  }, []);
+    return () => cancelAnimationFrame(raf);
+  }, [targetDurationMs]);
 
   return { progress, isComplete };
 }

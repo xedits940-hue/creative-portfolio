@@ -2,6 +2,7 @@
 
 import React, { useRef, useEffect, useState } from "react";
 import { motion, useScroll, useTransform, useInView } from "framer-motion";
+import { AsciiReveal } from "@/components/AsciiReveal";
 
 // ─── Animated counter hook ────────────────────────────────────────────────────
 function useCountUp(target: number, inView: boolean, duration = 1800) {
@@ -186,81 +187,33 @@ const AboutSection = () => {
                 </span>
               </div>
 
-              {/* Central Kinetic Gyroscope & Holographic Monogram */}
-              <div className="relative z-10 flex flex-col items-center justify-center py-6 px-4">
-                <div className="relative w-44 h-44 flex items-center justify-center">
-                  {/* Outer Orbit Ring */}
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 24, repeat: Infinity, ease: "linear" }}
-                    className="absolute inset-0 rounded-full border border-dashed border-white/15"
-                  >
-                    <span className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_#ff1f3d]" />
-                    <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-[#00f3ff] shadow-[0_0_8px_#00f3ff]" />
-                  </motion.div>
-
-                  {/* Mid Counter-Rotating Radar Ring */}
-                  <motion.div
-                    animate={{ rotate: -360 }}
-                    transition={{ duration: 16, repeat: Infinity, ease: "linear" }}
-                    className="absolute inset-4 rounded-full border border-white/10"
-                    style={{
-                      borderTopColor: "rgba(255,31,61,0.6)",
-                      borderRightColor: "rgba(0,243,255,0.4)",
-                    }}
+              {/* Interactive ASCII Character Reveal Container */}
+              <div className="relative z-10 flex flex-col items-center justify-center py-4 px-4 w-full">
+                <div className="relative w-full aspect-[4/3.8] max-w-[300px] rounded-2xl overflow-hidden border border-white/10 bg-black/60 shadow-inner group/ascii">
+                  <AsciiReveal
+                    image="/character.png"
+                    columns={70}
+                    contrast={25}
+                    inkColor="#ff1f3d"
+                    colorMode="image"
+                    reveal={true}
+                    revealOptions={{ size: 65, softness: 14 }}
+                    className="w-full h-full"
                   />
-
-                  {/* Inner Glowing Core Ring */}
-                  <motion.div
-                    animate={{ scale: [1, 1.06, 1], opacity: [0.7, 1, 0.7] }}
-                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                    className="absolute inset-10 rounded-full border border-primary/40 bg-gradient-to-tr from-primary/10 via-transparent to-[#00f3ff]/10 shadow-[0_0_24px_rgba(255,31,61,0.25)]"
-                  />
-
-                  {/* Stylized VTECH Center Monogram / Vector Emblem */}
-                  <div className="relative z-10 flex flex-col items-center justify-center select-none">
-                    <span className="text-2xl font-black tracking-tighter text-white drop-shadow-[0_0_12px_rgba(255,255,255,0.5)]">
-                      V<span className="text-primary">T</span>
-                    </span>
-                    <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-white/50 -mt-0.5">
-                      STUDIO
-                    </span>
+                  <div className="absolute bottom-2 left-1/2 -translate-x-1/2 pointer-events-none opacity-40 group-hover/ascii:opacity-90 transition-opacity text-[9px] font-mono tracking-widest uppercase text-white/70 bg-black/75 px-2.5 py-0.5 rounded-full border border-white/15 backdrop-blur-sm">
+                    Hover to Reveal
                   </div>
-                </div>
-
-                {/* Live Equalizer / Waveform Frequency Bars */}
-                <div className="flex items-center gap-1.5 mt-2 h-5">
-                  {[18, 32, 14, 28, 40, 22, 36, 16, 30, 24, 38, 20].map((h, i) => (
-                    <motion.div
-                      key={i}
-                      animate={{
-                        height: [
-                          `${Math.max(4, h * 0.25)}px`,
-                          `${h * 0.45}px`,
-                          `${Math.max(4, h * 0.25)}px`,
-                        ],
-                        opacity: [0.35, 0.9, 0.35],
-                      }}
-                      transition={{
-                        duration: 1.2 + (i % 4) * 0.25,
-                        repeat: Infinity,
-                        ease: "easeInOut",
-                        delay: i * 0.08,
-                      }}
-                      className="w-[2px] rounded-full bg-gradient-to-t from-primary/40 via-white/80 to-[#00f3ff]"
-                    />
-                  ))}
                 </div>
 
                 {/* Micro Telemetry Spec Grid */}
-                <div className="w-full grid grid-cols-2 gap-2 mt-4 px-2">
+                <div className="w-full grid grid-cols-2 gap-2 mt-3.5 px-2">
                   <div className="p-2 rounded-lg bg-white/[0.03] border border-white/5">
                     <span className="block font-mono text-[8px] uppercase tracking-widest text-muted-foreground/70">SPEC 01</span>
-                    <span className="block font-mono text-[10px] font-bold text-white/90">3D MOTION / CGI</span>
+                    <span className="block font-mono text-[10px] font-bold text-white/90">ASCII MATRIX</span>
                   </div>
                   <div className="p-2 rounded-lg bg-white/[0.03] border border-white/5">
                     <span className="block font-mono text-[8px] uppercase tracking-widest text-muted-foreground/70">SPEC 02</span>
-                    <span className="block font-mono text-[10px] font-bold text-white/90">WEB ARCHITECTURE</span>
+                    <span className="block font-mono text-[10px] font-bold text-white/90">INTERACTIVE REVEAL</span>
                   </div>
                 </div>
               </div>

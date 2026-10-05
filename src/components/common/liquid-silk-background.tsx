@@ -50,9 +50,18 @@ export default function LiquidSilkBackground() {
     <div
       id="app-background-container"
       aria-hidden="true"
-      className="fixed inset-0 w-full h-full pointer-events-none select-none overflow-hidden z-0 bg-[#050505]"
+      className="fixed inset-0 w-full h-full pointer-events-none select-none overflow-hidden z-0 bg-[#060608]"
       style={{ zIndex: 0 }}
     >
+      {/* 0. Ambient Studio Base Atmosphere */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(120% 70% at 50% -10%, rgba(180, 20, 48, 0.45), transparent 60%), radial-gradient(100% 60% at 80% 110%, rgba(220, 160, 120, 0.2), transparent 60%), #060608",
+        }}
+      />
+
       {/* 1. Red Interactive WebGL Liquid Silk Layer */}
       <motion.div
         className="absolute inset-0 w-full h-full"
@@ -97,18 +106,17 @@ export default function LiquidSilkBackground() {
       >
         <video
           ref={videoRef}
-          src="/hf_20260423_084718_72a17915-4964-4059-afcd-22d59399b72e.mp4"
+          src="/background-video.mp4"
           autoPlay
           loop
           muted
           playsInline
-          preload="auto"
+          preload={isVideo ? "auto" : "none"}
           className="w-full h-full object-cover object-center"
           style={{
             filter: "contrast(1.08) brightness(0.92)",
           }}
         >
-          <source src="/hf_20260423_084718_72a17915-4964-4059-afcd-22d59399b72e.mp4" type="video/mp4" />
           <source src="/background-video.mp4" type="video/mp4" />
         </video>
 

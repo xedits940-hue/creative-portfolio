@@ -156,7 +156,7 @@ export function SmoothCursor({
       return;
     }
 
-    // Inject global cursor styles to hide default cursor on fine-pointer devices
+    // Inject global cursor styles to hide default cursor on fine-pointer devices only when active
     const styleId = "smooth-cursor-hide-native";
     let style = document.getElementById(styleId) as HTMLStyleElement | null;
     if (!style) {
@@ -164,16 +164,20 @@ export function SmoothCursor({
       style.id = styleId;
       style.innerHTML = `
         @media (pointer: fine) and (hover: hover) {
-          *, *::before, *::after {
+          body.has-custom-cursor, body.has-custom-cursor * {
             cursor: none !important;
           }
-          input, textarea, [contenteditable="true"] {
+          body.has-custom-cursor input, 
+          body.has-custom-cursor textarea, 
+          body.has-custom-cursor [contenteditable="true"] {
             cursor: text !important;
           }
         }
       `;
       document.head.appendChild(style);
     }
+
+    document.body.classList.add("has-custom-cursor");
 
     let timeout: ReturnType<typeof setTimeout> | null = null;
     let rafId = 0;

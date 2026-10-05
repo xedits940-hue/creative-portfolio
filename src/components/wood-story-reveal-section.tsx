@@ -475,6 +475,17 @@ export function WoodStoryRevealSection({
       observer.observe(stage);
     }
 
+    let stageWidth = stage.clientWidth || 1200;
+    let stageHeight = stage.clientHeight || 700;
+
+    const updateStageDimensions = () => {
+      if (!stage) return;
+      stageWidth = stage.clientWidth || 1200;
+      stageHeight = stage.clientHeight || 700;
+    };
+
+    window.addEventListener("resize", updateStageDimensions, { passive: true });
+
     const animate = () => {
       if (!isSectionInView) {
         rafRef.current = 0;
@@ -501,11 +512,10 @@ export function WoodStoryRevealSection({
         Math.min(1, currentRadiusRef.current / Math.max(1, maxR))
       );
 
-      const rect = stage.getBoundingClientRect();
       const normX =
-        rect.width > 0 ? (smooth.current.x / rect.width - 0.5) * 2 : 0;
+        stageWidth > 0 ? (smooth.current.x / stageWidth - 0.5) * 2 : 0;
       const normY =
-        rect.height > 0 ? (smooth.current.y / rect.height - 0.5) * 2 : 0;
+        stageHeight > 0 ? (smooth.current.y / stageHeight - 0.5) * 2 : 0;
 
       // Soft circular cursor-following mask matching exact stops:
       // 0 -> 1, 0.4 -> 1, 0.6 -> 0.75, 0.75 -> 0.4, 0.88 -> 0.12, 1 -> 0
@@ -545,6 +555,7 @@ export function WoodStoryRevealSection({
 
     return () => {
       if (observer) observer.disconnect();
+      window.removeEventListener("resize", updateStageDimensions);
       window.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("mouseleave", handleMouseLeave);
       stage.removeEventListener("touchstart", handleTouchStart);

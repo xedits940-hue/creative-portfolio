@@ -130,6 +130,18 @@ export default function RootLayout({
             __html: `(function(){
               if(typeof window==='undefined')return;
               window.addEventListener('error',function(e){
+                if(e && e.message && (e.message.indexOf('Loading chunk')!==-1 || e.message.indexOf('ChunkLoadError')!==-1)){
+                  e.stopImmediatePropagation();
+                  e.preventDefault();
+                  var key='_last_chunk_reload';
+                  var now=Date.now();
+                  var last=parseInt(sessionStorage.getItem(key)||'0',10);
+                  if(now-last>8000){
+                    sessionStorage.setItem(key,now.toString());
+                    window.location.reload();
+                  }
+                  return;
+                }
                 if(!e.error||(e.target&&e.target!==window)){
                   e.stopImmediatePropagation();
                 }
@@ -139,7 +151,20 @@ export default function RootLayout({
                 }
               },true);
               window.addEventListener('unhandledrejection',function(e){
-                if(!e.reason||e.reason instanceof Event||(typeof e.reason==='object'&&e.reason&&'isTrusted' in e.reason)){
+                var reason=e.reason;
+                if(reason && (reason.name==='ChunkLoadError' || (typeof reason.message==='string' && (reason.message.indexOf('Loading chunk')!==-1 || reason.message.indexOf('ChunkLoadError')!==-1)))){
+                  e.stopImmediatePropagation();
+                  e.preventDefault();
+                  var key='_last_chunk_reload';
+                  var now=Date.now();
+                  var last=parseInt(sessionStorage.getItem(key)||'0',10);
+                  if(now-last>8000){
+                    sessionStorage.setItem(key,now.toString());
+                    window.location.reload();
+                  }
+                  return;
+                }
+                if(!reason||reason instanceof Event||(typeof reason==='object'&&reason&&'isTrusted' in reason)){
                   e.stopImmediatePropagation();
                   e.preventDefault();
                 }
