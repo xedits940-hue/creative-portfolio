@@ -1,9 +1,8 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import Link from "next/link";
 import { Anton } from "next/font/google";
-import { motion } from "framer-motion";
 import TrueFocus from "@/components/ui/TrueFocus";
 import TechText from "@/components/ui/TechText";
 import { Sparkles, ArrowDown, Play } from "lucide-react";
@@ -27,46 +26,51 @@ const ShineBar = () => (
 
 const AboutMe = () => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [fontSize, setFontSize] = useState<number>(195);
+
+  useEffect(() => {
+    const computeResponsiveSize = () => {
+      const w = window.innerWidth;
+      if (w < 440) {
+        // Mobile Phones: ~80-92px (fits edge-to-edge with luxury margins, no clipping)
+        setFontSize(Math.max(76, Math.min(Math.round(w * 0.22), 94)));
+      } else if (w < 768) {
+        // Large phones, foldables: ~105-135px
+        setFontSize(Math.max(100, Math.min(Math.round(w * 0.185), 140)));
+      } else if (w < 1024) {
+        // Tablets & small notebooks: ~140-175px
+        setFontSize(Math.max(140, Math.min(Math.round(w * 0.165), 175)));
+      } else if (w < 1600) {
+        // Laptops & Desktops: Bold, high-end, premium presence ~190-225px
+        setFontSize(Math.max(185, Math.min(Math.round(w * 0.15), 225)));
+      } else {
+        // Ultra-wides & 4K TVs: Impressive ~240-285px
+        setFontSize(Math.max(230, Math.min(Math.round(w * 0.125), 285)));
+      }
+    };
+
+    computeResponsiveSize();
+    window.addEventListener("resize", computeResponsiveSize);
+    return () => window.removeEventListener("resize", computeResponsiveSize);
+  }, []);
 
   return (
     <section
       ref={containerRef}
-      className="relative min-h-[95vh] w-full overflow-hidden flex flex-col items-center justify-between pt-28 pb-12 bg-transparent select-none"
+      className="relative min-h-[95vh] w-full overflow-hidden flex flex-col items-center justify-between pt-24 pb-12 bg-transparent select-none"
     >
       {/* Ambient background glow effects */}
       <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-red-600/15 rounded-full blur-[140px] pointer-events-none -z-10" />
       <div className="absolute top-1/2 left-1/4 w-[300px] h-[200px] bg-red-500/10 rounded-full blur-[100px] pointer-events-none -z-10" />
 
-      {/* Top Studio Status Pill */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
-        className="relative z-20 flex items-center gap-2.5 px-4 py-1.5 rounded-full border border-red-500/30 bg-black/50 backdrop-blur-md shadow-[0_0_15px_rgba(255,31,61,0.2)] mb-4"
-      >
-        <span className="relative flex h-2 w-2">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-          <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-        </span>
-        <span className="text-[11px] font-mono tracking-widest text-red-100 uppercase">
-          VTECH STUDIOS — OFFICIAL PRODUCTION REEL 2026
-        </span>
-      </motion.div>
-
-      {/* Giant typography section with interactive TechText effect */}
-      <div className="relative z-10 w-full flex flex-col items-center justify-center my-auto pointer-events-auto select-none overflow-hidden">
-        <div className="w-full max-w-6xl h-[22vh] min-h-[130px] max-h-[190px] flex items-center justify-center relative">
-          {/* Static glowing fallback layer for instant visual impact */}
-          <h1
-            className={`${anton.className} absolute text-7xl sm:text-9xl md:text-[160px] lg:text-[190px] font-bold text-red-600/20 select-none tracking-tight pointer-events-none filter drop-shadow-[0_0_40px_rgba(255,31,61,0.3)]`}
-          >
-            VTECH
-          </h1>
+      {/* Giant typography section with dynamically calibrated responsive TechText effect */}
+      <div className="relative z-10 w-full flex flex-col items-center justify-center my-auto pointer-events-auto select-none overflow-hidden px-2 sm:px-4">
+        <div className="w-full max-w-7xl h-[15vh] sm:h-[18vh] md:h-[22vh] lg:h-[25vh] min-h-[90px] sm:min-h-[120px] md:min-h-[160px] lg:min-h-[200px] flex items-center justify-center relative">
           <TechText
             text="VTECH"
             fontFamily={anton.style.fontFamily}
             fontWeight={400}
-            fontSize={200}
+            fontSize={fontSize}
             color="#ff1f3d"
             accentColor="#ff1f3d"
             reveal="letter"
@@ -80,17 +84,12 @@ const AboutMe = () => {
           />
         </div>
 
-        <div className="w-full max-w-6xl h-[22vh] min-h-[130px] max-h-[190px] flex items-center justify-center relative">
-          <h1
-            className={`${anton.className} absolute text-7xl sm:text-9xl md:text-[160px] lg:text-[190px] font-bold text-red-600/20 select-none tracking-tight pointer-events-none filter drop-shadow-[0_0_40px_rgba(255,31,61,0.3)]`}
-          >
-            STUDIOS
-          </h1>
+        <div className="w-full max-w-7xl h-[15vh] sm:h-[18vh] md:h-[22vh] lg:h-[25vh] min-h-[90px] sm:min-h-[120px] md:min-h-[160px] lg:min-h-[200px] flex items-center justify-center relative">
           <TechText
             text="STUDIOS"
             fontFamily={anton.style.fontFamily}
             fontWeight={400}
-            fontSize={200}
+            fontSize={fontSize}
             color="#ff1f3d"
             accentColor="#ff1f3d"
             reveal="letter"
@@ -117,7 +116,7 @@ const AboutMe = () => {
           <TrueFocus
             sentence="CREATIVE DIRECTION CINEMATIC MOTION DIGITAL PRODUCTION"
             manualMode={false}
-            blurAmount={3}
+            blurAmount={0}
             borderColor="#ff1f3d"
             glowColor="rgba(255, 31, 61, 0.6)"
             animationDuration={0.6}

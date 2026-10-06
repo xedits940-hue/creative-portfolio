@@ -191,13 +191,13 @@ const AboutSection = () => {
               <div className="relative z-10 flex flex-col items-center justify-center py-4 px-4 w-full">
                 <div className="relative w-full aspect-[4/3.8] max-w-[300px] rounded-2xl overflow-hidden border border-white/10 bg-black/60 shadow-inner group/ascii">
                   <AsciiReveal
-                    image="/character.png"
-                    columns={70}
-                    contrast={25}
+                    image="/vtech-studios-logo.png"
+                    columns={65}
+                    contrast={28}
                     inkColor="#ff1f3d"
                     colorMode="image"
                     reveal={true}
-                    revealOptions={{ size: 65, softness: 14 }}
+                    revealOptions={{ size: 70, softness: 16 }}
                     className="w-full h-full"
                   />
                   <div className="absolute bottom-2 left-1/2 -translate-x-1/2 pointer-events-none opacity-40 group-hover/ascii:opacity-90 transition-opacity text-[9px] font-mono tracking-widest uppercase text-white/70 bg-black/75 px-2.5 py-0.5 rounded-full border border-white/15 backdrop-blur-sm">

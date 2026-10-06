@@ -21,7 +21,8 @@ const socialLinks = [
   },
 ];
 
-const EASE_SNAPPY: [number, number, number, number] = [0.16, 1, 0.3, 1];
+// Silky, gentle relaxed luxury curve
+const EASE_LUXURY: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -45,14 +46,12 @@ const Navbar: React.FC = () => {
 
         await animate(
           scope.current,
-          { height: "4.25rem", borderRadius: "1rem" },
-          { duration: 0.35, ease: EASE_SNAPPY },
-        );
-
-        await animate(
-          scope.current,
-          { width: `${closedWidthRef.current}px`, borderRadius: "1rem" },
-          { duration: 0.35, ease: EASE_SNAPPY },
+          {
+            width: `${closedWidthRef.current}px`,
+            height: "4.25rem",
+            borderRadius: "1rem",
+          },
+          { duration: 0.58, ease: EASE_LUXURY },
         );
 
         scope.current.style.width = "";
@@ -84,6 +83,7 @@ const Navbar: React.FC = () => {
       closedWidthRef.current = scope.current.offsetWidth;
       scope.current.style.width = `${closedWidthRef.current}px`;
       setIsOpen(true);
+      setShowContent(true);
 
       const isMobile = window.innerWidth < 640;
       const targetWidth = isMobile
@@ -91,33 +91,29 @@ const Navbar: React.FC = () => {
         : `${Math.min(window.innerWidth - 32, 680)}px`;
       const targetHeight = isMobile ? "430px" : "380px";
 
+      // Calm, slow, unhurried fluid opening
       await animate(
         scope.current,
-        { width: targetWidth, borderRadius: "1.25rem" },
-        { duration: 0.4, ease: EASE_SNAPPY },
-      );
-
-      setShowContent(true);
-
-      await animate(
-        scope.current,
-        { height: targetHeight, borderRadius: "1.25rem" },
-        { duration: 0.45, ease: EASE_SNAPPY },
+        {
+          width: targetWidth,
+          height: targetHeight,
+          borderRadius: "1.25rem",
+        },
+        { duration: 0.68, ease: EASE_LUXURY },
       );
     } else {
       setShowContent(false);
       setHoveredIndex(null);
 
+      // Calm, slow, unhurried fluid closing
       await animate(
         scope.current,
-        { height: "4.25rem", borderRadius: "1rem" },
-        { duration: 0.35, ease: EASE_SNAPPY },
-      );
-
-      await animate(
-        scope.current,
-        { width: `${closedWidthRef.current}px`, borderRadius: "1rem" },
-        { duration: 0.35, ease: EASE_SNAPPY },
+        {
+          width: `${closedWidthRef.current}px`,
+          height: "4.25rem",
+          borderRadius: "1rem",
+        },
+        { duration: 0.58, ease: EASE_LUXURY },
       );
 
       scope.current.style.width = "";
@@ -141,7 +137,7 @@ const Navbar: React.FC = () => {
           target.scrollIntoView({ behavior: "smooth", block: "start" });
         }
       }
-    }, 280);
+    }, 300);
   };
 
   const handleInstagramClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -168,7 +164,7 @@ const Navbar: React.FC = () => {
             onClick={handleToggle}
             className="cursor-pointer relative h-8 w-8 flex items-center justify-center rounded-lg hover:bg-muted/50 transition-colors"
             aria-label={isOpen ? "Close menu" : "Open menu"}
-            whileTap={{ scale: 0.9 }}
+            whileTap={{ scale: 0.92 }}
             whileHover={{ scale: 1.05 }}
           >
             <AnimatePresence mode="wait">
@@ -178,7 +174,7 @@ const Navbar: React.FC = () => {
                   initial={{ opacity: 0, rotate: -90 }}
                   animate={{ opacity: 1, rotate: 0 }}
                   exit={{ opacity: 0, rotate: 90 }}
-                  transition={{ duration: 0.2, ease: "easeInOut" }}
+                  transition={{ duration: 0.22, ease: "easeInOut" }}
                 >
                   <X className="h-5 w-5 text-foreground" />
                 </motion.div>
@@ -188,7 +184,7 @@ const Navbar: React.FC = () => {
                   initial={{ opacity: 0, rotate: 90 }}
                   animate={{ opacity: 1, rotate: 0 }}
                   exit={{ opacity: 0, rotate: -90 }}
-                  transition={{ duration: 0.2, ease: "easeInOut" }}
+                  transition={{ duration: 0.22, ease: "easeInOut" }}
                 >
                   <Menu className="h-5 w-5 text-foreground" />
                 </motion.div>
@@ -230,20 +226,20 @@ const Navbar: React.FC = () => {
         <AnimatePresence>
           {showContent && (
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.25, ease: "easeOut" }}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.32, ease: "easeOut" }}
               className="flex flex-col flex-1 px-5 sm:px-8 pt-2 pb-5 overflow-hidden"
             >
               <div className="flex flex-col sm:flex-row flex-1 gap-6 sm:gap-8 justify-between">
                 {/* Left: Nav Links */}
                 <div className="flex-1 flex flex-col justify-center">
                   <motion.span
-                    initial={{ opacity: 0, x: -8 }}
+                    initial={{ opacity: 0, x: -6 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0 }}
-                    transition={{ duration: 0.3, ease: EASE_SNAPPY }}
+                    transition={{ duration: 0.3, ease: EASE_LUXURY }}
                     className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground font-mono mb-3 sm:mb-4"
                   >
                     Directory
@@ -253,13 +249,13 @@ const Navbar: React.FC = () => {
                     {navLinks.map((link, i) => (
                       <motion.div
                         key={link.name}
-                        initial={{ opacity: 0, y: 16 }}
+                        initial={{ opacity: 0, y: 12 }}
                         animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -8 }}
+                        exit={{ opacity: 0, y: -6 }}
                         transition={{
                           duration: 0.35,
-                          delay: i * 0.05,
-                          ease: EASE_SNAPPY,
+                          delay: i * 0.04,
+                          ease: EASE_LUXURY,
                         }}
                         onMouseEnter={() => setHoveredIndex(i)}
                         onMouseLeave={() => setHoveredIndex(null)}
@@ -301,33 +297,39 @@ const Navbar: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Right: Studio Details (Desktop/Tablet) */}
+                {/* Right: Studio Details (Desktop/Tablet) — Dedicated Instagram Connect */}
                 <motion.div
-                  initial={{ opacity: 0, x: 20 }}
+                  initial={{ opacity: 0, x: 14 }}
                   animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 10 }}
-                  transition={{ duration: 0.35, delay: 0.12, ease: EASE_SNAPPY }}
+                  exit={{ opacity: 0, x: 8 }}
+                  transition={{ duration: 0.35, delay: 0.08, ease: EASE_LUXURY }}
                   className="hidden sm:flex flex-col justify-between w-56 md:w-60 pl-6 border-l border-border/25 py-1"
                 >
-                  {/* Let's Talk */}
-                  <div className="flex flex-col gap-1">
-                    <span className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground font-mono">
-                      Let&apos;s Talk
-                    </span>
-                    <motion.a
-                      href="mailto:vtechprime01@gmail.com"
-                      className="text-xs sm:text-sm font-medium hover:text-primary transition-colors select-all break-all"
-                      whileHover={{ x: 2 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      vtechprime01@gmail.com
-                    </motion.a>
-                  </div>
-
-                  {/* Socials - Instagram */}
+                  {/* Let's Connect (Instagram) */}
                   <div className="flex flex-col gap-1.5">
                     <span className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground font-mono">
-                      Socials
+                      Let&apos;s Connect
+                    </span>
+                    <a
+                      href="https://www.instagram.com/vtechstudio.dev/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={handleInstagramClick}
+                      className="group/insta inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-foreground hover:text-primary transition-colors cursor-pointer"
+                    >
+                      <Instagram className="h-4 w-4 text-[#ff1f3d] group-hover/insta:scale-110 transition-transform shrink-0" />
+                      <span className="underline-offset-4 group-hover/insta:underline">@vtechstudio.dev</span>
+                      <ArrowUpRight className="h-3.5 w-3.5 opacity-60 group-hover/insta:opacity-100 group-hover/insta:translate-x-0.5 group-hover/insta:-translate-y-0.5 transition-all shrink-0" />
+                    </a>
+                    <span className="text-[11px] text-muted-foreground/80 font-mono">
+                      Direct Message for Inquiries
+                    </span>
+                  </div>
+
+                  {/* Socials - Instagram Pill */}
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground font-mono">
+                      Social Platform
                     </span>
                     <div className="flex flex-wrap gap-2">
                       {socialLinks.map((social) => (
@@ -338,9 +340,9 @@ const Navbar: React.FC = () => {
                           rel="noopener noreferrer"
                           onClick={handleInstagramClick}
                           aria-label="Open Instagram Profile in New Tab"
-                          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground hover:border-primary/50 transition-colors py-1 px-3 rounded-full border border-border/50 bg-background/50 cursor-pointer"
+                          className="inline-flex items-center gap-1.5 text-xs text-foreground hover:text-primary hover:border-primary/50 transition-colors py-1 px-3 rounded-full border border-border/50 bg-background/50 cursor-pointer shadow-sm"
                         >
-                          <Instagram className="h-3.5 w-3.5 text-pink-500" />
+                          <Instagram className="h-3.5 w-3.5 text-[#ff1f3d]" />
                           <span className="font-medium">{social.name}</span>
                           <ArrowUpRight className="h-3 w-3 opacity-70" />
                         </a>
@@ -351,9 +353,9 @@ const Navbar: React.FC = () => {
                   {/* Based In */}
                   <div className="flex flex-col gap-0.5">
                     <span className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground font-mono">
-                      Based In
+                      Studio Status
                     </span>
-                    <span className="text-xs font-semibold">India</span>
+                    <span className="text-xs font-semibold text-foreground">India</span>
                     <span className="text-[11px] text-muted-foreground">
                       Available Worldwide
                     </span>
@@ -365,34 +367,27 @@ const Navbar: React.FC = () => {
               <div className="flex sm:hidden flex-col gap-2 pt-2 border-t border-border/25 mt-2">
                 <div className="flex items-center justify-between text-xs">
                   <a
-                    href="mailto:vtechprime01@gmail.com"
-                    className="text-xs font-medium text-foreground hover:text-primary transition-colors"
+                    href="https://www.instagram.com/vtechstudio.dev/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={handleInstagramClick}
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-foreground hover:text-primary transition-colors py-0.5"
                   >
-                    vtechprime01@gmail.com
+                    <Instagram className="h-3.5 w-3.5 text-[#ff1f3d]" />
+                    <span>@vtechstudio.dev</span>
                   </a>
-                  {socialLinks.map((social) => (
-                    <a
-                      key={social.name}
-                      href={social.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={handleInstagramClick}
-                      className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground font-medium py-0.5 px-2 rounded-full border border-border/40"
-                    >
-                      <Instagram className="h-3 w-3 text-pink-500" />
-                      <span>{social.name}</span>
-                      <ArrowUpRight className="h-3 w-3" />
-                    </a>
-                  ))}
+                  <span className="text-[10px] font-mono uppercase text-muted-foreground tracking-wider">
+                    Official Instagram
+                  </span>
                 </div>
               </div>
 
               {/* Bottom Status Footer */}
               <motion.div
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.3, delay: 0.2, ease: EASE_SNAPPY }}
+                transition={{ duration: 0.3, delay: 0.15, ease: EASE_LUXURY }}
                 className="flex items-center justify-between pt-3 mt-auto border-t border-border/25 text-xs"
               >
                 <div className="flex items-center gap-2">

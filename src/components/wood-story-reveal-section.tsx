@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState, useCallback } from "react";
-import { GlyphMatrix } from "@/components/glyph-matrix";
-import { TextAnimate } from "@/registry/magicui/text-animate";
+import { TextTrail } from "@/components/ui/text-trail";
 
 const BG_IMAGE_1 =
   "https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260609_195923_b0ba8ace-1d1d-4f2c-9a28-1ab84b330680.png&w=1280&q=85";
@@ -11,51 +10,6 @@ const BG_IMAGE_2 =
   "https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260609_201152_bba90a12-bf12-459f-91f0-51f237dbaf3b.png&w=1280&q=85";
 
 const SPOTLIGHT_R = 260;
-
-const TEXT_VARIANTS = {
-  hidden: {
-    opacity: 0,
-    y: 30,
-    rotate: 45,
-    scale: 0.5,
-  },
-  show: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    rotate: 0,
-    scale: 1,
-    transition: {
-      delay: i * 0.012,
-      duration: 0.35,
-      y: {
-        type: "spring",
-        damping: 12,
-        stiffness: 200,
-        mass: 0.8,
-      },
-      rotate: {
-        type: "spring",
-        damping: 8,
-        stiffness: 150,
-      },
-      scale: {
-        type: "spring",
-        damping: 10,
-        stiffness: 300,
-      },
-    },
-  }),
-  exit: (i: number) => ({
-    opacity: 0,
-    y: 30,
-    rotate: 45,
-    scale: 0.5,
-    transition: {
-      delay: i * 0.006,
-      duration: 0.25,
-    },
-  }),
-};
 
 interface CutoutData {
   baseUrl: string;
@@ -583,17 +537,6 @@ export function WoodStoryRevealSection({
         style={{ backgroundImage: `url(${BG_IMAGE_1})` }}
       />
 
-      {/* 2. GlyphMatrix Atmospheric Background Layer */}
-      <div className="absolute inset-0 z-5 pointer-events-none">
-        <GlyphMatrix
-          glyphs="01·•+*/\<>="
-          cellSize={14}
-          mutationRate={0.04}
-          interval={90}
-          fadeBottom={0.6}
-        />
-      </div>
-
       {/* 3. Isolated Wood Cutout Foreground: Base State */}
       <div
         ref={baseImageRef}
@@ -623,42 +566,54 @@ export function WoodStoryRevealSection({
       {/* Subtle vignette border gradient */}
       <div className="absolute inset-0 pointer-events-none z-30 bg-radial from-transparent via-transparent to-black/70" />
 
-      {/* 5. Upper-Left BEFORE Text:
-          Activates when cursor enters the wood; smoothly transitions out when moving to reveal */}
+      {/* 5. Upper-Left BEFORE Text with WebGL TextTrail effect */}
       <div
-        className={`absolute top-6 left-6 sm:top-10 sm:left-10 md:top-12 md:left-12 z-40 max-w-sm sm:max-w-md pointer-events-none transition-opacity duration-300 ease-out ${
+        className={`absolute top-5 left-5 sm:top-8 sm:left-8 md:top-10 md:left-10 z-40 w-[270px] sm:w-[350px] md:w-[420px] h-[85px] sm:h-[105px] md:h-[125px] pointer-events-none transition-opacity duration-500 ease-out ${
           textState === "before" ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
       >
-        <TextAnimate
-          animate={textState === "before" ? "show" : "exit"}
-          startOnView={false}
-          className="font-stranger text-white/90 text-xs sm:text-sm md:text-base font-light uppercase tracking-[0.22em] sm:tracking-[0.26em] leading-relaxed drop-shadow-[0_2px_12px_rgba(0,0,0,0.95)]"
-          segmentClassName="font-stranger"
-          variants={TEXT_VARIANTS}
-          by="character"
-        >
-          THEY LEFT ME WITH REASONS TO STOP.
-        </TextAnimate>
+        <TextTrail
+          text={"THEY LEFT ME WITH\nREASONS TO STOP."}
+          font={{
+            fontFamily: "var(--font-stranger, 'Stranger back in the Night', sans-serif)",
+            fontSize: 24,
+            fontWeight: 700,
+            letterSpacing: "0.15em",
+            lineHeight: 1.3,
+          }}
+          color="#FFFFFF"
+          trailColor="#ff1f3d"
+          trail={16}
+          drift={20}
+          warp={6}
+          speed={18}
+          push={7}
+        />
       </div>
 
-      {/* 6. Lower-Right REVEAL Text:
-          Appears as cursor explores the reveal area of the wood */}
+      {/* 6. Lower-Right REVEAL Text with WebGL TextTrail effect */}
       <div
-        className={`absolute bottom-6 right-6 sm:bottom-10 sm:right-10 md:bottom-12 md:right-12 z-40 max-w-sm sm:max-w-md text-right pointer-events-none transition-opacity duration-300 ease-out ${
+        className={`absolute bottom-5 right-5 sm:bottom-8 sm:right-8 md:bottom-10 md:right-10 z-40 w-[290px] sm:w-[370px] md:w-[440px] h-[85px] sm:h-[105px] md:h-[125px] pointer-events-none transition-opacity duration-500 ease-out ${
           textState === "reveal" ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
       >
-        <TextAnimate
-          animate={textState === "reveal" ? "show" : "exit"}
-          startOnView={false}
-          className="font-stranger text-white text-xs sm:text-sm md:text-base font-normal uppercase tracking-[0.22em] sm:tracking-[0.26em] leading-relaxed drop-shadow-[0_2px_14px_rgba(0,0,0,0.98)]"
-          segmentClassName="font-stranger"
-          variants={TEXT_VARIANTS}
-          by="character"
-        >
-          I TURNED THEM INTO REASONS TO CONTINUE.
-        </TextAnimate>
+        <TextTrail
+          text={"I TURNED THEM INTO\nREASONS TO CONTINUE."}
+          font={{
+            fontFamily: "var(--font-stranger, 'Stranger back in the Night', sans-serif)",
+            fontSize: 24,
+            fontWeight: 700,
+            letterSpacing: "0.15em",
+            lineHeight: 1.3,
+          }}
+          color="#FFFFFF"
+          trailColor="#ff1f3d"
+          trail={16}
+          drift={20}
+          warp={6}
+          speed={18}
+          push={7}
+        />
       </div>
     </section>
   );

@@ -96,16 +96,15 @@ const TrueFocus: React.FC<TrueFocusProps> = ({
             }}
             className={`focus-word ${manualMode ? 'manual' : ''} ${isActive && !manualMode ? 'active' : ''}`}
             style={{
-              filter: manualMode
-                ? isActive
-                  ? `blur(0px)`
-                  : `blur(${blurAmount}px)`
-                : isActive
-                  ? `blur(0px)`
-                  : `blur(${blurAmount}px)`,
+              filter: blurAmount > 0
+                ? (manualMode
+                    ? (isActive ? 'blur(0px)' : `blur(${blurAmount}px)`)
+                    : (isActive ? 'blur(0px)' : `blur(${blurAmount}px)`))
+                : 'none',
+              opacity: isActive ? 1 : 0.85,
               '--border-color': borderColor,
               '--glow-color': glowColor,
-              transition: `filter ${animationDuration}s ease`
+              transition: `opacity ${animationDuration}s ease, color ${animationDuration}s ease`
             } as React.CSSProperties}
             onMouseEnter={() => handleMouseEnter(index)}
             onMouseLeave={handleMouseLeave}
