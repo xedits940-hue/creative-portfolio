@@ -171,7 +171,7 @@ export default function SoundToggle() {
   return (
     <div
       ref={containerRef}
-      className="fixed top-4 left-3 sm:top-5 sm:left-4 md:left-5 z-[9999] pointer-events-auto"
+      className="fixed z-[9999] pointer-events-auto top-4 left-3.5 sm:top-5 sm:left-4 md:left-5 lg:left-6 transition-all"
       style={{ zIndex: 9999 }}
     >
       <button

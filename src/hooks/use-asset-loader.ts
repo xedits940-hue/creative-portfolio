@@ -3,37 +3,33 @@
 import { useEffect, useState } from "react";
 
 /**
- * Drives a silky smooth 0 to 100% counter for the signature studio preloader.
- * Guarantees steady, continuous progression so all multilingual greetings
- * cycle legibly, the curved line fills steadily, and finishes cleanly at 100%.
+ * High-precision linear smooth asset loader hook.
+ * Drives 0 -> 100% with continuous linear increments so all 12 multilingual greetings
+ * display evenly and legibly on all devices (mobile, tablets, laptops, desktops).
  */
-export function useAssetLoader(targetDurationMs = 2200) {
+export function useAssetLoader(targetDurationMs = 2400) {
   const [progress, setProgress] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
 
   useEffect(() => {
     const start = performance.now();
     let raf = 0;
-    let lastShown = -1;
+    let lastReported = -1;
 
     const loop = (now: number) => {
       const elapsed = now - start;
-      const raw = Math.min(1, elapsed / targetDurationMs);
+      const linearRatio = Math.min(1, elapsed / targetDurationMs);
 
-      // Smooth custom easing: starts gently, advances fluidly, smoothly settles into 100%
-      const eased = raw < 0.5
-        ? 2 * raw * raw
-        : -1 + (4 - 2 * raw) * raw;
+      // Steady linear progression so every language word gets an equal time slice
+      const current = Math.min(100, Math.max(0, linearRatio * 100));
+      const shown = Math.floor(current);
 
-      const current = Math.min(100, Math.max(0, eased * 100));
-      const shown = Math.round(current);
-
-      if (shown !== lastShown) {
-        lastShown = shown;
+      if (shown !== lastReported) {
+        lastReported = shown;
         setProgress(shown);
       }
 
-      if (raw >= 1) {
+      if (linearRatio >= 1) {
         setProgress(100);
         setIsComplete(true);
         return;
@@ -42,11 +38,11 @@ export function useAssetLoader(targetDurationMs = 2200) {
       raf = requestAnimationFrame(loop);
     };
 
-    // Emergency safety timeout: ensure it NEVER gets stuck even in throttled background tabs
+    // Emergency watchdog: guarantees completion even if rAF is background-throttled
     const maxSafetyTimer = setTimeout(() => {
       setProgress(100);
       setIsComplete(true);
-    }, Math.min(targetDurationMs + 800, 3000));
+    }, targetDurationMs + 600);
 
     raf = requestAnimationFrame(loop);
 

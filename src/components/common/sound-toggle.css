@@ -1,6 +1,6 @@
 .sound-toggle {
   --size: 40px;
-  --min-hit: 36px;
+  --min-hit: 44px;
   --surface-opacity: 0.1;
   --surface-opacity-strong: 0.2;
   --blur: 16px;
@@ -27,6 +27,29 @@
   touch-action: manipulation;
   transform: translateZ(0) scale(1);
   transition: transform 200ms var(--ease-standard);
+}
+
+/* Responsive sizes across device categories */
+@media (max-width: 640px) {
+  .sound-toggle {
+    --size: 36px;
+    --min-hit: 40px;
+    --wave-stroke-width: 2.0;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .sound-toggle {
+    --size: 38px;
+    --min-hit: 42px;
+  }
+}
+
+@media (min-width: 1920px) {
+  .sound-toggle {
+    --size: 46px;
+    --min-hit: 48px;
+  }
 }
 
 .sound-toggle::before {

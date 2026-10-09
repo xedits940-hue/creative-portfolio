@@ -14,11 +14,11 @@ import WoodStoryRevealSection from "@/components/wood-story-reveal-section";
 export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
 
-  // Safety fallback: if anything prevents the preloader event, release the page after 2.8s
+  // Safety fallback: if anything prevents the preloader event, release the page after 3.6s
   useEffect(() => {
     const fallback = setTimeout(() => {
       setIsLoading(false);
-    }, 2800);
+    }, 3600);
     return () => clearTimeout(fallback);
   }, []);
 
