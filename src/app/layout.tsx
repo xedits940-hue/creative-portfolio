@@ -12,6 +12,11 @@ import ConsoleLog from "@/components/common/console-log";
 import { SmoothCursor } from "@/components/ui/smooth-cursor";
 import LiquidSilkBackground from "@/components/common/liquid-silk-background";
 import { BackgroundProvider } from "@/providers/background-provider";
+import { ErrorBoundary } from "@/components/common/error-boundary";
+import PerformanceMonitor from "@/components/common/performance-monitor";
+import SoundToggle from "@/components/common/sound-toggle";
+import { SoundProvider } from "@/providers/sound-provider";
+import SoundExperienceModal from "@/components/common/sound-experience-modal";
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -125,6 +130,10 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://images.unsplash.com" />
+        <link rel="dns-prefetch" href="https://framerusercontent.com" />
         <script
           dangerouslySetInnerHTML={{
             __html: `(function(){
@@ -176,26 +185,33 @@ export default function RootLayout({
       <body
         className={`${poppins.variable} ${cormorantGaramond.variable} antialiased mx-auto`}
       >
+        <PerformanceMonitor />
         <StructuredData />
         <Analytics />
         <ConsoleLog />
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          forcedTheme="dark"
-          enableSystem={false}
-          disableTransitionOnChange
-        >
-          <BackgroundProvider>
-            <LiquidSilkBackground />
-            <SmoothCursor />
-            <LenisWrapper>
-              <Navbar />
-              {children}
-              <FooterSection />
-            </LenisWrapper>
-          </BackgroundProvider>
-        </ThemeProvider>
+        <ErrorBoundary name="root-layout">
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="dark"
+            forcedTheme="dark"
+            enableSystem={false}
+            disableTransitionOnChange
+          >
+            <BackgroundProvider>
+              <SoundProvider>
+                <LiquidSilkBackground />
+                <SmoothCursor />
+                <SoundToggle />
+                <SoundExperienceModal />
+                <LenisWrapper>
+                  <Navbar />
+                  {children}
+                  <FooterSection />
+                </LenisWrapper>
+              </SoundProvider>
+            </BackgroundProvider>
+          </ThemeProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );

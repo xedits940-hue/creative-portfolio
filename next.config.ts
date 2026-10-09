@@ -1,13 +1,17 @@
 import type { NextConfig } from "next";
 import { PHASE_DEVELOPMENT_SERVER } from "next/constants";
 
-export default function nextConfig(phase: string): NextConfig {
-  const isDev = phase === PHASE_DEVELOPMENT_SERVER;
-
+export default function nextConfig(): NextConfig {
   return {
-    distDir: isDev ? ".next-dev" : ".next",
     devIndicators: false,
+    compress: true,
+    poweredByHeader: false,
+    httpAgentOptions: {
+      keepAlive: true,
+    },
     images: {
+      formats: ["image/avif", "image/webp"],
+      minimumCacheTTL: 31536000,
       remotePatterns: [
         {
           protocol: "https",
@@ -46,6 +50,52 @@ export default function nextConfig(phase: string): NextConfig {
           hostname: "d8j0ntlcm91z4.cloudfront.net",
         },
       ],
+    },
+    async headers() {
+      return [
+        {
+          source: "/:all*(svg|jpg|png|webp|avif|mp4|ttf|woff2)",
+          headers: [
+            {
+              key: "Access-Control-Allow-Origin",
+              value: "*",
+            },
+            {
+              key: "Cache-Control",
+              value: "public, max-age=31536000, immutable",
+            },
+          ],
+        },
+        {
+          source: "/:path*",
+          headers: [
+            {
+              key: "X-DNS-Prefetch-Control",
+              value: "on",
+            },
+            {
+              key: "Strict-Transport-Security",
+              value: "max-age=63072000; includeSubDomains; preload",
+            },
+            {
+              key: "X-Content-Type-Options",
+              value: "nosniff",
+            },
+            {
+              key: "X-XSS-Protection",
+              value: "1; mode=block",
+            },
+            {
+              key: "Referrer-Policy",
+              value: "strict-origin-when-cross-origin",
+            },
+            {
+              key: "Permissions-Policy",
+              value: "camera=(), microphone=(), geolocation=()",
+            },
+          ],
+        },
+      ];
     },
   };
 }

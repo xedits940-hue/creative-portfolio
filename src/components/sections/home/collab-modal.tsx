@@ -302,20 +302,11 @@ export default function CollabModal({ isOpen, onClose }: Props) {
             animate={{ clipPath: "circle(150% at 50% 50%)" }}
             exit={{ clipPath: "circle(0% at 50% 50%)" }}
             transition={{ duration: 0.88, ease: [0.76, 0, 0.24, 1] }}
-            className="fixed inset-0 z-[200]"
-            style={{ background: "#080808" }}
+            className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-2xl"
             aria-modal="true"
             role="dialog"
             aria-label="Collaboration form"
           >
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-0 z-0 opacity-[0.04]"
-              style={{
-                backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
-                backgroundSize: "200px",
-              }}
-            />
 
             {CORNERS.map((c, i) => (
               <motion.div

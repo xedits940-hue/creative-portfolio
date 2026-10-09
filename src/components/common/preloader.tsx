@@ -298,7 +298,7 @@ const Preloader: React.FC<PreloaderProps> = ({
         </div>
       </div>
 
-      {/* 4. Bottom Left: Status badge */}
+      {/* 4. Bottom Left: Studio identity status indicator */}
       <div className="absolute bottom-8 left-8 z-[2] flex items-center gap-3 pointer-events-none">
         <motion.span
           className="block h-2 w-2 rounded-full shadow-[0_0_8px_#ff1f3d]"
@@ -315,14 +315,13 @@ const Preloader: React.FC<PreloaderProps> = ({
             ease: "easeInOut",
           }}
         />
-
         <span
           className="text-[11px] font-mono font-medium uppercase tracking-[0.35em] opacity-70"
           style={{
             color: textColor,
           }}
         >
-          Loading experience
+          VTECH STUDIO
         </span>
       </div>
 

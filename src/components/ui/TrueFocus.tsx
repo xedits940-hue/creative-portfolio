@@ -6,6 +6,7 @@ import './TrueFocus.css';
 
 export interface TrueFocusProps {
   sentence?: string;
+  items?: string[];
   separator?: string;
   manualMode?: boolean;
   blurAmount?: number;
@@ -18,6 +19,7 @@ export interface TrueFocusProps {
 
 const TrueFocus: React.FC<TrueFocusProps> = ({
   sentence = 'True Focus',
+  items,
   separator = ' ',
   manualMode = false,
   blurAmount = 5,
@@ -27,7 +29,10 @@ const TrueFocus: React.FC<TrueFocusProps> = ({
   pauseBetweenAnimations = 1,
   className = '',
 }) => {
-  const words = sentence.split(separator);
+  const words = React.useMemo(() => {
+    if (items && items.length > 0) return items;
+    return sentence.split(separator);
+  }, [items, sentence, separator]);
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [lastActiveIndex, setLastActiveIndex] = useState<number | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);

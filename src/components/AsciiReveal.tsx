@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, type CSSProperties } from "react";
 
 const DEFAULT_IMAGE =
-  "/character.png";
+  "/vtech-studios-logo.png";
 
 type ColorMode = "mono" | "image";
 type Fit = "cover" | "contain";
@@ -331,7 +331,9 @@ export function AsciiReveal(props: AsciiImageProps) {
     }
 
     const img = new Image();
-    img.crossOrigin = "anonymous";
+    if (src && src.startsWith("http") && !src.includes(window.location.host)) {
+      img.crossOrigin = "anonymous";
+    }
     img.onload = () => {
       if (!alive) return;
       imgRef.current = img;
@@ -340,9 +342,10 @@ export function AsciiReveal(props: AsciiImageProps) {
       if (reveal) raf = requestAnimationFrame(loop);
     };
     img.onerror = () => {
-      // If local character.png fails, try fallback
-      if (src !== "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop") {
-        img.src = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop";
+      // Always fallback to official studio logo if custom path fails
+      if (img.src !== "/vtech-studios-logo.png" && !img.src.endsWith("/vtech-studios-logo.png")) {
+        img.removeAttribute("crossorigin");
+        img.src = "/vtech-studios-logo.png";
       }
     };
     if (src) img.src = src;

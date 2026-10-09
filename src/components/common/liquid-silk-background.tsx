@@ -9,27 +9,35 @@ export default function LiquidSilkBackground() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const { isVideo } = useBackground();
 
-  // Forward pointer coordinates to the liquid silk WebGL canvas safely
+  // Forward pointer coordinates to the liquid silk WebGL canvas safely with rAF throttling
   useEffect(() => {
+    let rafId: number | null = null;
     const handlePointerMove = (e: PointerEvent) => {
-      try {
-        const iframeWin = iframeRef.current?.contentWindow;
-        if (iframeWin) {
-          iframeWin.dispatchEvent(
-            new PointerEvent("pointermove", {
-              clientX: e.clientX,
-              clientY: e.clientY,
-              bubbles: true,
-            })
-          );
+      if (rafId !== null) return;
+      const clientX = e.clientX;
+      const clientY = e.clientY;
+      rafId = window.requestAnimationFrame(() => {
+        rafId = null;
+        try {
+          const iframeWin = iframeRef.current?.contentWindow;
+          if (iframeWin) {
+            iframeWin.dispatchEvent(
+              new PointerEvent("pointermove", {
+                clientX,
+                clientY,
+                bubbles: true,
+              })
+            );
+          }
+        } catch {
+          // Safe cross-context fallback
         }
-      } catch {
-        // Safe cross-context fallback
-      }
+      });
     };
 
     window.addEventListener("pointermove", handlePointerMove, { passive: true });
     return () => {
+      if (rafId !== null) cancelAnimationFrame(rafId);
       window.removeEventListener("pointermove", handlePointerMove);
     };
   }, []);

@@ -6,6 +6,8 @@ import { ThemeToggleButton } from "./theme-switcher";
 import Link from "next/link";
 import { Menu, X, ArrowUpRight, Instagram } from "lucide-react";
 import { motion, useAnimate, AnimatePresence } from "framer-motion";
+import { useLenis } from "lenis/react";
+import PreInstagramModal from "@/components/common/pre-instagram-modal";
 
 const navLinks = [
   { name: "Projects", href: "#projects", label: "Showcase & Work" },
@@ -27,10 +29,12 @@ const EASE_LUXURY: [number, number, number, number] = [0.22, 1, 0.36, 1];
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [showContent, setShowContent] = useState(false);
+  const [showInstaModal, setShowInstaModal] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [scope, animate] = useAnimate();
   const closedWidthRef = useRef<number>(0);
+  const lenis = useLenis();
 
   useEffect(() => {
     const handleClickOutside = async (event: MouseEvent) => {
@@ -132,23 +136,22 @@ const Navbar: React.FC = () => {
     }
     setTimeout(() => {
       if (href.startsWith("#")) {
-        const target = document.querySelector(href);
-        if (target) {
-          target.scrollIntoView({ behavior: "smooth", block: "start" });
+        if (lenis) {
+          lenis.scrollTo(href, { duration: 1.6, offset: -60 });
+        } else {
+          const target = document.querySelector(href);
+          if (target) {
+            target.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
         }
       }
-    }, 300);
+    }, 350);
   };
 
   const handleInstagramClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
     e.stopPropagation();
-    if (typeof window !== "undefined") {
-      window.open(
-        "https://www.instagram.com/vtechstudio.dev/",
-        "_blank",
-        "noopener,noreferrer"
-      );
-    }
+    setShowInstaModal(true);
   };
 
   return (
@@ -199,7 +202,11 @@ const Navbar: React.FC = () => {
             aria-label="VTECH STUDIOS Home"
             onClick={(e) => {
               e.preventDefault();
-              window.scrollTo({ top: 0, behavior: "smooth" });
+              if (lenis) {
+                lenis.scrollTo(0, { duration: 1.6 });
+              } else {
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }
               if (isOpen) handleToggle();
             }}
           >
@@ -408,6 +415,10 @@ const Navbar: React.FC = () => {
           )}
         </AnimatePresence>
       </div>
+      <PreInstagramModal
+        isOpen={showInstaModal}
+        onClose={() => setShowInstaModal(false)}
+      />
     </nav>
   );
 };

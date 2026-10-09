@@ -531,11 +531,8 @@ export function WoodStoryRevealSection({
         ...style,
       }}
     >
-      {/* 1. Main Background Image */}
-      <div
-        className="absolute inset-0 bg-center bg-cover bg-no-repeat z-0 pointer-events-none opacity-40 brightness-75 scale-105"
-        style={{ backgroundImage: `url(${BG_IMAGE_1})` }}
-      />
+      {/* Background: Clean dark backdrop allowing the isolated wood branch to float cleanly */}
+      <div className="absolute inset-0 bg-transparent z-0 pointer-events-none" />
 
       {/* 3. Isolated Wood Cutout Foreground: Base State */}
       <div

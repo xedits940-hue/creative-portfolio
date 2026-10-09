@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useRef, useEffect, useState } from "react";
+import Image from "next/image";
 import { motion, useScroll, useTransform, useInView } from "framer-motion";
 import { AsciiReveal } from "@/components/AsciiReveal";
 
@@ -79,8 +80,8 @@ const MetricCard = ({
         <div
           className={`font-black tracking-tighter leading-none mb-1 ${
             highlight
-              ? "text-primary text-7xl md:text-8xl"
-              : "text-foreground text-6xl md:text-7xl"
+              ? "text-primary text-6xl md:text-7xl"
+              : "text-foreground text-5xl md:text-6xl"
           }`}
         >
           {prefix}
@@ -110,17 +111,15 @@ const AboutSection = () => {
     offset: ["start end", "center center"],
   });
 
-  const imageY = useTransform(scrollYProgress, [0, 1], [50, -30]);
-  const imageScale = useTransform(scrollYProgress, [0, 1], [0.94, 1.02]);
-
-  // Section-level entrance: subtle elevation
-  const sectionY = useTransform(scrollYProgress, [0, 0.25], [30, 0]);
+  const imageY = useTransform(scrollYProgress, [0, 1], [40, -20]);
+  const imageScale = useTransform(scrollYProgress, [0, 1], [0.96, 1.02]);
+  const sectionY = useTransform(scrollYProgress, [0, 0.25], [20, 0]);
 
   return (
     <motion.section
       ref={sectionRef}
       style={{ y: sectionY }}
-      className="relative w-full py-28 md:py-40 bg-transparent overflow-hidden"
+      className="relative w-full py-24 md:py-36 bg-transparent overflow-hidden"
     >
       {/* Subtle dot-grid texture */}
       <div
@@ -144,9 +143,9 @@ const AboutSection = () => {
       />
 
       <div className="container mx-auto px-6 max-w-7xl relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-20 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-14 lg:gap-18 items-start">
           {/* ══════════ LEFT — Identity ══════════ */}
-          <div className="lg:col-span-5 flex flex-col gap-10">
+          <div className="lg:col-span-5 flex flex-col gap-8">
             {/* Badge */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
@@ -159,37 +158,48 @@ const AboutSection = () => {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
               </span>
-              About
+              Studio Overview
             </motion.div>
 
-            {/* VTECH Interactive Studio Core Visual (Award-Winning Engineering Matrix) */}
+            {/* VTECH Interactive Studio Core Visual */}
             <motion.div
               style={{ y: imageY, scale: imageScale }}
-              className="relative w-full aspect-[4/4.6] max-w-[380px] mx-auto lg:mx-0 overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-[#141417]/90 via-[#0c0c0e]/95 to-[#060607] shadow-2xl backdrop-blur-xl group transition-all duration-700 hover:border-primary/40"
+              className="relative w-full aspect-[4/4.5] max-w-[360px] mx-auto lg:mx-0 overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-[#141417]/90 via-[#0c0c0e]/95 to-[#060607] shadow-2xl backdrop-blur-xl group transition-all duration-700 hover:border-primary/40"
             >
-              {/* Corner crosshairs and technical markings */}
+              {/* Corner crosshairs */}
               <div className="absolute top-3 left-3 text-[10px] font-mono text-white/30 select-none z-20">+</div>
               <div className="absolute top-3 right-3 text-[10px] font-mono text-white/30 select-none z-20">+</div>
               <div className="absolute bottom-3 left-3 text-[10px] font-mono text-white/30 select-none z-20">+</div>
               <div className="absolute bottom-3 right-3 text-[10px] font-mono text-white/30 select-none z-20">+</div>
 
               {/* Ambient radial glow backdrop */}
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(255,31,61,0.18)_0%,rgba(0,243,255,0.06)_45%,transparent_75%)] pointer-events-none group-hover:opacity-100 transition-opacity duration-700" />
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(255,31,61,0.18)_0%,transparent_75%)] pointer-events-none group-hover:opacity-100 transition-opacity duration-700" />
 
-              {/* Top Telemetry Header Bar */}
+              {/* Top Bar */}
               <div className="relative z-20 flex items-center justify-between px-5 pt-4 pb-2 border-b border-white/5 font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
                 <span className="flex items-center gap-1.5 text-white/80">
                   <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                  CORE // VTECH-01
+                  CORE // VTECH STUDIO
                 </span>
                 <span className="text-[10px] text-primary/80 tracking-widest">
-                  120 FPS // ACTIVE
+                  INTERACTIVE
                 </span>
               </div>
 
-              {/* Interactive ASCII Character Reveal Container */}
+              {/* Interactive ASCII Character Reveal Container with Official Logo */}
               <div className="relative z-10 flex flex-col items-center justify-center py-4 px-4 w-full">
-                <div className="relative w-full aspect-[4/3.8] max-w-[300px] rounded-2xl overflow-hidden border border-white/10 bg-black/60 shadow-inner group/ascii">
+                <div className="relative w-full aspect-[4/3.8] max-w-[290px] rounded-2xl overflow-hidden border border-white/10 bg-black/60 shadow-inner group/ascii">
+                  {/* High-fidelity official logo base */}
+                  <div className="absolute inset-4 pointer-events-none z-0 flex items-center justify-center opacity-30 group-hover/ascii:opacity-100 transition-opacity duration-700">
+                    <Image
+                      src="/vtech-studios-logo.png"
+                      alt="Official VTECH Studio Logo"
+                      fill
+                      className="object-contain p-2"
+                      priority
+                      referrerPolicy="no-referrer"
+                    />
+                  </div>
                   <AsciiReveal
                     image="/vtech-studios-logo.png"
                     columns={65}
@@ -198,27 +208,20 @@ const AboutSection = () => {
                     colorMode="image"
                     reveal={true}
                     revealOptions={{ size: 70, softness: 16 }}
-                    className="w-full h-full"
+                    className="relative z-10 w-full h-full"
                   />
-                  <div className="absolute bottom-2 left-1/2 -translate-x-1/2 pointer-events-none opacity-40 group-hover/ascii:opacity-90 transition-opacity text-[9px] font-mono tracking-widest uppercase text-white/70 bg-black/75 px-2.5 py-0.5 rounded-full border border-white/15 backdrop-blur-sm">
-                    Hover to Reveal
+                  <div className="absolute bottom-2 left-1/2 -translate-x-1/2 pointer-events-none opacity-40 group-hover/ascii:opacity-90 transition-opacity text-[9px] font-mono tracking-widest uppercase text-white/70 bg-black/75 px-2.5 py-0.5 rounded-full border border-white/15 backdrop-blur-sm z-20">
+                    Hover to Reveal Logo
                   </div>
                 </div>
 
-                {/* Micro Telemetry Spec Grid */}
-                <div className="w-full grid grid-cols-2 gap-2 mt-3.5 px-2">
-                  <div className="p-2 rounded-lg bg-white/[0.03] border border-white/5">
-                    <span className="block font-mono text-[8px] uppercase tracking-widest text-muted-foreground/70">SPEC 01</span>
-                    <span className="block font-mono text-[10px] font-bold text-white/90">ASCII MATRIX</span>
-                  </div>
-                  <div className="p-2 rounded-lg bg-white/[0.03] border border-white/5">
-                    <span className="block font-mono text-[8px] uppercase tracking-widest text-muted-foreground/70">SPEC 02</span>
-                    <span className="block font-mono text-[10px] font-bold text-white/90">INTERACTIVE REVEAL</span>
-                  </div>
+                {/* Sub-label */}
+                <div className="w-full text-center mt-3 font-mono text-[11px] text-muted-foreground tracking-wider uppercase">
+                  Official Studio Mark // High-Fidelity
                 </div>
               </div>
 
-              {/* Bottom Availability Pill */}
+              {/* Bottom Status Pill */}
               <div className="relative z-20 px-4 pb-4">
                 <div className="flex items-center justify-between px-3.5 py-2 rounded-xl bg-background/80 backdrop-blur-md border border-white/10 text-xs font-medium">
                   <span className="flex items-center gap-2 text-white/90 font-mono text-[11px] tracking-wide">
@@ -228,8 +231,8 @@ const AboutSection = () => {
                     </span>
                     Available for Projects
                   </span>
-                  <span className="font-mono text-[9px] uppercase tracking-widest text-emerald-400/90 font-bold">
-                    Q3 / Q4 OPEN
+                  <span className="font-mono text-[9px] uppercase tracking-widest text-emerald-400 font-bold">
+                    ACTIVE
                   </span>
                 </div>
               </div>
@@ -248,7 +251,7 @@ const AboutSection = () => {
                 }}
                 className="text-4xl md:text-5xl font-black tracking-tighter leading-none"
               >
-                VTECH STUDIOS
+                VTECH STUDIO
               </motion.h2>
 
               <motion.p
@@ -258,7 +261,7 @@ const AboutSection = () => {
                 transition={{ duration: 0.7, delay: 0.2 }}
                 className="font-mono text-sm uppercase tracking-widest text-primary"
               >
-                Digital Production & Creative Direction
+                Creative Engineering &amp; Vibe Coding
               </motion.p>
 
               <motion.p
@@ -266,11 +269,9 @@ const AboutSection = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.7, delay: 0.3 }}
-                className="text-muted-foreground text-[15px] leading-relaxed max-w-xs"
+                className="text-muted-foreground text-[15px] leading-relaxed max-w-sm"
               >
-                Crafting high-impact motion design, cinematic storytelling, and
-                digital production for global brands. Turning bold concepts into
-                compelling visual experiences that command attention.
+                VTECH STUDIO pioneers modern vibe coding—rapidly transforming creative prompts, aesthetic vision, and architectural concepts into bespoke, high-performance web products. Specially designed for growing local businesses, boutique services, and ambitious digital creators.
               </motion.p>
             </div>
 
@@ -283,15 +284,15 @@ const AboutSection = () => {
               className="flex flex-wrap gap-2"
             >
               {[
-                "Creative Direction",
+                "Vibe Coding",
+                "Creative Engineering",
+                "Local Business Growth",
                 "Motion Design",
-                "Video Editing",
-                "Brand Strategy",
-                "Digital Production",
+                "Custom Web Systems",
               ].map((tag) => (
                 <span
                   key={tag}
-                  className="px-5 py-2 rounded border border-border bg-muted text-xs font-mono uppercase tracking-wider text-muted-foreground hover:border-primary/40 hover:text-foreground transition-colors duration-300 cursor-default"
+                  className="px-4 py-1.5 rounded-full border border-border bg-muted/60 text-xs font-mono uppercase tracking-wider text-muted-foreground hover:border-primary/40 hover:text-foreground transition-colors duration-300 cursor-default"
                 >
                   {tag}
                 </span>
@@ -310,7 +311,7 @@ const AboutSection = () => {
                 transition={{ duration: 0.5 }}
                 className="font-mono text-xs uppercase tracking-widest text-muted-foreground mb-4"
               >
-                By the numbers
+                Studio Foundation
               </motion.p>
 
               <motion.h3
@@ -326,36 +327,36 @@ const AboutSection = () => {
               >
                 Results that
                 <br />
-                <span className=" text-primary">Speak Loudly.</span>
+                <span className="text-primary">Speak Loudly.</span>
               </motion.h3>
             </div>
 
-            {/* Metric cards */}
+            {/* Metric cards — Refined to authentic studio metrics */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <MetricCard
-                value={5}
-                suffix="+ yrs"
-                label="Years of Experience"
-                description="Half a decade honing the craft of visual storytelling across global brands and viral campaigns."
+                value={100}
+                suffix="%"
+                label="Client Commitment"
+                description="Direct founder attention on every build — no outsourced middle layers, no generic templates, and zero communication drop-off."
                 delay={0.15}
               />
 
               <MetricCard
-                value={100}
-                suffix="+"
-                label="Projects Completed"
-                description="From FIFA tournaments to esports highlights — diverse, delivered, and always ahead of deadline."
+                value={48}
+                suffix="h"
+                label="Rapid Vibe Coding Sprint"
+                description="Accelerated turnaround from design direction to functional, interactive prototype ready for testing and deployment."
                 delay={0.25}
               />
 
-              {/* Revenue — full-width highlighted */}
+              {/* Full-width highlighted card */}
               <div className="sm:col-span-2">
                 <MetricCard
-                  prefix="$"
-                  value={3}
-                  suffix="M+"
-                  label="Revenue Achieved"
-                  description="Revenue generated for clients through high-conversion content, brand campaigns, and viral media strategies that move the needle."
+                  prefix=""
+                  value={1}
+                  suffix=" Unified Creative Engine"
+                  label="Bespoke Architecture"
+                  description="Merging creative direction, digital motion, and agile vibe coding to solve real business bottlenecks and establish market-leading digital presence."
                   highlight
                   delay={0.35}
                 />
@@ -370,7 +371,7 @@ const AboutSection = () => {
               transition={{ duration: 0.7, delay: 0.5 }}
               className="text-xs font-mono text-muted-foreground/50 uppercase tracking-widest border-t border-border pt-6"
             >
-              Numbers reflect verified client outcomes — not estimates.
+              Precision craftsmanship backed by real business impact.
             </motion.p>
           </div>
         </div>

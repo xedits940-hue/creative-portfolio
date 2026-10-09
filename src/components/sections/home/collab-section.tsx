@@ -1,10 +1,9 @@
 "use client";
 
 import React, { useRef, useState } from "react";
-import Image from "next/image";
 import { motion } from "framer-motion";
 import CollabModal from "./collab-modal";
-import { VectorWordmark } from "@/components/ui/vector-wordmark";
+import { TextTrail } from "@/components/ui/text-trail";
 
 const CollabSec: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -41,12 +40,12 @@ const CollabSec: React.FC = () => {
           </motion.div>
         </div>
 
-        {/* ── SPLIT COLLAGE PANELS (VTECH on Left, CLIENT on Right) ── */}
+        {/* ── SPLIT PANELS (VTECH on Left, CLIENT on Right) — No random photos ── */}
         <div className="relative flex flex-col md:flex-row w-full h-[580px] md:h-[660px] items-stretch">
           
-          {/* ══════════ LEFT PANEL: VTECH (/bg/1.png with Side Border Framing) ══════════ */}
+          {/* ══════════ LEFT PANEL: VTECH ══════════ */}
           <div
-            className="relative w-full md:w-1/2 h-1/2 md:h-full overflow-hidden group cursor-pointer border-b md:border-b-0 md:border-r border-white/15 transition-all duration-500 hover:border-[#ff1f3d]/60"
+            className="relative w-full md:w-1/2 h-1/2 md:h-full overflow-hidden group cursor-pointer border-b md:border-b-0 md:border-r border-white/15 transition-all duration-500 bg-linear-to-b from-[#111116] via-[#09090c] to-[#050507] hover:border-[#ff1f3d]/60"
             onMouseEnter={() => setHovered("left")}
             onMouseLeave={() => setHovered(null)}
             onClick={() => setModalOpen(true)}
@@ -54,22 +53,6 @@ const CollabSec: React.FC = () => {
             tabIndex={0}
             aria-label="Collaborate with VTECH"
           >
-            {/* The Original Side Border Photo: 1.png */}
-            <div className="absolute inset-0 w-full h-full">
-              <Image
-                src="/bg/1.png"
-                alt="VTECH Studio Creative Direction"
-                fill
-                priority
-                sizes="(max-width: 768px) 100vw, 50vw"
-                className="object-cover object-center transition-transform duration-1000 ease-out group-hover:scale-105 pointer-events-none select-none"
-              />
-            </div>
-
-            {/* Cinematic Luxury Dark Vignette Overlay: Keeps photo rich while preventing text clash */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/60 to-black/85 pointer-events-none" />
-            <div className="absolute inset-0 bg-black/35 pointer-events-none" />
-
             {/* Ambient Red Glow on Hover */}
             <div
               className={`absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(255,31,61,0.18),transparent_70%)] transition-opacity duration-700 pointer-events-none ${
@@ -77,29 +60,35 @@ const CollabSec: React.FC = () => {
               }`}
             />
 
-            {/* Center Typography & Text Animation - VTECH VectorWordmark */}
+            {/* Subtle Grid Accent */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-0 opacity-[0.03]"
+              style={{
+                backgroundImage:
+                  "radial-gradient(rgba(255,255,255,0.4) 1px, transparent 1px)",
+                backgroundSize: "32px 32px",
+              }}
+            />
+
+            {/* Center Typography & Text Animation - VTECH Motion Text Trail */}
             <div className="absolute inset-0 flex flex-col items-center justify-center z-20 px-3 sm:px-6 text-center select-none pointer-events-none">
               <div className="relative w-full max-w-xl h-[170px] sm:h-[220px] md:h-[270px] flex items-center justify-center pointer-events-auto">
-                <VectorWordmark
+                <TextTrail
                   text="VTECH"
                   font={{
                     fontFamily: "Inter, system-ui, sans-serif",
+                    fontSize: "140px",
                     fontWeight: 900,
-                    fontSize: "210px",
                     letterSpacing: "-0.03em",
                   }}
-                  background="transparent"
-                  textColor="#FFFFFF"
-                  shade="#D4D4D8"
-                  accent={redColor}
-                  reach={280}
-                  speed={45}
-                  damping={55}
-                  handles={{
-                    size: 96,
-                    spread: 24,
-                    labels: false, // Clean finish, zero clutter numbers
-                  }}
+                  color="#FFFFFF"
+                  trailColor={redColor}
+                  trail={16}
+                  drift={20}
+                  warp={6}
+                  speed={20}
+                  push={6}
                   className="w-full h-full"
                 />
               </div>
@@ -145,9 +134,9 @@ const CollabSec: React.FC = () => {
             </div>
           </div>
 
-          {/* ══════════ RIGHT PANEL: CLIENT (/bg/2.png with Side Border Framing) ══════════ */}
+          {/* ══════════ RIGHT PANEL: CLIENT ══════════ */}
           <div
-            className="relative w-full md:w-1/2 h-1/2 md:h-full overflow-hidden group cursor-pointer transition-all duration-500 hover:border-[#ff1f3d]/60"
+            className="relative w-full md:w-1/2 h-1/2 md:h-full overflow-hidden group cursor-pointer transition-all duration-500 bg-linear-to-b from-[#111116] via-[#09090c] to-[#050507] hover:border-[#ff1f3d]/60"
             onMouseEnter={() => setHovered("right")}
             onMouseLeave={() => setHovered(null)}
             onClick={() => setModalOpen(true)}
@@ -155,22 +144,6 @@ const CollabSec: React.FC = () => {
             tabIndex={0}
             aria-label="Collaborate as Client"
           >
-            {/* The Original Side Border Photo: 2.png */}
-            <div className="absolute inset-0 w-full h-full">
-              <Image
-                src="/bg/2.png"
-                alt="Client Collaborative Vision"
-                fill
-                priority
-                sizes="(max-width: 768px) 100vw, 50vw"
-                className="object-cover object-center transition-transform duration-1000 ease-out group-hover:scale-105 pointer-events-none select-none"
-              />
-            </div>
-
-            {/* Cinematic Luxury Dark Vignette Overlay: Keeps photo rich while preventing text clash */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/60 to-black/85 pointer-events-none" />
-            <div className="absolute inset-0 bg-black/35 pointer-events-none" />
-
             {/* Ambient Red Glow on Hover */}
             <div
               className={`absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(255,31,61,0.18),transparent_70%)] transition-opacity duration-700 pointer-events-none ${
@@ -178,29 +151,35 @@ const CollabSec: React.FC = () => {
               }`}
             />
 
-            {/* Center Typography & Text Animation - CLIENT VectorWordmark */}
+            {/* Subtle Grid Accent */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-0 opacity-[0.03]"
+              style={{
+                backgroundImage:
+                  "radial-gradient(rgba(255,255,255,0.4) 1px, transparent 1px)",
+                backgroundSize: "32px 32px",
+              }}
+            />
+
+            {/* Center Typography & Text Animation - CLIENT Motion Text Trail */}
             <div className="absolute inset-0 flex flex-col items-center justify-center z-20 px-3 sm:px-6 text-center select-none pointer-events-none">
               <div className="relative w-full max-w-xl h-[170px] sm:h-[220px] md:h-[270px] flex items-center justify-center pointer-events-auto">
-                <VectorWordmark
+                <TextTrail
                   text="CLIENT"
                   font={{
                     fontFamily: "Inter, system-ui, sans-serif",
+                    fontSize: "140px",
                     fontWeight: 900,
-                    fontSize: "210px",
                     letterSpacing: "-0.03em",
                   }}
-                  background="transparent"
-                  textColor="#FFFFFF"
-                  shade="#D4D4D8"
-                  accent={redColor}
-                  reach={280}
-                  speed={45}
-                  damping={55}
-                  handles={{
-                    size: 96,
-                    spread: 24,
-                    labels: false, // Clean finish, zero clutter numbers
-                  }}
+                  color="#FFFFFF"
+                  trailColor={redColor}
+                  trail={16}
+                  drift={20}
+                  warp={6}
+                  speed={20}
+                  push={6}
                   className="w-full h-full"
                 />
               </div>

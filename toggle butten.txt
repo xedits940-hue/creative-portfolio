@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sound Toggle</title>
+<style>
+  .sound-toggle{
+    --size: 56px;
+    --min-hit: 44px;
+    --surface-opacity: 0.1;
+    --surface-opacity-strong: 0.2;
+    --blur: 16px;
+    --border-color: rgba(255,70,70,0.35);
+    --shadow-color: rgba(255,20,30,0.25);
+    --wave-color-active: #ffffff;
+    --wave-color-inactive: rgba(255,255,255,0.4);
+    --wave-stroke-width: 2.4;
+    --transition-duration: 460ms;
+    --ease-standard: cubic-bezier(0.22, 1, 0.36, 1);
+
+    position: relative;
+    width: max(var(--size), var(--min-hit));
+    height: max(var(--size), var(--min-hit));
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    margin: 0;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    transform: translateZ(0) scale(1);
+    transition: transform 200ms var(--ease-standard);
+  }
+
+  .sound-toggle::before{
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: var(--size);
+    height: var(--size);
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: linear-gradient(
+      150deg,
+      rgba(255,255,255, var(--surface-opacity-strong)) 0%,
+      rgba(255,40,50, calc(var(--surface-opacity) * 0.9)) 55%,
+      rgba(0,0,0, 0.3) 100%
+    );
+    -webkit-backdrop-filter: blur(var(--blur)) saturate(140%);
+    backdrop-filter: blur(var(--blur)) saturate(140%);
+    border: 1px solid var(--border-color);
+    box-shadow:
+      inset 0 1px 1px rgba(255,255,255,0.22),
+      inset 0 -6px 12px rgba(0,0,0,0.35),
+      0 6px 18px var(--shadow-color);
+    transition: box-shadow var(--transition-duration) var(--ease-standard),
+                background var(--transition-duration) var(--ease-standard),
+                border-color var(--transition-duration) var(--ease-standard);
+    z-index: 0;
+  }
+
+  .sound-toggle[aria-pressed="true"]::before{
+    box-shadow:
+      inset 0 1px 1px rgba(255,255,255,0.25),
+      inset 0 -6px 12px rgba(0,0,0,0.3),
+      0 0 0 1px rgba(255,45,61,0.25),
+      0 6px 22px rgba(255,30,40,0.35);
+  }
+
+  .sound-toggle svg{
+    position: relative;
+    z-index: 2;
+    width: calc(var(--size) * 0.52);
+    height: calc(var(--size) * 0.52);
+    overflow: visible;
+    pointer-events: none;
+    display: block;
+  }
+
+  .sound-toggle path{
+    fill: none;
+    stroke: var(--wave-color-inactive);
+    stroke-width: var(--wave-stroke-width);
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+    transition: stroke var(--transition-duration) var(--ease-standard);
+  }
+  .sound-toggle[aria-pressed="true"] path{ stroke: var(--wave-color-active); }
+
+  .sound-toggle:hover{ transform: scale(1.06); }
+  .sound-toggle:active{ transform: scale(0.92); }
+
+  .sound-toggle:focus{ outline: none; }
+  .sound-toggle:focus-visible::before{
+    box-shadow:
+      inset 0 1px 1px rgba(255,255,255,0.25),
+      0 0 0 2px rgba(0,0,0,1),
+      0 0 0 4px #ff2d3d;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .sound-toggle{ transition: none; }
+  }
+</style>
+</head>
+<body>
+
+  <button
+    type="button"
+    class="sound-toggle"
+    id="soundToggle"
+    aria-pressed="false"
+    aria-label="Toggle sound"
+  >
+    <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+      <path id="wavePath" d="M10,24 L38,24"></path>
+    </svg>
+  </button>
+
+<script>
+(function(){
+  "use strict";
+
+  const AUDIO_SRC = ""; // set a real audio file path here if needed
+
+  const toggleBtn = document.getElementById("soundToggle");
+  const wavePath  = document.getElementById("wavePath");
+
+  const N = 7, CX = 24, CY = 24, X_START = 10, X_END = 38, AMP_MAX = 7;
+  const BASE_SPEED = 0.0021;
+  const TRANSITION_MS = 460;
+  const REDUCED_TRANSITION_MS = 1;
+
+  const weights = [], xPositions = [];
+  for (let i = 0; i < N; i++){
+    weights.push(Math.sin(Math.PI * i / (N - 1)));
+    xPositions.push(X_START + i * (X_END - X_START) / (N - 1));
+  }
+
+  const reducedMotionMQ = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+  let isActive      = false;
+  let ampStart      = 0;
+  let ampTarget     = 0;
+  let ampStartTime  = performance.now();
+  let phase         = 0;
+  let lastFrameTime = performance.now();
+  let rafId         = null;
+
+  function easeInOutCubic(t){ return t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2,3)/2; }
+  function transitionDuration(){ return reducedMotionMQ.matches ? REDUCED_TRANSITION_MS : TRANSITION_MS; }
+
+  function currentAmplitude(now){
+    const dur = transitionDuration();
+    const t = Math.min(1, (now - ampStartTime) / dur);
+    return ampStart + (ampTarget - ampStart) * easeInOutCubic(t);
+  }
+
+  function catmullRomToPath(pts){
+    let d = "M" + pts[0].x.toFixed(2) + "," + pts[0].y.toFixed(2);
+    for (let i = 0; i < pts.length - 1; i++){
+      const p0 = pts[i-1] || pts[i], p1 = pts[i], p2 = pts[i+1], p3 = pts[i+2] || p2;
+      const c1x = p1.x + (p2.x - p0.x)/6, c1y = p1.y + (p2.y - p0.y)/6;
+      const c2x = p2.x - (p3.x - p1.x)/6, c2y = p2.y - (p3.y - p1.y)/6;
+      d += ` C${c1x.toFixed(2)},${c1y.toFixed(2)} ${c2x.toFixed(2)},${c2y.toFixed(2)} ${p2.x.toFixed(2)},${p2.y.toFixed(2)}`;
+    }
+    return d;
+  }
+
+  function buildPathD(amp, ph){
+    const modulation = 0.85 + 0.15 * Math.sin(ph * 0.35);
+    const pts = [];
+    for (let i = 0; i < N; i++){
+      const w = weights[i];
+      pts.push({ x: xPositions[i], y: CY + amp * w * AMP_MAX * modulation * Math.sin(ph + i * 0.9) });
+    }
+    return catmullRomToPath(pts);
+  }
+
+  function tick(now){
+    const dt = now - lastFrameTime;
+    lastFrameTime = now;
+    if (!reducedMotionMQ.matches) phase += dt * BASE_SPEED;
+
+    const amp = currentAmplitude(now);
+    wavePath.setAttribute("d", buildPathD(amp, phase));
+
+    const dur = transitionDuration();
+    const done = (now - ampStartTime) >= dur;
+    const needsMotion = ampTarget === 1 && !reducedMotionMQ.matches;
+
+    if (done && !needsMotion){ rafId = null; return; }
+    rafId = requestAnimationFrame(tick);
+  }
+
+  function ensureLoop(){
+    if (rafId === null){ lastFrameTime = performance.now(); rafId = requestAnimationFrame(tick); }
+  }
+
+  function setActive(nextActive){
+    isActive = nextActive;
+    const now = performance.now();
+    ampStart = currentAmplitude(now);
+    ampStartTime = now;
+    ampTarget = isActive ? 1 : 0;
+    toggleBtn.setAttribute("aria-pressed", String(isActive));
+    ensureLoop();
+  }
+
+  let audioEl = null;
+  if (AUDIO_SRC){
+    audioEl = new Audio(AUDIO_SRC);
+    audioEl.loop = true;
+    audioEl.preload = "none";
+  }
+
+  function syncAudio(){
+    if (!audioEl) return;
+    if (isActive){
+      const p = audioEl.play();
+      if (p && typeof p.then === "function"){
+        p.catch(function(err){ console.warn("Audio playback was prevented:", err && err.message); });
+      }
+    } else {
+      audioEl.pause();
+    }
+  }
+
+  toggleBtn.addEventListener("click", function(){
+    setActive(!isActive);
+    syncAudio();
+  });
+
+  function handleReducedMotionChange(){ if (isActive) ensureLoop(); }
+  if (typeof reducedMotionMQ.addEventListener === "function"){
+    reducedMotionMQ.addEventListener("change", handleReducedMotionChange);
+  } else if (typeof reducedMotionMQ.addListener === "function"){
+    reducedMotionMQ.addListener(handleReducedMotionChange);
+  }
+
+  toggleBtn.setAttribute("aria-pressed", String(isActive));
+  wavePath.setAttribute("d", buildPathD(ampTarget, phase));
+
+})();
+</script>
+</body>
+</html>

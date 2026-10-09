@@ -46,7 +46,16 @@ const LenisWrapper = ({ children }: Props) => {
     // syncTouch:false (Lenis's default) means touch devices keep NATIVE momentum
     // scrolling — Lenis stays out of the way on iOS/Android, so there's no
     // fighting Safari's rubber-band / address-bar behaviour.
-    <ReactLenis root autoRaf={false} options={{ syncTouch: false }}>
+    <ReactLenis
+      root
+      autoRaf={false}
+      options={{
+        lerp: 0.07,
+        duration: 1.5,
+        smoothWheel: true,
+        syncTouch: false,
+      }}
+    >
       <LenisGsapSync />
       {children}
     </ReactLenis>

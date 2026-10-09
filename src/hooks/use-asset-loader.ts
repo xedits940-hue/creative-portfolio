@@ -42,9 +42,18 @@ export function useAssetLoader(targetDurationMs = 2200) {
       raf = requestAnimationFrame(loop);
     };
 
+    // Emergency safety timeout: ensure it NEVER gets stuck even in throttled background tabs
+    const maxSafetyTimer = setTimeout(() => {
+      setProgress(100);
+      setIsComplete(true);
+    }, Math.min(targetDurationMs + 800, 3000));
+
     raf = requestAnimationFrame(loop);
 
-    return () => cancelAnimationFrame(raf);
+    return () => {
+      cancelAnimationFrame(raf);
+      clearTimeout(maxSafetyTimer);
+    };
   }, [targetDurationMs]);
 
   return { progress, isComplete };
