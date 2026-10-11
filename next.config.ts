@@ -9,6 +9,7 @@ export default function nextConfig(): NextConfig {
       keepAlive: true,
     },
     images: {
+      qualities: [75, 85, 95, 100],
       formats: ["image/avif", "image/webp"],
       minimumCacheTTL: 31536000,
       remotePatterns: [

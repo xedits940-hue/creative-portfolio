@@ -48,8 +48,8 @@ const Preloader: React.FC<PreloaderProps> = ({
   textColor = "#ffffff",
   accentColor = "#ff1f3d",
 }) => {
-  // 3000ms duration so all 12 words cycle with equal 250ms readability
-  const { progress, isComplete } = useAssetLoader(3000);
+  // 2400ms steady progression: 200ms per word cleanly
+  const { progress, isComplete } = useAssetLoader(2400);
 
   useEffect(() => {
     if (!isComplete) return;
@@ -74,14 +74,30 @@ const Preloader: React.FC<PreloaderProps> = ({
   );
 
   // SVG curtain paths in 1000x1000 normalized coordinates:
-  // Initial: covers 100% of screen completely
-  // Exit: bottom edge curves UPWARD into a deep arch (y=660) as curtain lifts
+  // Starts 100% flat/straight: M 0 0 L 1000 0 L 1000 1000 Q 500 1000 0 1000 Z
+  // Upon exit, it curves dynamically upward into an elegant arch (Q 500 660) as the curtain lifts!
   const curtainCurve: Variants = {
     initial: {
       d: "M 0 0 L 1000 0 L 1000 1000 Q 500 1000 0 1000 Z",
     },
     exit: {
       d: "M 0 0 L 1000 0 L 1000 1000 Q 500 660 0 1000 Z",
+      transition: {
+        duration: 1.0,
+        ease: [0.76, 0, 0.24, 1],
+      },
+    },
+  };
+
+  // Line paths in 1000x1000 coordinates:
+  // Initial: perfectly STRAIGHT at bottom edge (y=998 across entire screen)
+  // Exit: sweeps and arches beautifully UPWARDS (Q 500 660) in sync with the curtain!
+  const lineCurve: Variants = {
+    initial: {
+      d: "M 0 998 Q 500 998 1000 998",
+    },
+    exit: {
+      d: "M 0 998 Q 500 660 1000 998",
       transition: {
         duration: 1.0,
         ease: [0.76, 0, 0.24, 1],
@@ -100,13 +116,14 @@ const Preloader: React.FC<PreloaderProps> = ({
         willChange: "transform",
       }}
     >
-      {/* 1. Underlying SVG Curtain */}
+      {/* 1. Underlying SVG Curtain & Animated Curved Lines */}
       <svg
         viewBox="0 0 1000 1000"
         preserveAspectRatio="none"
         className="absolute inset-0 w-full h-full pointer-events-none"
         style={{ zIndex: 0 }}
       >
+        {/* Curtain */}
         <motion.path
           variants={curtainCurve}
           initial="initial"
@@ -114,6 +131,38 @@ const Preloader: React.FC<PreloaderProps> = ({
           exit="exit"
           style={{
             fill: backgroundColor,
+          }}
+        />
+
+        {/* Base Track Line - flat line on screen bottom */}
+        <motion.path
+          variants={lineCurve}
+          initial="initial"
+          animate="initial"
+          exit="exit"
+          fill="none"
+          stroke="rgba(255, 255, 255, 0.12)"
+          strokeWidth={4}
+          vectorEffect="non-scaling-stroke"
+        />
+
+        {/* Active Crimson Glowing Line: fills 0 -> 100% flat at bottom, then arches curve UPWARDS on exit */}
+        <motion.path
+          variants={lineCurve}
+          initial="initial"
+          animate="initial"
+          exit="exit"
+          fill="none"
+          stroke={accentColor}
+          strokeWidth={5}
+          strokeLinecap="round"
+          vectorEffect="non-scaling-stroke"
+          pathLength={1}
+          strokeDasharray="1 1"
+          strokeDashoffset={1 - clamped / 100}
+          style={{
+            filter: "drop-shadow(0 0 12px rgba(255, 31, 61, 0.9))",
+            transition: "stroke-dashoffset 40ms linear",
           }}
         />
       </svg>
@@ -230,7 +279,7 @@ const Preloader: React.FC<PreloaderProps> = ({
                 filter: "blur(4px)",
               }}
               transition={{
-                duration: 0.22,
+                duration: 0.2,
                 ease: [0.22, 1, 0.36, 1],
               }}
               className="block whitespace-nowrap text-2xl sm:text-3xl md:text-5xl font-light leading-none text-center"
@@ -304,22 +353,6 @@ const Preloader: React.FC<PreloaderProps> = ({
         >
           %
         </span>
-      </div>
-
-      {/* 6. Continuous Responsive Screen-Bottom Loading Bar across EVERY device */}
-      <div
-        className="absolute bottom-0 left-0 right-0 z-[12] h-[3px] sm:h-[4px] bg-white/10 overflow-hidden pointer-events-none"
-        style={{
-          marginBottom: "env(safe-area-inset-bottom, 0px)",
-        }}
-      >
-        <motion.div
-          className="h-full bg-gradient-to-r from-red-600 via-[#ff1f3d] to-rose-400 shadow-[0_0_14px_rgba(255,31,61,0.95)]"
-          style={{
-            width: `${clamped}%`,
-            transition: "width 40ms linear",
-          }}
-        />
       </div>
     </motion.div>
   );
