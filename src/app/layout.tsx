@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Poppins, Cormorant_Garamond } from "next/font/google";
 import "./globals.css";
+import "@/vtech/vtech.css";
 import { BASE_URL } from "@/lib/constants";
 import LenisWrapper from "@/providers/lenis-provider";
 import { ThemeProvider } from "@/providers/theme-provider";
@@ -17,6 +18,7 @@ import PerformanceMonitor from "@/components/common/performance-monitor";
 import SoundToggle from "@/components/common/sound-toggle";
 import { SoundProvider } from "@/providers/sound-provider";
 import SoundExperienceModal from "@/components/common/sound-experience-modal";
+import { SecretLanyardProvider } from "@/providers/secret-lanyard-provider";
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -122,6 +124,13 @@ export const metadata: Metadata = {
   category: "technology",
 };
 
+export const viewport = {
+  themeColor: "#0A0A0B",
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -134,6 +143,24 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://images.unsplash.com" />
         <link rel="dns-prefetch" href="https://framerusercontent.com" />
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `html{background:#0A0A0B}html.vt-intro,html.vt-intro body{overflow:hidden}html.vt-intro .vt-hero-hold{visibility:hidden}.vt-loader{display:none}html.vt-intro .vt-loader{display:block}`,
+          }}
+        />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function (d) {
+  var MODE = 'once-per-session';
+  var play = true;
+  try { if (MODE === 'once-per-session' && sessionStorage.getItem('vt:introSeen') === '1') play = false; } catch (e) {}
+  if (play) d.documentElement.classList.add('vt-intro');
+  try { if ('scrollRestoration' in history) history.scrollRestoration = 'manual'; } catch (e) {}
+  window.scrollTo(0, 0);
+  setTimeout(function () { d.documentElement.classList.remove('vt-intro'); }, 12000);
+})(document);`,
+          }}
+        />
         <script
           dangerouslySetInnerHTML={{
             __html: `(function(){
@@ -199,15 +226,17 @@ export default function RootLayout({
           >
             <BackgroundProvider>
               <SoundProvider>
-                <LiquidSilkBackground />
-                <SmoothCursor />
-                <SoundToggle />
-                <SoundExperienceModal />
-                <LenisWrapper>
-                  <Navbar />
-                  {children}
-                  <FooterSection />
-                </LenisWrapper>
+                <SecretLanyardProvider>
+                  <LiquidSilkBackground />
+                  <SmoothCursor />
+                  <SoundToggle />
+                  <SoundExperienceModal />
+                  <LenisWrapper>
+                    <Navbar />
+                    {children}
+                    <FooterSection />
+                  </LenisWrapper>
+                </SecretLanyardProvider>
               </SoundProvider>
             </BackgroundProvider>
           </ThemeProvider>

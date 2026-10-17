@@ -24,17 +24,6 @@ const CAPABILITIES = [
   "CERTIFICATE DESIGN",
 ];
 
-const ShineBar = () => (
-  <span
-    aria-hidden="true"
-    className="inline-block w-[3.5px] h-4 rounded-full mr-3 shrink-0"
-    style={{
-      backgroundColor: "#ff1f3d",
-      boxShadow: "0 0 12px 3px rgba(255, 31, 61, 0.8)",
-    }}
-  />
-);
-
 const AboutMe = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [fontSize, setFontSize] = useState<number>(195);
@@ -115,16 +104,15 @@ const AboutMe = () => {
           </div>
         </div>
 
-        {/* Studio Capabilities — Flush with left wall on laptops/large devices, buttons removed */}
-        <div className="relative z-20 w-full px-4 sm:px-6 md:px-8 lg:px-0 xl:px-0 flex flex-col justify-start items-start text-foreground mt-auto pb-2">
-          <div className="flex flex-col gap-2.5 text-left items-start w-full">
-            <div className="flex items-center justify-start lg:pl-0">
-              <ShineBar />
-              <p className="text-xs sm:text-[13px] font-mono uppercase tracking-[0.22em] text-muted-foreground font-semibold">
+        {/* Studio Capabilities — Centered, refined minimalist badge and clean layout */}
+        <div className="relative z-20 w-full px-4 sm:px-6 md:px-8 max-w-5xl mx-auto flex flex-col justify-center items-center text-foreground mt-auto pb-4">
+          <div className="flex flex-col gap-3 text-center items-center w-full">
+            <div className="inline-flex items-center justify-center px-3.5 py-1 rounded-full bg-white/[0.04] border border-white/10 backdrop-blur-md shadow-sm">
+              <span className="text-[11px] sm:text-xs font-mono uppercase tracking-[0.25em] text-neutral-300 font-medium">
                 Studio Capabilities
-              </p>
+              </span>
             </div>
-            <div className="w-full lg:pl-0">
+            <div className="w-full flex justify-center items-center">
               <TrueFocus
                 items={CAPABILITIES}
                 manualMode={false}
@@ -133,6 +121,7 @@ const AboutMe = () => {
                 glowColor="rgba(255, 31, 61, 0.6)"
                 animationDuration={0.6}
                 pauseBetweenAnimations={1.2}
+                className="justify-center text-center"
               />
             </div>
           </div>

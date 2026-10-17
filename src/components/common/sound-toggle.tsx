@@ -171,12 +171,12 @@ export default function SoundToggle() {
   return (
     <div
       ref={containerRef}
-      className="fixed z-[9999] pointer-events-auto top-4 left-3.5 sm:top-5 sm:left-4 md:left-5 lg:left-6 transition-all"
+      className="fixed z-[9999] pointer-events-auto top-4 left-3 sm:top-5 sm:left-4 md:left-6 transition-all"
       style={{ zIndex: 9999 }}
     >
       <button
         type="button"
-        className="sound-toggle"
+        className="sound-toggle vt-sound-toggle vt-tap"
         id="soundToggle"
         aria-pressed={isSoundActive ? "true" : "false"}
         aria-label="Toggle sound"

@@ -303,7 +303,7 @@ export function SmoothCursor({
   return (
     <motion.div
       aria-hidden="true"
-      className={`fixed top-0 left-0 pointer-events-none z-[9999999] will-change-transform ${className}`}
+      className={`fixed top-0 left-0 pointer-events-none z-[9999999] will-change-transform vt-cursor ${className}`}
       style={{
         left: cursorX,
         top: cursorY,

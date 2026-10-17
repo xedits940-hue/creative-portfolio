@@ -3,11 +3,11 @@
 import Image from "next/image";
 import React, { useRef, useState, useEffect } from "react";
 import { ThemeToggleButton } from "./theme-switcher";
-import Link from "next/link";
 import { Menu, X, ArrowUpRight, Instagram } from "lucide-react";
 import { motion, useAnimate, AnimatePresence } from "framer-motion";
 import { useLenis } from "lenis/react";
 import PreInstagramModal from "@/components/common/pre-instagram-modal";
+import { useSecretLanyard } from "@/providers/secret-lanyard-provider";
 
 const navLinks = [
   { name: "Projects", href: "#projects", label: "Showcase & Work" },
@@ -35,6 +35,10 @@ const Navbar: React.FC = () => {
   const [scope, animate] = useAnimate();
   const closedWidthRef = useRef<number>(0);
   const lenis = useLenis();
+  const { openLanyard } = useSecretLanyard();
+  const logoClicksRef = useRef(0);
+  const logoResetTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const [logoTapKey, setLogoTapKey] = useState(0);
 
   useEffect(() => {
     const handleClickOutside = async (event: MouseEvent) => {
@@ -195,32 +199,64 @@ const Navbar: React.FC = () => {
             </AnimatePresence>
           </motion.button>
 
-          <Link
+          <motion.div
             id="navbar-logo-container"
-            href={"/"}
             data-magnetic
-            aria-label="VTECH STUDIOS Home"
+            whileHover={{ scale: 1.06 }}
+            whileTap={{ scale: 0.82 }}
+            transition={{ type: "spring", stiffness: 600, damping: 22 }}
+            className="relative flex items-center justify-center cursor-pointer select-none"
             onClick={(e) => {
               e.preventDefault();
-              if (lenis) {
-                lenis.scrollTo(0, { duration: 1.6 });
-              } else {
-                window.scrollTo({ top: 0, behavior: "smooth" });
+              logoClicksRef.current += 1;
+              const count = logoClicksRef.current;
+              setLogoTapKey((prev) => prev + 1);
+
+              if (logoResetTimerRef.current) {
+                clearTimeout(logoResetTimerRef.current);
               }
-              if (isOpen) handleToggle();
+
+              if (count >= 5) {
+                logoClicksRef.current = 0;
+                if (isOpen) handleToggle();
+                openLanyard();
+                return;
+              }
+
+              logoResetTimerRef.current = setTimeout(() => {
+                logoClicksRef.current = 0;
+              }, 3000);
+
+              if (count === 1) {
+                if (lenis) {
+                  lenis.scrollTo(0, { duration: 1.6 });
+                } else {
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }
+                if (isOpen) handleToggle();
+              }
             }}
           >
+            {logoTapKey > 0 && (
+              <motion.span
+                key={logoTapKey}
+                initial={{ scale: 0.8, opacity: 0.8 }}
+                animate={{ scale: 1.5, opacity: 0 }}
+                transition={{ duration: 0.35, ease: "easeOut" }}
+                className="absolute inset-0 rounded-full border border-red-500/70 pointer-events-none"
+              />
+            )}
             <Image
               id="navbar-logo-img"
               src="/vtech-studios-logo.png"
               alt="VTECH STUDIOS Logo"
-              className="h-9 w-9 sm:h-11 sm:w-11 cursor-pointer object-contain"
+              className="h-9 w-9 sm:h-11 sm:w-11 object-contain pointer-events-none"
               width={88}
               height={88}
               priority
               referrerPolicy="no-referrer"
             />
-          </Link>
+          </motion.div>
 
           <ThemeToggleButton
             start="left-right"

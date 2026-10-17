@@ -10,9 +10,15 @@ import { TimelineDemo } from "@/components/sections/home/timeline-demo";
 import CollabSec from "@/components/sections/home/collab-section";
 import AboutSection from "@/components/sections/about/about-section";
 import WoodStoryRevealSection from "@/components/wood-story-reveal-section";
+import { initTier } from "@/vtech/tier.js";
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
+
+  // Initialize adaptive quality tier on startup
+  useEffect(() => {
+    initTier();
+  }, []);
 
   // Safety fallback: if anything prevents the preloader event, release the page after 3.6s
   useEffect(() => {
@@ -34,7 +40,7 @@ export default function Home() {
 
       <main className="relative z-10 flex min-h-screen w-full flex-col items-center justify-center scroll-smooth bg-transparent">
         {/* 1. Hero Section - Immediately Visible with Rich High-End Visuals */}
-        <section id="hero" className="w-full scroll-mt-24 bg-transparent">
+        <section id="hero" className="w-full scroll-mt-24 bg-transparent vt-hero-hold">
           <AboutMe />
         </section>
 

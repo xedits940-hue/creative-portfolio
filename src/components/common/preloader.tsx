@@ -1,10 +1,16 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { motion, Variants } from "framer-motion";
-import { useAssetLoader } from "@/hooks/use-asset-loader";
 import { playSound } from "@/lib/sound";
+import {
+  createCounter,
+  trackAssets,
+  shouldPlayIntro,
+  markIntroSeen,
+  VT_MOTION,
+} from "@/vtech/loader.js";
 
 const slideUp: Variants = {
   initial: {
@@ -13,8 +19,8 @@ const slideUp: Variants = {
   exit: {
     y: "-100%",
     transition: {
-      duration: 1.0,
-      ease: [0.76, 0, 0.24, 1] as const,
+      duration: VT_MOTION.revealMs / 1000,
+      ease: [0.76, 0, 0.24, 1],
       delay: 0.05,
     },
   },
@@ -48,29 +54,70 @@ const Preloader: React.FC<PreloaderProps> = ({
   textColor = "#ffffff",
   accentColor = "#ff1f3d",
 }) => {
-  // 2400ms steady progression: 200ms per word cleanly
-  const { progress, isComplete } = useAssetLoader(2400);
+  const [progressVal, setProgressVal] = useState<number>(0);
+  const [isComplete, setIsComplete] = useState<boolean>(false);
+  const numRef = useRef<HTMLSpanElement | null>(null);
+  const barPathRef = useRef<SVGPathElement | null>(null);
 
   useEffect(() => {
-    if (!isComplete) return;
-    try {
-      playSound("/universfield-swoosh-07-351043.mp3", 0.18);
-    } catch {
-      // Audio playback safe fallback
+    // If user has already seen the intro this session, release immediately
+    if (!shouldPlayIntro("once-per-session")) {
+      if (typeof document !== "undefined") {
+        document.documentElement.classList.remove("vt-intro");
+      }
+      onComplete?.();
+      return undefined;
     }
 
-    const timer = setTimeout(() => {
-      onComplete?.();
-    }, 250);
-    return () => clearTimeout(timer);
-  }, [isComplete, onComplete]);
+    const counter = createCounter({
+      smoothingMs: 140,
+      maxPointsPerSec: 140,
+      creepTo: 0,
+      holdAt100Ms: VT_MOTION.holdAt100Ms,
+      render: (v) => {
+        setProgressVal(v);
+        if (numRef.current) {
+          numRef.current.textContent = String(Math.round(v)).padStart(2, "0");
+        }
+        if (barPathRef.current) {
+          barPathRef.current.style.strokeDashoffset = String(1 - v / 100);
+        }
+      },
+      onDone: () => {
+        setIsComplete(true);
+        try {
+          playSound("/universfield-swoosh-07-351043.mp3", 0.18);
+        } catch {
+          // Audio safe fallback
+        }
+        markIntroSeen();
+        if (typeof document !== "undefined") {
+          document.documentElement.classList.remove("vt-intro");
+        }
+        setTimeout(() => {
+          onComplete?.();
+        }, VT_MOTION.holdAt100Ms + 100);
+      },
+    });
 
-  const clamped = Math.min(100, Math.max(0, progress));
+    // Real critical asset tracking (fonts, window load, above-the-fold assets)
+    trackAssets({
+      images: ["/vtech-studios-logo.png"],
+      fonts: true,
+      windowLoad: true,
+      timeoutMs: 3600,
+      onProgress: (p) => counter.setTarget(p),
+    });
+
+    return () => counter.stop();
+  }, [onComplete]);
+
+  const clamped = Math.min(100, Math.max(0, progressVal));
 
   // Determine index evenly across words
   const index = Math.min(
     words.length - 1,
-    Math.floor((clamped / 100) * words.length),
+    Math.floor((clamped / 100) * words.length)
   );
 
   // SVG curtain paths in 1000x1000 normalized coordinates:
@@ -83,7 +130,7 @@ const Preloader: React.FC<PreloaderProps> = ({
     exit: {
       d: "M 0 0 L 1000 0 L 1000 1000 Q 500 660 0 1000 Z",
       transition: {
-        duration: 1.0,
+        duration: VT_MOTION.revealMs / 1000,
         ease: [0.76, 0, 0.24, 1],
       },
     },
@@ -99,7 +146,7 @@ const Preloader: React.FC<PreloaderProps> = ({
     exit: {
       d: "M 0 998 Q 500 660 1000 998",
       transition: {
-        duration: 1.0,
+        duration: VT_MOTION.revealMs / 1000,
         ease: [0.76, 0, 0.24, 1],
       },
     },
@@ -111,7 +158,7 @@ const Preloader: React.FC<PreloaderProps> = ({
       initial="initial"
       animate="initial"
       exit="exit"
-      className="fixed inset-0 h-screen w-screen z-[99999] select-none pointer-events-auto bg-transparent overflow-hidden"
+      className="fixed inset-0 h-screen w-screen z-[99999] select-none pointer-events-auto bg-transparent overflow-hidden vt-loader"
       style={{
         willChange: "transform",
       }}
@@ -146,8 +193,9 @@ const Preloader: React.FC<PreloaderProps> = ({
           vectorEffect="non-scaling-stroke"
         />
 
-        {/* Active Crimson Glowing Line: fills 0 -> 100% flat at bottom, then arches curve UPWARDS on exit */}
+        {/* Active Crimson Glowing Line: fills 0 -> 100% via scaleX/offset, arches upward on exit */}
         <motion.path
+          ref={barPathRef}
           variants={lineCurve}
           initial="initial"
           animate="initial"
@@ -162,15 +210,15 @@ const Preloader: React.FC<PreloaderProps> = ({
           strokeDashoffset={1 - clamped / 100}
           style={{
             filter: "drop-shadow(0 0 12px rgba(255, 31, 61, 0.9))",
-            transition: "stroke-dashoffset 40ms linear",
+            transformOrigin: "left center",
           }}
         />
       </svg>
 
-      {/* 2. Ambient blurred crimson glow in center */}
+      {/* 2. Ambient blurred crimson glow in center — soft, capped via vt-loader__glow, never a solid disc */}
       <motion.div
         aria-hidden
-        className="pointer-events-none absolute left-1/2 top-1/2 z-[1] h-[280px] w-[280px] sm:h-[340px] sm:w-[340px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-[100px] sm:blur-[130px]"
+        className="pointer-events-none absolute left-1/2 top-1/2 z-[1] h-[280px] w-[280px] sm:h-[340px] sm:w-[340px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-[100px] sm:blur-[130px] vt-loader__glow vt-fx"
         style={{
           backgroundColor: accentColor,
           willChange: "transform, opacity",
@@ -198,8 +246,8 @@ const Preloader: React.FC<PreloaderProps> = ({
                   scale: 0.65,
                   opacity: 0.8,
                   transition: {
-                    duration: 0.65,
-                    ease: [0.76, 0, 0.24, 1],
+                    duration: VT_MOTION.logoMs / 1000,
+                    ease: VT_MOTION.easeArray as readonly [number, number, number, number],
                   },
                 }
               : {
@@ -218,7 +266,7 @@ const Preloader: React.FC<PreloaderProps> = ({
             opacity: 0,
             transition: {
               duration: 0.75,
-              ease: [0.76, 0, 0.24, 1],
+              ease: VT_MOTION.easeArray as readonly [number, number, number, number],
             },
           }}
           className="relative mb-6 sm:mb-8 flex flex-col items-center"
@@ -294,7 +342,7 @@ const Preloader: React.FC<PreloaderProps> = ({
         </div>
       </div>
 
-      {/* 4. Bottom Left: Studio identity status indicator (Always visible, responsive with safe-area) */}
+      {/* 4. Bottom Left: Studio identity status indicator */}
       <div
         className="absolute bottom-4 left-4 sm:bottom-6 sm:left-6 md:bottom-8 md:left-8 z-[10] flex items-center gap-2.5 sm:gap-3 pointer-events-none"
         style={{
@@ -327,7 +375,7 @@ const Preloader: React.FC<PreloaderProps> = ({
         </span>
       </div>
 
-      {/* 5. Bottom Right: High-impact editorial percentage (Crystal clear on all mobile, foldables, laptops, screens) */}
+      {/* 5. Bottom Right: High-impact editorial percentage with tabular-nums */}
       <div
         className="absolute bottom-3 right-4 sm:bottom-5 sm:right-6 md:bottom-7 md:right-10 z-[10] flex items-end tabular-nums pointer-events-none"
         style={{
@@ -336,6 +384,7 @@ const Preloader: React.FC<PreloaderProps> = ({
         }}
       >
         <span
+          ref={numRef}
           className="font-[var(--font-accent)] text-[15vw] sm:text-[10vw] md:text-[6.5vw] lg:text-[5vw] leading-none tracking-tighter font-bold"
           style={{
             color: textColor,

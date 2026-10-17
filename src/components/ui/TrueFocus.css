@@ -2,17 +2,18 @@
   position: relative;
   display: flex;
   gap: 0.85rem;
-  justify-content: flex-start;
+  justify-content: center;
   align-items: center;
   flex-wrap: wrap;
   outline: none;
   user-select: none;
   padding: 3px 0;
+  max-width: 100%;
 }
 
 @media (max-width: 768px) {
   .focus-container {
-    justify-content: flex-start;
+    justify-content: center;
     gap: 0.65rem;
   }
 }

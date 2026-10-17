@@ -9,6 +9,27 @@ const CollabSec: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [hovered, setHovered] = useState<null | "left" | "right">(null);
+  const [trailFontSize, setTrailFontSize] = React.useState<string>("140px");
+
+  React.useEffect(() => {
+    const updateSize = () => {
+      const w = window.innerWidth;
+      if (w < 340) {
+        setTrailFontSize("58px");
+      } else if (w < 400) {
+        setTrailFontSize("68px");
+      } else if (w < 640) {
+        setTrailFontSize("82px");
+      } else if (w < 1024) {
+        setTrailFontSize("105px");
+      } else {
+        setTrailFontSize("130px");
+      }
+    };
+    updateSize();
+    window.addEventListener("resize", updateSize);
+    return () => window.removeEventListener("resize", updateSize);
+  }, []);
 
   // Signature VTECH crimson accent
   const redColor = "#ff1f3d";
@@ -78,7 +99,7 @@ const CollabSec: React.FC = () => {
                   text="VTECH"
                   font={{
                     fontFamily: "Inter, system-ui, sans-serif",
-                    fontSize: "140px",
+                    fontSize: trailFontSize,
                     fontWeight: 900,
                     letterSpacing: "-0.03em",
                   }}
@@ -169,7 +190,7 @@ const CollabSec: React.FC = () => {
                   text="CLIENT"
                   font={{
                     fontFamily: "Inter, system-ui, sans-serif",
-                    fontSize: "140px",
+                    fontSize: trailFontSize,
                     fontWeight: 900,
                     letterSpacing: "-0.03em",
                   }}

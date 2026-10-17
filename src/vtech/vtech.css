@@ -1,0 +1,118 @@
+/* src/vtech/vtech.css — import ONCE, after your own global CSS:  import './vtech/vtech.css'  */
+:root{
+  --vt-bg:#0A0A0B; --vt-surface-1:#111114; --vt-surface-2:#18181C;
+  --vt-line:rgb(255 255 255 / .09); --vt-text:#F4F2F0; --vt-text-muted:#B3AFAD;
+  --vt-red:#E5122D; --vt-red-hover:#FF2A45; --vt-red-press:#B80E24;
+  --vt-glow:0 0 24px rgb(229 18 45 / .22);
+  --vt-radius:14px; --vt-tap:44px;
+  --vt-ease:cubic-bezier(.76,0,.24,1); --vt-ease-out:cubic-bezier(.22,1,.36,1);
+}
+html{background:var(--vt-bg);color-scheme:dark;-webkit-text-size-adjust:100%;overflow-x:clip}
+body{background:var(--vt-bg);overflow-x:clip}
+/* OPTIONAL (only if your sizes are in rem): scale the whole site up on 1080p/4K TVs and big monitors
+@media (min-width:1920px){html{font-size:clamp(16px,.833vw,32px)}} */
+ 
+/* ---- first paint / intro (works with the <head> snippet) ---- */
+html.vt-intro,html.vt-intro body{overflow:hidden}
+html.vt-intro .vt-hero-hold{visibility:hidden}
+.vt-loader{will-change:transform;background:var(--vt-bg)}
+/* the red glow in the loader: soft, capped, never a solid disc */
+.vt-loader__glow{background:radial-gradient(60% 50% at 50% 50%,rgb(150 20 30 / .22),transparent 70%)}
+ 
+/* ---- adaptive quality: add these classes to your heavy decorative elements ---- */
+html[data-tier="0"] .vt-fx, html[data-tier="0"] .vt-fx-heavy, html[data-tier="1"] .vt-fx-heavy{display:none!important}
+html[data-tier="0"] .vt-blur-in, html[data-tier="1"] .vt-blur-in{filter:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+@media (prefers-reduced-motion:reduce){
+  .vt-motion{animation:none!important;transition:none!important}
+  .vt-fx,.vt-fx-heavy{display:none!important}
+  .vt-blur-in{filter:none!important}
+}
+/* custom cursor must never exist on touch devices */
+@media (hover:none),(pointer:coarse){.vt-cursor{display:none!important}}
+ 
+/* ---- type + helpers ---- */
+.vt-title-fit{font-size:clamp(2.5rem,15vw,10rem);line-height:.92;max-width:100%;overflow-wrap:anywhere}
+.vt-h2{font-size:clamp(1.75rem,1.3rem + 2.2vw,3rem);line-height:1.08;margin:.2em 0 .4em;color:var(--vt-text)}
+.vt-body{font-size:clamp(.9375rem,.9rem + .25vw,1.0625rem);line-height:1.6;color:var(--vt-text-muted);margin:.3em 0}
+.vt-label{font-size:clamp(.75rem,.7rem + .2vw,.8125rem);letter-spacing:.14em;text-transform:uppercase;color:var(--vt-text-muted);margin:0}
+.vt-label--red{color:var(--vt-red)}
+.vt-tap{min-width:var(--vt-tap);min-height:var(--vt-tap)}
+.vt-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.vt-section{padding:clamp(48px,8vw,120px) max(16px,env(safe-area-inset-left)) clamp(48px,8vw,120px) max(16px,env(safe-area-inset-right));max-width:1200px;margin-inline:auto}
+.vt-section__head{max-width:60ch;margin-bottom:clamp(24px,4vw,48px)}
+.vt-chips{display:flex;flex-wrap:wrap;gap:8px;list-style:none;padding:0;margin:8px 0 0}
+.vt-chip{font-size:.8125rem;padding:.35em .8em;border:1px solid var(--vt-line);border-radius:999px;color:var(--vt-text)}
+.vt-badge{display:inline-block;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--vt-red);border:1px solid rgb(229 18 45 / .4);border-radius:999px;padding:.15em .7em}
+.vt-btn{display:inline-flex;align-items:center;justify-content:center;gap:.4em;min-height:var(--vt-tap);padding:0 1.2em;border-radius:999px;border:1px solid var(--vt-line);background:transparent;color:var(--vt-text);font:inherit;font-weight:600;text-decoration:none;cursor:pointer;touch-action:manipulation}
+.vt-btn:focus-visible,.vt-cert__thumb:focus-visible,.vt-apps__track:focus-visible{outline:2px solid var(--vt-red);outline-offset:3px}
+.vt-btn--primary{background:var(--vt-red);border-color:var(--vt-red);color:#fff}
+.vt-btn--primary:hover{background:var(--vt-red-hover)} .vt-btn--primary:active{background:var(--vt-red-press)}
+.vt-btn--lg{min-height:52px;padding:0 1.6em}
+.vt-btn--disabled{opacity:.5;cursor:not-allowed}
+ 
+/* ---- header + sound toggle (existing toggle, just placed/sized safely) ---- */
+.vt-header{display:grid;grid-template-columns:var(--vt-tap) 1fr var(--vt-tap);align-items:center;gap:8px;padding-inline:max(12px,env(safe-area-inset-left)) max(12px,env(safe-area-inset-right));padding-top:max(8px,env(safe-area-inset-top))}
+.vt-sound-toggle{width:var(--vt-tap);height:var(--vt-tap);min-width:var(--vt-tap);border-radius:50%;flex:none;touch-action:manipulation}
+@media (max-width:767px){
+  .vt-sound-toggle--float{position:fixed;left:max(12px,env(safe-area-inset-left));bottom:max(16px,env(safe-area-inset-bottom));z-index:60}
+}
+ 
+/* ---- capabilities ---- */
+.vt-cap{max-width:42rem}
+.vt-cap__title{display:flex;align-items:center;gap:.9em;margin:0 0 1.2em;font-size:.8125rem;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--vt-text-muted)}
+.vt-cap__title::before{content:"";width:28px;height:1px;background:var(--vt-red);flex:none}
+.vt-cap__groups{display:grid;gap:1.1em}
+.vt-cap__group{display:grid;grid-template-columns:minmax(5.5rem,7rem) 1fr;gap:.4em 1em;align-items:baseline;padding-top:.9em;border-top:1px solid var(--vt-line)}
+@media (max-width:480px){.vt-cap__group{grid-template-columns:1fr}}
+.vt-cap__label{margin:0;font-size:.75rem;letter-spacing:.16em;text-transform:uppercase;color:var(--vt-red);font-weight:600}
+.vt-cap__list{display:flex;flex-wrap:wrap;gap:.2em .5em;list-style:none;margin:0;padding:0}
+.vt-cap__item{position:relative;padding:.35em .65em;font-size:clamp(.8125rem,.78rem + .3vw,.9375rem);font-weight:600;color:var(--vt-text)}
+.vt-cap__item::before,.vt-cap__item::after{content:"";position:absolute;width:7px;height:7px;border:1.5px solid var(--vt-red);opacity:0;transition:opacity .25s}
+.vt-cap__item::before{left:0;top:0;border-right:0;border-bottom:0}
+.vt-cap__item::after{right:0;bottom:0;border-left:0;border-top:0}
+.vt-cap__item[data-active="true"]::before,.vt-cap__item[data-active="true"]::after{opacity:1}
+ 
+/* ---- studio overview: ONE surface, hairline dividers, no box-in-box-in-box ---- */
+.vt-ov{background:var(--vt-surface-1);border:1px solid var(--vt-line);border-radius:var(--vt-radius);padding:clamp(16px,3vw,28px);display:grid;gap:16px}
+.vt-ov__bar{display:flex;justify-content:space-between;gap:12px;align-items:center;padding-bottom:12px;border-bottom:1px solid var(--vt-line)}
+.vt-ov__media{display:grid;place-items:center;aspect-ratio:1/1;max-height:min(70svh,420px);margin-inline:auto;width:100%}
+.vt-ov__meta{display:flex;justify-content:space-between;gap:12px;align-items:center;padding-top:12px;border-top:1px solid var(--vt-line)}
+.vt-ov__status::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:#2fd37a;margin-right:.5em}
+/* tap/hover/focus hook: style states with [data-open="true"] — never hide information behind it */
+.vt-reveal[data-open="true"] .vt-reveal__on{opacity:1}
+.vt-reveal .vt-reveal__on{opacity:0;transition:opacity .4s var(--vt-ease-out)}
+@media (prefers-reduced-motion:reduce){.vt-reveal .vt-reveal__on{transition:none}}
+ 
+/* ---- certificates ---- */
+.vt-certs{display:grid;gap:clamp(16px,3vw,28px);grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));list-style:none;margin:0;padding:0}
+.vt-cert{background:var(--vt-surface-1);border:1px solid var(--vt-line);border-radius:var(--vt-radius);padding:16px;display:flex;flex-direction:column;gap:10px}
+.vt-cert__title{margin:0;font-size:clamp(1.05rem,1rem + .4vw,1.25rem);color:var(--vt-text)}
+.vt-cert__issuer{margin:0;font-size:.875rem;color:var(--vt-text-muted)}
+.vt-cert__kind{margin:0;font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--vt-red)}
+.vt-cert__details{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.875rem;color:var(--vt-text)}
+.vt-cert__thumb{all:unset;box-sizing:border-box;position:relative;display:block;cursor:zoom-in;border-radius:10px;overflow:hidden;border:1px solid var(--vt-line)}
+.vt-cert__thumb img{display:block;width:100%;height:auto}
+.vt-cert__zoom{position:absolute;right:8px;bottom:8px;font-size:.75rem;padding:.3em .7em;border-radius:999px;background:rgb(10 10 11 / .8);color:var(--vt-text)}
+.vt-dialog{border:0;padding:0;background:transparent;width:min(96vw,1100px);max-width:none;max-height:92svh;color:var(--vt-text)}
+.vt-dialog::backdrop{background:rgb(0 0 0 / .88)}
+.vt-dialog__body{position:relative;display:grid;gap:8px;justify-items:center}
+.vt-dialog__body img{width:100%;height:auto;max-height:82svh;object-fit:contain;border-radius:10px;background:#fff}
+.vt-dialog__close{position:absolute;top:8px;right:8px;z-index:2;border-radius:50%;border:1px solid var(--vt-line);background:rgb(10 10 11 / .85);color:var(--vt-text);font-size:1.5rem;line-height:1;cursor:pointer}
+.vt-dialog__hint{margin:0;font-size:.8125rem;color:var(--vt-text-muted)}
+ 
+/* ---- apps ---- */
+.vt-apps__nav{display:flex;gap:8px;justify-content:flex-end;margin:12px 0}
+.vt-apps__track{display:grid;grid-auto-flow:column;grid-auto-columns:min(88%,460px);gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 2px 16px;overscroll-behavior-x:contain;scrollbar-width:thin}
+.vt-app{scroll-snap-align:center;background:var(--vt-surface-1);border:1px solid var(--vt-line);border-radius:var(--vt-radius);overflow:hidden;display:flex;flex-direction:column}
+.vt-app__media{display:block;width:100%;height:auto;aspect-ratio:16/10;object-fit:cover;background:var(--vt-surface-2)}
+.vt-app__body{padding:16px;display:grid;gap:10px}
+.vt-app__top{display:flex;gap:12px;align-items:center}
+.vt-app__icon{width:44px;height:44px;border-radius:10px;object-fit:cover}
+.vt-app__name{margin:0 0 4px;font-size:1.15rem;color:var(--vt-text)}
+.vt-app__tagline{margin:0;color:var(--vt-text);font-weight:600}
+.vt-morph{position:relative;aspect-ratio:16/10;max-height:70svh;width:100%;border-radius:var(--vt-radius);overflow:hidden;margin-bottom:16px}
+.vt-morph__pause{position:absolute;left:12px;bottom:12px;background:rgb(10 10 11 / .8)}
+.vt-appspage{position:fixed;inset:0;z-index:99999;overflow:auto;background:var(--vt-bg);padding:max(16px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
+.vt-appspage__inner{max-width:1100px;margin:0 auto}
+.vt-appspage__close{position:sticky;top:0;float:right}
+html.vt-apps-open,html.vt-apps-open body{overflow:hidden}

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { TextTrail } from "@/components/ui/text-trail";
+import { useTapReveal } from "@/vtech/interactions.js";
 
 const BG_IMAGE_1 =
   "https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260609_195923_b0ba8ace-1d1d-4f2c-9a28-1ab84b330680.png&w=1280&q=85";
@@ -244,6 +245,7 @@ export function WoodStoryRevealSection({
   const stageRef = useRef<HTMLElement | null>(null);
   const baseImageRef = useRef<HTMLDivElement | null>(null);
   const revealDivRef = useRef<HTMLDivElement | null>(null);
+  const { open: tapOpen, bind: tapBind } = useTapReveal<HTMLElement>({ autoOnTouch: true });
 
   const mouse = useRef({ x: -999, y: -999 });
   const smooth = useRef({ x: -999, y: -999 });
@@ -522,8 +524,19 @@ export function WoodStoryRevealSection({
 
   return (
     <section
-      ref={stageRef}
-      className={`relative w-full overflow-hidden bg-neutral-950 select-none tracking-[-0.02em] ${className || ""}`}
+      ref={(el) => {
+        stageRef.current = el;
+        if (tapBind.ref) tapBind.ref.current = el;
+      }}
+      data-open={tapOpen ? "true" : "false"}
+      onPointerEnter={tapBind.onPointerEnter}
+      onPointerLeave={tapBind.onPointerLeave}
+      onFocus={tapBind.onFocus}
+      onBlur={tapBind.onBlur}
+      onKeyDown={tapBind.onKeyDown}
+      tabIndex={0}
+      aria-label="Interactive burnt wood story reveal. Use space or enter to reveal story."
+      className={`relative w-full overflow-hidden bg-neutral-950 select-none tracking-[-0.02em] vt-reveal ${className || ""}`}
       style={{
         minHeight: "520px",
         height: "72vh",
@@ -566,7 +579,7 @@ export function WoodStoryRevealSection({
       {/* 5. Upper-Left BEFORE Text with WebGL TextTrail effect */}
       <div
         className={`absolute top-5 left-5 sm:top-8 sm:left-8 md:top-10 md:left-10 z-40 w-[270px] sm:w-[350px] md:w-[420px] h-[85px] sm:h-[105px] md:h-[125px] pointer-events-none transition-opacity duration-500 ease-out ${
-          textState === "before" ? "opacity-100" : "opacity-0 pointer-events-none"
+          textState === "before" || (tapOpen && textState !== "reveal") ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
       >
         <TextTrail
@@ -591,7 +604,7 @@ export function WoodStoryRevealSection({
       {/* 6. Lower-Right REVEAL Text with WebGL TextTrail effect */}
       <div
         className={`absolute bottom-5 right-5 sm:bottom-8 sm:right-8 md:bottom-10 md:right-10 z-40 w-[290px] sm:w-[370px] md:w-[440px] h-[85px] sm:h-[105px] md:h-[125px] pointer-events-none transition-opacity duration-500 ease-out ${
-          textState === "reveal" ? "opacity-100" : "opacity-0 pointer-events-none"
+          textState === "reveal" || tapOpen ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
       >
         <TextTrail
