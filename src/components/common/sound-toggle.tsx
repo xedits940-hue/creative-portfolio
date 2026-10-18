@@ -6,7 +6,7 @@ import { useSoundContext } from "@/providers/sound-provider";
 
 export default function SoundToggle() {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const { isSoundActive, toggleSound } = useSoundContext();
+  const { isSoundActive, toggleSound, triggerSwitchSound } = useSoundContext();
   const setActiveRef = useRef<((nextActive: boolean) => void) | null>(null);
 
   useEffect(() => {
@@ -123,13 +123,7 @@ export default function SoundToggle() {
 
     setActiveRef.current = setActive;
 
-    function handleClick(e: MouseEvent) {
-      e.preventDefault();
-      e.stopPropagation();
-      toggleSound();
-    }
 
-    toggleBtn.addEventListener("click", handleClick);
 
     function handleReducedMotionChange() {
       if (currentActive) ensureLoop();
@@ -148,7 +142,7 @@ export default function SoundToggle() {
     }
 
     return () => {
-      toggleBtn.removeEventListener("click", handleClick);
+
       if (typeof reducedMotionMQ.removeEventListener === "function") {
         reducedMotionMQ.removeEventListener("change", handleReducedMotionChange);
       } else if (typeof reducedMotionMQ.removeListener === "function") {
@@ -171,12 +165,20 @@ export default function SoundToggle() {
   return (
     <div
       ref={containerRef}
-      className="fixed z-[9999] pointer-events-auto top-4 left-3 sm:top-5 sm:left-4 md:left-6 transition-all"
-      style={{ zIndex: 9999 }}
+      className="fixed z-20 pointer-events-auto top-4 left-3 sm:top-5 sm:left-4 md:left-6 transition-all"
+      style={{ zIndex: 20 }}
     >
       <button
         type="button"
-        className="sound-toggle vt-sound-toggle vt-tap"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          if (!isSoundActive) {
+            triggerSwitchSound();
+          }
+          toggleSound();
+        }}
+        className="sound-toggle vt-sound-toggle vt-tap cursor-pointer"
         id="soundToggle"
         aria-pressed={isSoundActive ? "true" : "false"}
         aria-label="Toggle sound"

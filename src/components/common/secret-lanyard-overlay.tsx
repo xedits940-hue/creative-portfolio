@@ -11,7 +11,6 @@ const VT_PIN_CODE = "6786";
 declare global {
   interface Window {
     vtUpdateCardScreenPos?: (x: number, y: number) => void;
-    vtOpenPinPopup?: () => void;
   }
 }
 
@@ -94,7 +93,6 @@ export default function SecretLanyardOverlay() {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   const [pin, setPin] = useState("");
-  const [isPinOpen, setIsPinOpen] = useState(false);
   const [pinStatus, setPinStatus] = useState<"idle" | "error" | "success">("idle");
   const inputRef = useRef<HTMLInputElement | null>(null);
   const anchorRef = useRef<HTMLDivElement | null>(null);
@@ -105,7 +103,6 @@ export default function SecretLanyardOverlay() {
   const triggerDropRef = useRef<(() => void) | null>(null);
 
   const handleClose = useCallback(() => {
-    setIsPinOpen(false);
     setPin("");
     setPinStatus("idle");
     closeLanyard();
@@ -123,7 +120,50 @@ export default function SecretLanyardOverlay() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, handleClose]);
 
-  // When isOpen changes, instantly trigger the smooth physical drop without compilation delay
+  // Global keyboard typing for PIN: Users can simply type numbers on keyboard without searching for input boxes!
+  useEffect(() => {
+    if (!isOpen || isUnlocked) return;
+
+    const handleGlobalKey = (e: KeyboardEvent) => {
+      if (e.key === "Backspace") {
+        setPin((prev) => prev.slice(0, -1));
+        setPinStatus("idle");
+        return;
+      }
+      if (/^[0-9]$/.test(e.key)) {
+        setPin((prev) => {
+          if (prev.length >= 4) return prev;
+          const next = prev + e.key;
+          if (next.length === 4) {
+            if (next === VT_PIN_CODE) {
+              setPinStatus("success");
+              try {
+                if (navigator.vibrate) navigator.vibrate(60);
+              } catch {}
+              setTimeout(() => {
+                unlockVault();
+              }, 500);
+            } else {
+              setPinStatus("error");
+              try {
+                if (navigator.vibrate) navigator.vibrate([60, 60, 60]);
+              } catch {}
+              setTimeout(() => {
+                setPin("");
+                setPinStatus("idle");
+              }, 500);
+            }
+          }
+          return next;
+        });
+      }
+    };
+
+    window.addEventListener("keydown", handleGlobalKey);
+    return () => window.removeEventListener("keydown", handleGlobalKey);
+  }, [isOpen, isUnlocked, unlockVault]);
+
+  // When isOpen changes, instantly trigger smooth physical drop without compilation delay
   useEffect(() => {
     if (isOpen) {
       setPin("");
@@ -134,14 +174,11 @@ export default function SecretLanyardOverlay() {
       if (startSimulationRef.current) {
         startSimulationRef.current();
       }
-      // Reveal PIN chip smoothly at the lower edge once the card swings into frame
-      const timer = setTimeout(() => {
-        setIsPinOpen(true);
+      // Focus hidden input for mobile software keyboard
+      setTimeout(() => {
         inputRef.current?.focus({ preventScroll: true });
-      }, 750);
-      return () => clearTimeout(timer);
+      }, 400);
     } else {
-      setIsPinOpen(false);
       if (stopSimulationRef.current) {
         stopSimulationRef.current();
       }
@@ -159,13 +196,8 @@ export default function SecretLanyardOverlay() {
       }
     };
 
-    window.vtOpenPinPopup = () => {
-      setIsPinOpen(true);
-      inputRef.current?.focus({ preventScroll: true });
-    };
-
     /* ============================================================
-       THREE.JS LANYARD PHYSICS ENGINE
+       THREE.JS LANYARD PHYSICS ENGINE - PURE LUXURY RED & BLACK
     ============================================================ */
 
     const CARD_SIZES: Record<string, [number, number]> = {
@@ -177,13 +209,13 @@ export default function SecretLanyardOverlay() {
     const BEVEL = 0.007;
     const JOINTS = 4;
     const NODE_WEIGHT = 1 / 0.05;
-    const MAX_STEP = 1 / 1440;
-    const ITERATIONS = 8;
+    const MAX_STEP = 1 / 360;
+    const ITERATIONS = 6;
     const MIN_GUIDE = 1;
     const MIN_SEGMENT = 0.015;
     const BEND_SMOOTHING = 0.06;
     const GRAB_FOLLOW_RATE = 40;
-    const INTRO_SETTLE_DURATION = 1.4;
+    const INTRO_SETTLE_DURATION = 0.8;
     const SAMPLES = 96;
     const FOV = 24;
     const STRAP_WIDTH = 0.36;
@@ -193,27 +225,8 @@ export default function SecretLanyardOverlay() {
     const CLAMP_BODY = 0.15;
     const FACE_WIDTH = 1024;
 
-    const FINISHES = {
-      glossy: { roughness: 0.42, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.06, foil: 0, anisotropy: 0 },
-    };
-
     const BAND_COLUMNS = [0, 0.07, 0.93, 1];
     const BAND_BEND = [-0.95, -0.28, 0.28, 0.95];
-
-    const FOIL_VERTEX_HEAD =
-      "varying vec2 vFoilUv;\nvarying vec3 vFoilX;\nvarying vec3 vFoilY;\n";
-    const FOIL_VERTEX_BODY =
-      "vFoilUv = uv;\nvFoilX = normalize((modelViewMatrix * vec4(1.0, 0.0, 0.0, 0.0)).xyz);\nvFoilY = normalize((modelViewMatrix * vec4(0.0, 1.0, 0.0, 0.0)).xyz);\n";
-    const FOIL_FRAGMENT_HEAD =
-      "uniform float foilStrength;\nuniform float foilAspect;\nuniform vec3 foilKey;\nuniform vec3 foilFill;\nuniform vec3 foilTop;\nvarying vec2 vFoilUv;\nvarying vec3 vFoilX;\nvarying vec3 vFoilY;\n" +
-      "float foilHash(vec2 p) { p = fract(p * vec2(234.34, 435.345)); p += dot(p, p + 34.23); return fract(p.x * p.y); }\n" +
-      "float foilBump(float t, float center, float width) { float x = (t - center) / width; return max(0.0, 1.0 - x * x); }\n" +
-      "vec3 foilSpectrum(float t) { return vec3(foilBump(t, 0.82, 0.32) + 0.4 * foilBump(t, 0.02, 0.12), foilBump(t, 0.5, 0.26), foilBump(t, 0.18, 0.24)); }\n" +
-      "vec3 foilGrating(float u, float spacing) { vec3 color = vec3(0.0); for (int m = 1; m <= 2; m++) { float order = float(m); float t = (spacing * abs(u) / order - 0.38) / 0.32; color += foilSpectrum(t) / order; } return color; }\n" +
-      "vec3 foilShard(vec2 p) { vec2 base = floor(p); float best = 9.0; float edge = 9.0; vec2 id = base; for (int j = -1; j <= 1; j++) { for (int i = -1; i <= 1; i++) { vec2 cell = base + vec2(float(i), float(j)); vec2 site = cell + vec2(foilHash(cell), foilHash(cell + 7.31)) * 0.9 + 0.05; float d = length(site - p); if (d < best) { edge = best; best = d; id = cell; } else if (d < edge) { edge = d; } } } return vec3(foilHash(id + 3.17), foilHash(id + 11.73), edge - best); }\n";
-    const FOIL_FRAGMENT_BODY =
-      "if (foilStrength > 0.0) {\n" +
-      "  vec3 foilView = normalize(vViewPosition);\n  vec3 foilNormal = normalize(normal);\n  vec2 foilP = vec2(vFoilUv.x, vFoilUv.y * foilAspect);\n  vec3 shard = foilShard(foilP * 26.0);\n  vec2 ray = foilP - vec2(-1.6, 2.6 * foilAspect);\n  float angle = atan(ray.y, ray.x) + (shard.x - 0.5) * 0.16;\n  vec3 grating = normalize(vFoilX * cos(angle) + vFoilY * sin(angle));\n  float spacing = 1.7 * (0.95 + shard.y * 0.1);\n  vec3 rainbow = foilGrating(dot(foilKey + foilView, grating), spacing);\n  rainbow += 0.6 * foilGrating(dot(foilTop + foilView, grating), spacing);\n  rainbow *= 0.8 + 0.2 * smoothstep(0.0, 0.04, shard.z);\n  rainbow = max(rainbow - 0.35 * min(rainbow.r, min(rainbow.g, rainbow.b)), 0.0);\n  vec2 grid = foilP * 64.0;\n  vec2 cell = floor(grid);\n  vec2 jitter = vec2(foilHash(cell + 1.7), foilHash(cell + 9.2));\n  float flake = smoothstep(0.32, 0.06, length(fract(grid) - jitter * 0.6 - 0.2)) * step(0.45, foilHash(cell + 4.4));\n  vec3 facet = normalize(foilNormal + (vFoilX * (jitter.x - 0.5) + vFoilY * (jitter.y - 0.5)) * 0.8);\n  float glint = pow(max(dot(reflect(-foilKey, facet), foilView), 0.0), 28.0);\n  glint += 0.7 * pow(max(dot(reflect(-foilTop, facet), foilView), 0.0), 28.0);\n  float fine = 1.0 - smoothstep(0.35, 0.9, max(fwidth(grid.x), fwidth(grid.y)));\n  vec3 sparkle = flake * glint * fine * (vec3(0.7) + foilGrating(dot(foilKey + foilView, grating) + jitter.x * 0.4, spacing));\n  float ink = dot(diffuseColor.rgb, vec3(0.2126, 0.7152, 0.0722));\n  float foil = foilStrength * (0.08 + 0.92 * smoothstep(0.04, 0.7, ink));\n  float facing = clamp(dot(foilNormal, foilView), 0.0, 1.0);\n  float tint = clamp(dot(rainbow, vec3(0.4)), 0.0, 1.0);\n  outgoingLight = outgoingLight * (1.0 - foil * (0.3 + 0.32 * tint)) + (rainbow * 0.62 * (0.4 + 0.6 * facing) + sparkle * 1.6) * foil;\n}\n";
 
     const METALS = {
       silver: { color: "#d9dce2", roughness: 0.16 },
@@ -246,12 +259,6 @@ export default function SecretLanyardOverlay() {
       }
     }
 
-    function luminance(rgb: [number, number, number]) {
-      return 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2];
-    }
-    function toCss(rgb: [number, number, number], alpha = 1) {
-      return `rgba(${Math.round(rgb[0] * 255)}, ${Math.round(rgb[1] * 255)}, ${Math.round(rgb[2] * 255)}, ${alpha})`;
-    }
 
     function seeded(start: number) {
       let state = start >>> 0;
@@ -401,43 +408,7 @@ export default function SecretLanyardOverlay() {
       return texture;
     }
 
-    function buildGrainTexture() {
-      const size = 128;
-      const canvas = document.createElement("canvas");
-      canvas.width = size;
-      canvas.height = size;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return new THREE.CanvasTexture(canvas);
-      const random = seeded(7);
-      const field = new Float32Array(size * size);
-      for (let k = 0; k < field.length; k++) field[k] = random();
-      function height(x: number, y: number) {
-        let sum = 0;
-        for (let j = -1; j <= 1; j++) {
-          for (let i = -1; i <= 1; i++) sum += field[((y + j + size) % size) * size + ((x + i + size) % size)];
-        }
-        return (sum / 9) * 1.6;
-      }
-      const image = ctx.createImageData(size, size);
-      for (let y = 0; y < size; y++) {
-        for (let x = 0; x < size; x++) {
-          const nx = height((x - 1 + size) % size, y) - height((x + 1) % size, y);
-          const ny = height(x, (y - 1 + size) % size) - height(x, (y + 1) % size);
-          const length = Math.hypot(nx, ny, 1);
-          const i2 = (y * size + x) * 4;
-          image.data[i2] = ((nx / length) * 0.5 + 0.5) * 255;
-          image.data[i2 + 1] = ((ny / length) * 0.5 + 0.5) * 255;
-          image.data[i2 + 2] = ((1 / length) * 0.5 + 0.5) * 255;
-          image.data[i2 + 3] = 255;
-        }
-      }
-      ctx.putImageData(image, 0, 0);
-      const texture = new THREE.CanvasTexture(canvas);
-      texture.wrapS = THREE.RepeatWrapping;
-      texture.wrapT = THREE.RepeatWrapping;
-      texture.repeat.set(5, 7);
-      return texture;
-    }
+    
 
     function buildWeaveTexture() {
       const size = 128;
@@ -485,61 +456,149 @@ export default function SecretLanyardOverlay() {
       return texture;
     }
 
-    // ORIGINAL PURE RED + BLACK MIXTURE AS REQUESTED BY USER
+    // ORIGINAL PURE RED & BLACK LUXURY FINISH (NO RAINBOW / NO NOISE)
     function paintFace(canvas: HTMLCanvasElement, color: [number, number, number], logoImageElement?: HTMLImageElement | null) {
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
       const w = canvas.width, h = canvas.height;
 
-      ctx.fillStyle = toCss(color);
+      // Base Obsidian Carbon
+      ctx.fillStyle = "#070709";
       ctx.fillRect(0, 0, w, h);
 
-      // Deep obsidian & crimson luxury gradient
+      // Deep Ruby & Crimson Luxury Gradient
       const base = ctx.createLinearGradient(0, 0, w, h);
-      base.addColorStop(0, "#050506");
-      base.addColorStop(0.42, "#190608");
-      base.addColorStop(0.74, "#6e0f16");
-      base.addColorStop(1, "#b5141f");
+      base.addColorStop(0, "#060608");
+      base.addColorStop(0.35, "#140306");
+      base.addColorStop(0.70, "#48080f");
+      base.addColorStop(1, "#8e0e18");
       ctx.fillStyle = base;
       ctx.fillRect(0, 0, w, h);
 
-      // Delicate diagonal glass reflection
-      const sheen = ctx.createLinearGradient(0, 0, w, h * 0.55);
+      // Subtle fine carbon weave pattern
+      ctx.save();
+      ctx.fillStyle = "rgba(255, 40, 55, 0.025)";
+      for (let y = 0; y < h; y += 6) {
+        ctx.fillRect(0, y, w, 1);
+      }
+      for (let x = 0; x < w; x += 6) {
+        ctx.fillRect(x, 0, 1, h);
+      }
+      ctx.restore();
+
+      // Delicate diagonal glass sheen (pure white monochrome, zero rainbow)
+      const sheen = ctx.createLinearGradient(0, 0, w * 0.8, h * 0.6);
       sheen.addColorStop(0, "rgba(255, 255, 255, 0.08)");
-      sheen.addColorStop(0.5, "rgba(255, 255, 255, 0.0)");
+      sheen.addColorStop(0.4, "rgba(255, 255, 255, 0.02)");
       sheen.addColorStop(1, "rgba(255, 255, 255, 0.0)");
       ctx.fillStyle = sheen;
       ctx.fillRect(0, 0, w, h);
 
-      // Fine metallic border hairline
-      const inset = Math.min(w, h) * 0.035;
-      ctx.strokeStyle = "rgba(255, 90, 100, 0.55)";
+      // Outer metallic crimson hairline border
+      const inset = Math.min(w, h) * 0.038;
+      ctx.strokeStyle = "rgba(255, 55, 70, 0.65)";
       ctx.lineWidth = Math.max(2, Math.min(w, h) * 0.0035);
       ctx.strokeRect(inset, inset, w - inset * 2, h - inset * 2);
 
-      // Clean, uncrowded, tasteful small logo in center
+      // Inner subtle dark border
+      const innerInset = inset + 5;
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
+      ctx.lineWidth = 1;
+      ctx.strokeRect(innerInset, innerInset, w - innerInset * 2, h - innerInset * 2);
+
+      // Corner security corner brackets
+      const bLen = Math.min(w, h) * 0.06;
+      ctx.strokeStyle = "#ff2d3d";
+      ctx.lineWidth = 2.5;
+      // Top-left
+      ctx.beginPath();
+      ctx.moveTo(inset, inset + bLen); ctx.lineTo(inset, inset); ctx.lineTo(inset + bLen, inset);
+      ctx.stroke();
+      // Top-right
+      ctx.beginPath();
+      ctx.moveTo(w - inset - bLen, inset); ctx.lineTo(w - inset, inset); ctx.lineTo(w - inset, inset + bLen);
+      ctx.stroke();
+      // Bottom-left
+      ctx.beginPath();
+      ctx.moveTo(inset, h - inset - bLen); ctx.lineTo(inset, h - inset); ctx.lineTo(inset + bLen, h - inset);
+      ctx.stroke();
+      // Bottom-right
+      ctx.beginPath();
+      ctx.moveTo(w - inset - bLen, h - inset); ctx.lineTo(w - inset, h - inset); ctx.lineTo(w - inset, h - inset - bLen);
+      ctx.stroke();
+
+      // Top Header Typography
+      ctx.save();
+      ctx.fillStyle = "rgba(255, 255, 255, 0.85)";
+      ctx.font = "bold " + Math.round(w * 0.042) + "px sans-serif";
+      ctx.letterSpacing = "3px";
+      ctx.fillText("VTECH STUDIOS", inset + 12, inset + 28);
+
+      ctx.fillStyle = "#ff3b4b";
+      ctx.font = "bold " + Math.round(w * 0.032) + "px monospace";
+      ctx.fillText("VIP ACCESS // 2026", w - inset - Math.round(w * 0.38), inset + 28);
+      ctx.restore();
+
+      // Center Studio Logo
       if (logoImageElement) {
-        const logoSize = Math.min(w, h) * 0.22;
-        ctx.drawImage(logoImageElement, (w - logoSize) / 2, (h - logoSize) / 2, logoSize, logoSize);
+        const logoSize = Math.min(w, h) * 0.34;
+        ctx.save();
+        // Subtle crimson ambient backglow behind logo
+        const logoGlow = ctx.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, logoSize * 0.8);
+        logoGlow.addColorStop(0, "rgba(255, 35, 50, 0.25)");
+        logoGlow.addColorStop(1, "rgba(255, 35, 50, 0)");
+        ctx.fillStyle = logoGlow;
+        ctx.beginPath();
+        ctx.arc(w / 2, h / 2, logoSize * 0.8, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.drawImage(logoImageElement, (w - logoSize) / 2, (h - logoSize) / 2 - 10, logoSize, logoSize);
+        ctx.restore();
       }
+
+      // Subtitle below logo
+      ctx.save();
+      ctx.textAlign = "center";
+      ctx.fillStyle = "rgba(255, 255, 255, 0.75)";
+      ctx.font = "500 " + Math.round(w * 0.03) + "px sans-serif";
+      ctx.fillText("CREATIVE ENGINEERING & MOTION", w / 2, h / 2 + Math.min(w, h) * 0.23);
+
+      // Security verification bar at bottom
+      const barY = h - inset - 38;
+      ctx.fillStyle = "rgba(255, 45, 61, 0.2)";
+      ctx.fillRect(inset + 10, barY, w - (inset + 10) * 2, 22);
+      ctx.fillStyle = "#ff2d3d";
+      ctx.font = "bold " + Math.round(w * 0.026) + "px monospace";
+      ctx.fillText("ENCRYPTED ACCESS // CODE: VT-7009", w / 2, barY + 15);
+      ctx.restore();
     }
 
-    function paintStrap(canvas: HTMLCanvasElement, color: [number, number, number]) {
+    function paintStrap(canvas: HTMLCanvasElement) {
       const across = 192;
       const along = across * 2;
       canvas.width = across;
       canvas.height = along;
       const ctx = canvas.getContext("2d");
       if (!ctx) return along / across;
-      ctx.fillStyle = toCss(color);
+      
+      // Jet black obsidian lanyard strap
+      ctx.fillStyle = "#0c0c0e";
       ctx.fillRect(0, 0, across, along);
-      const ink: [number, number, number] = luminance(color) > 0.5 ? [0, 0, 0] : [1, 1, 1];
-      ctx.fillStyle = toCss(ink, 0.05);
+
+      // Fine woven thread micro-texture
+      ctx.fillStyle = "rgba(255, 255, 255, 0.035)";
       for (let y = 0; y < along; y += 4) ctx.fillRect(0, y, across, 1);
-      ctx.fillStyle = toCss(ink, 0.2);
+
+      // Crimson racing edge lines
+      ctx.fillStyle = "#ff2d3d";
+      ctx.fillRect(across * 0.08, 0, 3.5, along);
+      ctx.fillRect(across * 0.92 - 3.5, 0, 3.5, along);
+
+      // Metallic micro-stitches
+      ctx.fillStyle = "rgba(255, 255, 255, 0.16)";
       for (let y2 = 0; y2 < along; y2 += 14) {
-        ctx.fillRect(across * 0.075, y2, 2, 8);
-        ctx.fillRect(across * 0.925 - 2, y2, 2, 8);
+        ctx.fillRect(across * 0.15, y2, 2, 6);
+        ctx.fillRect(across * 0.85 - 2, y2, 2, 6);
       }
       return along / across;
     }
@@ -665,32 +724,29 @@ export default function SecretLanyardOverlay() {
       const { nodes, previous, velocities, body, anchor } = sim;
       nodes[0].copy(anchor);
 
-      if (intro) {
-        for (let i = 1; i <= JOINTS; i++) {
-          nodes[i].copy(anchor);
-          nodes[i].y -= 0.0009 * i;
-          nodes[i].x += (i % 2 === 0 ? 1 : -1) * 0.0005 * i;
-        }
-        body.quaternion.setFromAxisAngle(scratch.h.set(0.3, 1, 0.15).normalize(), 0.22);
-      } else {
-        for (let j = 1; j <= JOINTS; j++) {
-          nodes[j].copy(nodes[j - 1]);
-          nodes[j].y -= sim.rest;
-        }
-        body.quaternion.identity();
+      for (let j = 1; j <= JOINTS; j++) {
+        nodes[j].copy(nodes[j - 1]);
+        nodes[j].y -= sim.rest * (intro ? 0.78 : 1.0);
+        nodes[j].x += (j % 2 === 0 ? 1 : -1) * 0.008 * j;
+        previous[j].copy(nodes[j]);
+        velocities[j].set(0, 0, 0);
       }
 
       body.hang.set(0, layout.hangY, 0);
+      if (intro) {
+        body.quaternion.setFromAxisAngle(scratch.h.set(0.18, 1, 0.08).normalize(), 0.18);
+      } else {
+        body.quaternion.identity();
+      }
+
       const offset = scratch.a.copy(body.hang).applyQuaternion(body.quaternion);
       body.position.copy(nodes[JOINTS]).sub(offset);
       body.previous.copy(body.position);
       body.previousQuaternion.copy(body.quaternion);
-      body.velocity.set(0, 0, 0);
+      body.velocity.set(0, intro ? -0.5 : 0, 0);
       body.angular.set(0, 0, 0);
-      for (let k = 0; k <= JOINTS; k++) {
-        previous[k].copy(nodes[k]);
-        velocities[k].set(0, 0, 0);
-      }
+      previous[0].copy(nodes[0]);
+      velocities[0].set(0, 0, 0);
       sim.lengths.fill(sim.rest);
       sim.turn = 0;
       sim.twist = 0;
@@ -888,41 +944,36 @@ export default function SecretLanyardOverlay() {
     const strapTexture = makeCanvasTexture(strapCanvas, anisotropy);
     strapTexture.wrapS = THREE.ClampToEdgeWrapping;
     strapTexture.wrapT = THREE.RepeatWrapping;
-    const grain = buildGrainTexture();
     const weave = buildWeaveTexture();
 
-    const foilUniforms = {
-      foilStrength: { value: 0.35 },
-      foilAspect: { value: 1.4 },
-      foilKey: { value: new THREE.Vector3() },
-      foilFill: { value: new THREE.Vector3() },
-      foilTop: { value: new THREE.Vector3() },
-    };
-
-    function injectFoil(shader: { uniforms: Record<string, unknown>; vertexShader: string; fragmentShader: string }) {
-      Object.assign(shader.uniforms, foilUniforms);
-      shader.vertexShader = shader.vertexShader
-        .replace("#include <common>", "#include <common>\n" + FOIL_VERTEX_HEAD)
-        .replace("#include <project_vertex>", "#include <project_vertex>\n" + FOIL_VERTEX_BODY);
-      shader.fragmentShader = shader.fragmentShader
-        .replace("#include <common>", "#include <common>\n" + FOIL_FRAGMENT_HEAD)
-        .replace("#include <opaque_fragment>", FOIL_FRAGMENT_BODY + "\n#include <opaque_fragment>");
-    }
-
+    // Pure luxury obsidian finish - NO rainbow shader
     const frontMaterial = new THREE.MeshPhysicalMaterial({
       map: frontTexture,
-      normalMap: grain,
-      normalScale: new THREE.Vector2(0.06, 0.06),
+      roughness: 0.18,
+      metalness: 0.08,
+      clearcoat: 0.95,
+      clearcoatRoughness: 0.06,
     });
     const backMaterial = new THREE.MeshPhysicalMaterial({
       map: backTexture,
-      normalMap: grain,
-      normalScale: new THREE.Vector2(0.06, 0.06),
+      roughness: 0.18,
+      metalness: 0.08,
+      clearcoat: 0.95,
+      clearcoatRoughness: 0.06,
     });
-    frontMaterial.onBeforeCompile = injectFoil;
-    backMaterial.onBeforeCompile = injectFoil;
-    const edgeMaterial = new THREE.MeshPhysicalMaterial();
-    const metalMaterial = new THREE.MeshStandardMaterial({ metalness: 1 });
+
+    const edgeMaterial = new THREE.MeshPhysicalMaterial({
+      color: new THREE.Color("#160305"),
+      roughness: 0.32,
+      metalness: 0.25,
+      clearcoat: 0.8,
+      clearcoatRoughness: 0.1,
+    });
+    const metalMaterial = new THREE.MeshStandardMaterial({
+      color: new THREE.Color("#dcdde2"),
+      metalness: 0.95,
+      roughness: 0.18,
+    });
     const bandMaterial = new THREE.MeshPhysicalMaterial({
       map: strapTexture,
       normalMap: weave,
@@ -998,7 +1049,7 @@ export default function SecretLanyardOverlay() {
     }
 
     function repaintStrap() {
-      tileRatio = paintStrap(strapCanvas, parseColor("#111111", [0.07, 0.07, 0.07]));
+      tileRatio = paintStrap(strapCanvas);
       weave.repeat.set(2, 2 * tileRatio);
       strapTexture.needsUpdate = true;
       start();
@@ -1015,9 +1066,6 @@ export default function SecretLanyardOverlay() {
       camera.lookAt(0, 0, 0);
       camera.updateProjectionMatrix();
       camera.updateMatrixWorld();
-      foilUniforms.foilKey.value.set(-2.5, 4, 6).normalize().transformDirection(camera.matrixWorldInverse);
-      foilUniforms.foilFill.value.set(3, -1, 4).normalize().transformDirection(camera.matrixWorldInverse);
-      foilUniforms.foilTop.value.set(0.5, 4.5, 8).normalize().transformDirection(camera.matrixWorldInverse);
       const anchorX = (ANCHORS.center - 0.5) * viewWidth;
       const anchorY = viewHeight / 2 + 0.2;
       const cardTop = viewHeight / 2 - viewHeight * mix(0.12, 0.42, 0.5);
@@ -1051,19 +1099,17 @@ export default function SecretLanyardOverlay() {
       paintFaces();
       repaintStrap();
 
-      const finish = FINISHES.glossy;
       const card = parseColor("#210709", [1, 1, 1]);
       [frontMaterial, backMaterial].forEach((material) => {
-        material.roughness = finish.roughness;
-        material.metalness = finish.metalness;
-        material.clearcoat = finish.clearcoat;
-        material.clearcoatRoughness = finish.clearcoatRoughness;
+        material.roughness = 0.28;
+        material.metalness = 0.05;
+        material.clearcoat = 1;
+        material.clearcoatRoughness = 0.08;
       });
-      foilUniforms.foilStrength.value = 0.45;
-      foilUniforms.foilAspect.value = layout.height / layout.width;
+
       edgeMaterial.color.setRGB(card[0] * 0.92, card[1] * 0.92, card[2] * 0.92, THREE.SRGBColorSpace);
-      edgeMaterial.roughness = Math.min(finish.roughness, 0.35);
-      edgeMaterial.metalness = finish.metalness;
+      edgeMaterial.roughness = 0.3;
+      edgeMaterial.metalness = 0.05;
       edgeMaterial.clearcoat = 1;
       edgeMaterial.clearcoatRoughness = 0.08;
       const metalLook = METALS.silver;
@@ -1072,7 +1118,7 @@ export default function SecretLanyardOverlay() {
 
       clampMesh.geometry.dispose();
       clampMesh.geometry = buildClampGeometry(strapScale);
-      canvas.style.touchAction = "pan-y";
+      canvas.style.touchAction = "none";
       start();
     }
 
@@ -1244,7 +1290,6 @@ export default function SecretLanyardOverlay() {
       }
     }
 
-    // Instantly reset the physical drop pose from top
     function triggerDrop() {
       placeHanging(sim, layout, true);
       start();
@@ -1272,6 +1317,7 @@ export default function SecretLanyardOverlay() {
       return hits[0] || null;
     }
 
+    // Touch & Pointer Down: Grabs card cleanly on mobile and desktop!
     function onPointerDown(event: PointerEvent) {
       if (event.button > 0) return;
       toPointer(event);
@@ -1285,38 +1331,50 @@ export default function SecretLanyardOverlay() {
         target: hit.point.clone(),
       };
       press = { x: event.clientX, y: event.clientY, time: performance.now() };
-      if (canvas.setPointerCapture) canvas.setPointerCapture(event.pointerId);
+      canvas.style.cursor = "grabbing";
+      if (canvas.setPointerCapture) {
+        try {
+          canvas.setPointerCapture(event.pointerId);
+        } catch {}
+      }
       start();
     }
 
+    // Pointer Move: Stretches, moves and swings card with full elasticity!
     function onPointerMove(event: PointerEvent) {
       toPointer(event);
       if (sim.grab) {
         if (press && Math.hypot(event.clientX - press.x, event.clientY - press.y) > 6) press = null;
         raycaster.ray.at(sim.grab.reach, sim.grab.raw);
+        canvas.style.cursor = "grabbing";
         start();
         return;
       }
       hovering = !!pickCard();
-      canvas.style.cursor = hovering ? "pointer" : "default";
+      canvas.style.cursor = hovering ? "grab" : "default";
     }
 
+    // Pointer Up: Releases card and sets it swinging gracefully!
     function onPointerUp(event: PointerEvent) {
       if (!sim.grab) return;
       sim.grab = null;
+      canvas.style.cursor = hovering ? "grab" : "default";
       if (press && event.type === "pointerup" && performance.now() - press.time < 450) {
-        if (!sim.introActive && window.vtOpenPinPopup) {
-          window.vtOpenPinPopup();
-        }
+        inputRef.current?.focus({ preventScroll: true });
       }
       press = null;
-      if (canvas.releasePointerCapture) canvas.releasePointerCapture(event.pointerId);
+      if (canvas.releasePointerCapture) {
+        try {
+          canvas.releasePointerCapture(event.pointerId);
+        } catch {}
+      }
       start();
     }
 
-    canvas.addEventListener("pointerdown", onPointerDown);
-    canvas.addEventListener("pointermove", onPointerMove);
+    canvas.addEventListener("pointerdown", onPointerDown, { passive: false });
+    canvas.addEventListener("pointermove", onPointerMove, { passive: false });
     canvas.addEventListener("pointerup", onPointerUp);
+    canvas.addEventListener("pointercancel", onPointerUp);
 
     function resize() {
       if (!stage) return;
@@ -1343,12 +1401,13 @@ export default function SecretLanyardOverlay() {
       canvas.removeEventListener("pointerdown", onPointerDown);
       canvas.removeEventListener("pointermove", onPointerMove);
       canvas.removeEventListener("pointerup", onPointerUp);
+      canvas.removeEventListener("pointercancel", onPointerUp);
       renderer.dispose();
       if (canvas.parentNode) canvas.parentNode.removeChild(canvas);
     };
   }, []);
 
-  // Handle PIN input typing
+  // Handle PIN input typing (works via virtual keyboard or physical keyboard)
   const handlePinChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value.replace(/[^0-9]/g, "").slice(0, 4);
     setPin(val);
@@ -1358,7 +1417,7 @@ export default function SecretLanyardOverlay() {
       if (val === VT_PIN_CODE) {
         setPinStatus("success");
         try {
-          if (navigator.vibrate) navigator.vibrate(50);
+          if (navigator.vibrate) navigator.vibrate(60);
         } catch {}
         setTimeout(() => {
           unlockVault();
@@ -1371,7 +1430,7 @@ export default function SecretLanyardOverlay() {
         setTimeout(() => {
           setPin("");
           setPinStatus("idle");
-        }, 600);
+        }, 500);
       }
     }
   };
@@ -1388,21 +1447,21 @@ export default function SecretLanyardOverlay() {
         className="fixed inset-0 z-0 pointer-events-none transition-opacity duration-700"
         style={{
           background: `
-            radial-gradient(1100px 650px at 18% 12%, rgba(255, 45, 61, 0.16), transparent 60%),
-            radial-gradient(900px 600px at 85% 85%, rgba(255, 45, 61, 0.1), transparent 65%),
-            linear-gradient(135deg, rgba(7, 7, 10, 0.6) 0%, rgba(18, 16, 20, 0.7) 55%, rgba(26, 10, 12, 0.75) 100%)
+            radial-gradient(1100px 650px at 18% 12%, rgba(255, 45, 61, 0.08), transparent 60%),
+            radial-gradient(900px 600px at 85% 85%, rgba(255, 45, 61, 0.05), transparent 65%),
+            linear-gradient(135deg, rgba(7, 7, 10, 0.22) 0%, rgba(18, 16, 20, 0.25) 55%, rgba(26, 10, 12, 0.26) 100%)
           `,
         }}
       />
 
-      {/* Glass Forum Effect Sheet (vtScrim) over the running background animation */}
+      {/* Medium-low glass forum blur sheet: softly separates the card while keeping site motion alive underneath */}
       <div
         id="vtScrim"
-        className="fixed inset-0 z-1 pointer-events-auto transition-all duration-600 ease-out"
+        className="fixed inset-0 z-1 pointer-events-auto transition-all duration-500 ease-out"
         style={{
-          backdropFilter: isOpen ? "blur(14px) saturate(140%)" : "blur(0px)",
-          WebkitBackdropFilter: isOpen ? "blur(14px) saturate(140%)" : "blur(0px)",
-          backgroundColor: isOpen ? "rgba(6, 3, 4, 0.55)" : "rgba(6, 3, 4, 0)",
+          backdropFilter: isOpen ? "blur(2.5px) saturate(110%)" : "blur(0px)",
+          WebkitBackdropFilter: isOpen ? "blur(2.5px) saturate(110%)" : "blur(0px)",
+          backgroundColor: isOpen ? "rgba(6, 3, 4, 0.15)" : "rgba(6, 3, 4, 0)",
         }}
         onClick={handleClose}
       />
@@ -1422,59 +1481,39 @@ export default function SecretLanyardOverlay() {
           <MotivationalVaultView onClose={handleClose} />
         </div>
       ) : (
-        /* The 3D Lanyard Card & PIN Chip Overlay */
+        /* The 3D Lanyard Card & Smart Integrated Security Chip Strip */
         <div className="relative z-20 w-full h-full flex items-center justify-center pointer-events-none">
           <div
             id="lanyardContainer"
             ref={containerRef}
             className="w-full h-full pointer-events-auto relative overflow-hidden"
           >
-            {/* Minimal Luxury PIN Chip - Positioned cleanly below the card so the card face remains completely visible */}
-            <div
-              id="vtPinOverlay"
-              className={`vt-pin-overlay ${isPinOpen ? "is-open" : ""}`}
-              aria-hidden={!isPinOpen}
-            >
+            {/* Integrated Smart Security Micro-Strip: Seamlessly attached directly at the lower edge of the card */}
+            <div id="vtPinOverlay" className="vt-pin-overlay">
               <div id="vtPinAnchor" ref={anchorRef} className="vt-pin-anchor">
                 <div
-                  className={`vt-pin-card ${pinStatus === "success" ? "is-success" : ""} ${
+                  className={`vt-security-strip ${pinStatus === "success" ? "is-success" : ""} ${
                     pinStatus === "error" ? "is-error" : ""
                   }`}
                   onClick={() => inputRef.current?.focus({ preventScroll: true })}
                 >
-                  <div className="vt-pin-head">
-                    {pinStatus === "success" ? (
-                      <Unlock className="w-3.5 h-3.5 text-emerald-400" />
-                    ) : (
-                      <Lock className="w-3.5 h-3.5 text-red-400" />
-                    )}
-                    <span className="text-[10px] font-mono tracking-widest text-neutral-300 uppercase font-semibold">
-                      {pinStatus === "success"
-                        ? "UNLOCKED"
-                        : pinStatus === "error"
-                        ? "TRY AGAIN"
-                        : "PASSCODE"}
-                    </span>
-                  </div>
+                  {pinStatus === "success" ? (
+                    <Unlock className="w-3 h-3 text-emerald-400 shrink-0" />
+                  ) : (
+                    <Lock className="w-3 h-3 text-red-400 shrink-0" />
+                  )}
 
-                  <div className="h-3 w-[1px] bg-white/15" />
-
-                  {/* 4 Compact Glowing PIN Dots */}
-                  <div className="vt-pin-dots">
+                  {/* 4 Microscopic Security Jewel LEDs */}
+                  <div className="vt-led-cluster">
                     {[0, 1, 2, 3].map((i) => (
                       <span
                         key={i}
-                        className={`vt-pin-dot ${i < pin.length ? "is-filled" : ""}`}
-                        data-i={i}
+                        className={`vt-led-dot ${i < pin.length ? "is-active" : ""}`}
                       />
                     ))}
                   </div>
 
-                  <span className="text-[9px] font-mono tracking-wider text-neutral-400/80 uppercase">
-                    (6786)
-                  </span>
-
-                  {/* Invisible native input for iOS & desktop keyboards */}
+                  {/* Invisible native input for touch keyboards */}
                   <input
                     ref={inputRef}
                     id="vtPinInput"
@@ -1484,7 +1523,7 @@ export default function SecretLanyardOverlay() {
                     pattern="[0-9]*"
                     maxLength={4}
                     autoComplete="one-time-code"
-                    aria-label="PIN"
+                    aria-label="Security Passcode"
                     value={pin}
                     onChange={handlePinChange}
                   />
@@ -1502,20 +1541,23 @@ export default function SecretLanyardOverlay() {
           width: 100%;
           height: 100%;
           opacity: 0;
+          pointer-events: auto !important;
+          touch-action: none !important;
+          cursor: grab;
           transition: opacity 650ms cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .lanyard-canvas:active {
+          cursor: grabbing;
         }
         .lanyard-canvas.is-ready {
           opacity: 1;
         }
+        /* Overlay container does NOT block canvas clicks or drag */
         .vt-pin-overlay {
           position: absolute;
           inset: 0;
           z-index: 5;
-          pointer-events: none;
-          transition: background 380ms ease;
-        }
-        .vt-pin-overlay.is-open {
-          pointer-events: auto;
+          pointer-events: none !important;
         }
         .vt-pin-anchor {
           position: absolute;
@@ -1524,114 +1566,71 @@ export default function SecretLanyardOverlay() {
           width: 0;
           height: 0;
           will-change: transform;
+          pointer-events: none !important;
         }
-        /* Refined, compact luxury capsule pill positioned gracefully below the card face */
-        .vt-pin-card {
+        /* Sleek, ultra-compact luxury security micro-strip flush along bottom edge of card */
+        .vt-security-strip {
           position: absolute;
           left: 0;
           top: 0;
           display: flex;
-          flex-direction: row;
           align-items: center;
-          gap: 10px;
-          padding: 8px 16px;
+          justify-content: center;
+          gap: 8px;
+          height: 24px;
+          padding: 0 12px;
           border-radius: 9999px;
-          background: linear-gradient(165deg, rgba(20, 8, 10, 0.88), rgba(8, 4, 6, 0.94));
-          border: 1px solid rgba(255, 90, 100, 0.28);
-          backdrop-filter: blur(20px) saturate(170%);
-          -webkit-backdrop-filter: blur(20px) saturate(170%);
-          box-shadow: 0 12px 32px rgba(0, 0, 0, 0.65), 0 0 16px rgba(255, 40, 50, 0.2);
-          opacity: 0;
-          filter: blur(6px);
-          pointer-events: none;
-          transform: translate(-50%, 85px) scale(0.92);
-          transition:
-            opacity 300ms cubic-bezier(0.22, 1, 0.36, 1),
-            filter 300ms cubic-bezier(0.22, 1, 0.36, 1),
-            transform 380ms cubic-bezier(0.34, 1.56, 0.64, 1),
-            box-shadow 400ms ease;
-          will-change: transform, filter, opacity;
+          background: rgba(16, 6, 8, 0.75);
+          border: 1px solid rgba(255, 65, 75, 0.3);
+          backdrop-filter: blur(12px) saturate(160%);
+          -webkit-backdrop-filter: blur(12px) saturate(160%);
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 10px rgba(255, 30, 45, 0.2);
+          pointer-events: auto !important;
+          transform: translate(-50%, 82px);
           cursor: pointer;
+          transition: border-color 300ms ease, box-shadow 300ms ease;
         }
-        .vt-pin-overlay.is-open .vt-pin-card {
-          opacity: 1;
-          filter: blur(0);
-          pointer-events: auto;
-          transform: translate(-50%, 85px) scale(1);
-          animation: vtPinAura 2.6s ease-in-out infinite;
+        .vt-security-strip.is-success {
+          border-color: rgba(52, 211, 153, 0.8);
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 16px rgba(52, 211, 153, 0.4);
         }
-        @keyframes vtPinAura {
-          0%, 100% {
-            box-shadow:
-              0 14px 34px rgba(0, 0, 0, 0.65),
-              0 0 0 1px rgba(255, 90, 100, 0.28) inset,
-              0 0 20px rgba(255, 30, 45, 0.2);
-          }
-          50% {
-            box-shadow:
-              0 14px 34px rgba(0, 0, 0, 0.65),
-              0 0 0 1px rgba(255, 130, 138, 0.4) inset,
-              0 0 30px rgba(255, 40, 55, 0.35);
-          }
+        .vt-security-strip.is-error {
+          animation: vtPinShake 460ms cubic-bezier(0.36, 0.07, 0.19, 0.97);
+          border-color: rgba(255, 30, 45, 0.9);
         }
-        .vt-pin-head {
+        @keyframes vtPinShake {
+          10%, 90% { transform: translate(calc(-50% - 2px), 82px); }
+          20%, 80% { transform: translate(calc(-50% + 3px), 82px); }
+          30%, 50%, 70% { transform: translate(calc(-50% - 4px), 82px); }
+          40%, 60% { transform: translate(calc(-50% + 4px), 82px); }
+        }
+        .vt-led-cluster {
           display: flex;
           align-items: center;
           gap: 6px;
         }
-        .vt-pin-dots {
-          display: flex;
-          justify-content: center;
-          gap: 8px;
-        }
-        .vt-pin-dot {
-          width: 9px;
-          height: 9px;
+        .vt-led-dot {
+          width: 6px;
+          height: 6px;
           border-radius: 50%;
-          background: rgba(255, 255, 255, 0.08);
-          border: 1px solid rgba(255, 160, 165, 0.4);
-          box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5);
-          opacity: 0;
-          transform: translateY(3px) scale(0.6);
-          transition:
-            opacity 280ms ease,
-            transform 350ms cubic-bezier(0.34, 1.56, 0.64, 1),
-            background 200ms ease,
-            border-color 200ms ease,
-            box-shadow 240ms ease;
+          background: rgba(255, 255, 255, 0.12);
+          border: 1px solid rgba(255, 120, 130, 0.35);
+          transition: background 200ms ease, box-shadow 200ms ease, transform 200ms ease;
         }
-        .vt-pin-overlay.is-open .vt-pin-dot {
-          opacity: 1;
-          transform: translateY(0) scale(1);
+        .vt-led-dot.is-active {
+          background: #ff2d3d;
+          border-color: #ff808b;
+          box-shadow: 0 0 8px #ff2234, 0 0 12px rgba(255, 34, 52, 0.5);
+          transform: scale(1.15);
         }
-        .vt-pin-dot.is-filled {
-          background: radial-gradient(circle at 35% 30%, #ff6b74, #c21321 72%);
-          border-color: rgba(255, 175, 180, 0.95);
-          box-shadow:
-            inset 0 1px 1px rgba(255, 255, 255, 0.4),
-            0 0 8px rgba(255, 40, 55, 0.8),
-            0 0 16px rgba(255, 40, 55, 0.4);
-          transform: translateY(0) scale(1.15);
-        }
-        .vt-pin-card.is-success .vt-pin-dot {
-          background: radial-gradient(circle at 35% 30%, #7dffa8, #15a64c 72%);
-          border-color: rgba(150, 255, 190, 0.95);
-          box-shadow:
-            inset 0 1px 1px rgba(255, 255, 255, 0.5),
-            0 0 12px rgba(60, 255, 140, 0.9);
-        }
-        .vt-pin-card.is-error {
-          animation: vtPinShake 460ms cubic-bezier(0.36, 0.07, 0.19, 0.97);
-        }
-        @keyframes vtPinShake {
-          10%, 90% { transform: translate(calc(-50% - 2px), 85px) scale(1); }
-          20%, 80% { transform: translate(calc(-50% + 3px), 85px) scale(1); }
-          30%, 50%, 70% { transform: translate(calc(-50% - 5px), 85px) scale(1); }
-          40%, 60% { transform: translate(calc(-50% + 5px), 85px) scale(1); }
+        .vt-security-strip.is-success .vt-led-dot {
+          background: #34d399;
+          border-color: #a7f3d0;
+          box-shadow: 0 0 8px #34d399, 0 0 12px rgba(52, 211, 153, 0.5);
         }
         .vt-pin-input {
           position: absolute;
-          inset: -12px;
+          inset: -6px;
           opacity: 0.01;
           border: 0;
           outline: none;

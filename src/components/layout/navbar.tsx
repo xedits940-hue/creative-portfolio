@@ -159,10 +159,10 @@ const Navbar: React.FC = () => {
   };
 
   return (
-    <nav className="fixed top-4 sm:top-5 left-0 right-0 z-50 flex justify-center items-center px-3 sm:px-4 pointer-events-auto">
+    <nav className="fixed top-4 sm:top-5 left-0 right-0 z-40 flex justify-center items-center px-3 sm:px-4 pointer-events-none">
       <div
         ref={scope}
-        className="w-[92%] sm:w-[85%] md:w-[680px] max-w-[680px] border border-border/40 h-[4.25rem] rounded-2xl bg-background/90 dark:bg-background/80 backdrop-blur-xl shadow-xl shadow-black/10 flex flex-col overflow-hidden transition-colors"
+        className="w-[92%] sm:w-[85%] md:w-[680px] max-w-[680px] border border-border/40 h-[4.25rem] rounded-2xl bg-background/90 dark:bg-background/80 backdrop-blur-xl shadow-xl shadow-black/10 flex flex-col overflow-hidden transition-colors pointer-events-auto"
       >
         {/* Top Bar Header */}
         <div className="flex justify-between items-center h-[4.25rem] min-h-[4.25rem] shrink-0 px-5 sm:px-6">
@@ -202,12 +202,14 @@ const Navbar: React.FC = () => {
           <motion.div
             id="navbar-logo-container"
             data-magnetic
-            whileHover={{ scale: 1.06 }}
-            whileTap={{ scale: 0.82 }}
-            transition={{ type: "spring", stiffness: 600, damping: 22 }}
-            className="relative flex items-center justify-center cursor-pointer select-none"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.84, z: -8 }}
+            transition={{ type: "spring", stiffness: 700, damping: 25 }}
+            style={{ perspective: 800, transformStyle: "preserve-3d" }}
+            className="relative flex items-center justify-center cursor-pointer select-none active:scale-[0.84] transition-transform duration-75"
             onClick={(e) => {
               e.preventDefault();
+              e.stopPropagation();
               logoClicksRef.current += 1;
               const count = logoClicksRef.current;
               setLogoTapKey((prev) => prev + 1);
@@ -224,17 +226,16 @@ const Navbar: React.FC = () => {
               }
 
               logoResetTimerRef.current = setTimeout(() => {
-                logoClicksRef.current = 0;
-              }, 3000);
-
-              if (count === 1) {
-                if (lenis) {
-                  lenis.scrollTo(0, { duration: 1.6 });
-                } else {
-                  window.scrollTo({ top: 0, behavior: "smooth" });
+                if (logoClicksRef.current === 1) {
+                  if (lenis) {
+                    lenis.scrollTo(0, { duration: 1.2 });
+                  } else {
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }
+                  if (isOpen) handleToggle();
                 }
-                if (isOpen) handleToggle();
-              }
+                logoClicksRef.current = 0;
+              }, 450);
             }}
           >
             {logoTapKey > 0 && (

@@ -13,22 +13,40 @@ import WoodStoryRevealSection from "@/components/wood-story-reveal-section";
 import { initTier } from "@/vtech/tier.js";
 
 export default function Home() {
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(() => {
+    if (typeof window !== "undefined") {
+      try {
+        return sessionStorage.getItem("vt:introSeen") !== "1";
+      } catch {
+        return false;
+      }
+    }
+    return true;
+  });
 
   // Initialize adaptive quality tier on startup
   useEffect(() => {
     initTier();
+    if (typeof window !== "undefined" && sessionStorage.getItem("vt:introSeen") === "1") {
+      document.documentElement.classList.remove("vt-intro");
+      setIsLoading(false);
+    }
   }, []);
 
-  // Safety fallback: if anything prevents the preloader event, release the page after 3.6s
+  // Safety fallback: release after timeout
   useEffect(() => {
+    if (!isLoading) return;
     const fallback = setTimeout(() => {
+      document.documentElement.classList.remove("vt-intro");
       setIsLoading(false);
     }, 3600);
     return () => clearTimeout(fallback);
-  }, []);
+  }, [isLoading]);
 
   const handlePreloaderComplete = () => {
+    if (typeof document !== "undefined") {
+      document.documentElement.classList.remove("vt-intro");
+    }
     setIsLoading(false);
   };
 
