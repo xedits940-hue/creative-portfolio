@@ -236,7 +236,7 @@ const Preloader: React.FC<PreloaderProps> = ({
 
       {/* 3. Central Showcase: Studio Logo & Multilingual Greetings */}
       <div className="absolute inset-0 z-[2] flex flex-col items-center justify-center pointer-events-none px-4">
-        {/* Signature VTECH STUDIOS Logo */}
+        {/* Signature VTECH STUDIO Logo */}
         <motion.div
           initial={{ y: 20, opacity: 0, scale: 0.9 }}
           animate={
@@ -291,7 +291,7 @@ const Preloader: React.FC<PreloaderProps> = ({
 
           <Image
             src="/vtech-studios-logo.png"
-            alt="VTECH STUDIOS Logo"
+            alt="VTECH STUDIO Logo"
             width={110}
             height={110}
             priority

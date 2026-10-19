@@ -21,14 +21,14 @@ export function TimelineDemo() {
   // 3. certicate.png
   const data = [
     {
-      title: "Credential 01",
+      title: "MILESTONE 01",
       content: (
         <div className="w-full">
           <h3 className="text-xl font-bold text-neutral-800 md:text-3xl dark:text-neutral-200">
-            <PhraseAnimation phrase="Verified   Professional   Accreditation" />
+            <PhraseAnimation phrase="Gemini Certified Student" />
           </h3>
           <p className="mb-6 text-xs text-muted-foreground md:text-base mt-2">
-            <PhraseAnimation phrase="Official certification recognizing industry excellence, technical proficiency, and creative craftsmanship." />
+            <PhraseAnimation phrase="Google for Education certified. I use AI tools confidently and responsibly to build better, faster." />
           </p>
 
           <CertificateCard
@@ -40,14 +40,14 @@ export function TimelineDemo() {
       ),
     },
     {
-      title: "Credential 02",
+      title: "MILESTONE 02",
       content: (
         <div className="w-full">
           <h3 className="text-xl font-bold text-neutral-800 md:text-3xl dark:text-neutral-200">
-            <PhraseAnimation phrase="Practical   Excellence   &   Mastery" />
+            <PhraseAnimation phrase="English Communication" />
           </h3>
           <p className="mb-6 text-xs text-muted-foreground md:text-base mt-2">
-            <PhraseAnimation phrase="Accredited institutional credential verifying rigorous project delivery, software mastery, and technical engineering." />
+            <PhraseAnimation phrase="Verified 3-month Spoken English course at CBitss (Grade A). I speak clearly and confidently with clients." />
           </p>
 
           <CertificateCard
@@ -59,14 +59,14 @@ export function TimelineDemo() {
       ),
     },
     {
-      title: "Credential 03",
+      title: "MILESTONE 03",
       content: (
         <div className="w-full">
           <h3 className="text-xl font-bold text-neutral-800 md:text-3xl dark:text-neutral-200">
-            <PhraseAnimation phrase="Master   Studio   Qualification" />
+            <PhraseAnimation phrase="Computer Fundamentals" />
           </h3>
           <p className="mb-6 text-xs text-muted-foreground md:text-base mt-2">
-            <PhraseAnimation phrase="Registered qualification record confirming specialized studio standards, verified compliance, and professional distinction." />
+            <PhraseAnimation phrase="Basic computer course. A solid foundation behind my design and development work." />
           </p>
 
           <CertificateCard

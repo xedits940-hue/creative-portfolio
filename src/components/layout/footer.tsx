@@ -75,7 +75,7 @@ export default function CreativeFooter() {
     );
   };
 
-  const copyrightText = `© ${currentYear}–${currentYear + 1} VTECH STUDIOS. ALL RIGHTS RESERVED.`;
+  const copyrightText = `© ${currentYear}–${currentYear + 1} VTECH STUDIO. ALL RIGHTS RESERVED.`;
 
   return (
     <footer
@@ -106,8 +106,8 @@ export default function CreativeFooter() {
               transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
               className="text-6xl font-bold tracking-tighter md:text-8xl lg:text-9xl"
             >
-              Let&apos;s make <br />
-              <span className=" text-primary/80">waves.</span>
+              Let&apos;s build <br />
+              <span className=" text-primary/80">something remarkable.</span>
             </motion.h2>
           </div>
 
@@ -133,11 +133,11 @@ export default function CreativeFooter() {
             transition={{ duration: 0.6, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
             className="col-span-1 md:col-span-5 flex flex-col gap-6"
           >
-            <Link href="/" aria-label="VTECH STUDIOS Home" className="flex w-fit items-center gap-3">
+            <Link href="/" aria-label="VTECH STUDIO Home" className="flex w-fit items-center gap-3">
               <div className="relative size-12 overflow-hidden rounded-xl bg-linear-to-br from-background to-muted border border-border shadow-sm flex items-center justify-center p-1.5">
                 <Image
                   src="/vtech-studios-logo.png"
-                  alt="VTECH STUDIOS Logo"
+                  alt="VTECH STUDIO Logo"
                   width={96}
                   height={96}
                   referrerPolicy="no-referrer"
@@ -145,12 +145,11 @@ export default function CreativeFooter() {
                 />
               </div>
               <span className="text-xl font-bold tracking-tight">
-                VTECH STUDIOS
+                VTECH STUDIO
               </span>
             </Link>
             <p className="max-w-xs text-muted-foreground text-sm leading-relaxed">
-              High-impact cinematic editing, motion direction, and visual brand
-              systems engineered to convert.
+              Custom websites and digital design, built with care to help your business stand out.
             </p>
           </motion.div>
 

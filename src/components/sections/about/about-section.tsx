@@ -227,10 +227,10 @@ const AboutSection = () => {
                 className="space-y-2 text-muted-foreground text-[14px] leading-relaxed max-w-sm"
               >
                 <p>
-                  VTech Studios designs and builds custom websites using AI-assisted development. I turn your ideas and references into fast, polished sites for small businesses, clinics, salons, real estate agents and independent professionals anywhere.
+                  VTech Studio designs and builds custom websites with AI-powered tools. I turn your ideas and references into fast, polished sites for local businesses, clinics, salons, property professionals and freelancers worldwide.
                 </p>
                 <p className="text-xs text-neutral-400 pt-1">
-                  <span className="text-white font-medium">What is vibe coding?</span> I describe what I want to an AI tool, check every result, and keep refining it until it works properly.
+                  <span className="text-white font-medium">What is vibe coding?</span> Three years of practice turning ideas into polished websites. I guide AI tools, then test and refine every detail by hand.
                 </p>
               </motion.div>
             </div>
@@ -244,11 +244,11 @@ const AboutSection = () => {
               className="flex flex-wrap gap-2"
             >
               {[
-                "AI-Assisted Development",
+                "AI-Powered Building",
                 "Interactive Web Experiences",
-                "Websites for Small Businesses",
+                "Websites for Professionals",
                 "Web Animation",
-                "Custom Websites & Web Apps",
+                "Custom Websites",
                 "Digital Design & Content",
               ].map((tag) => (
                 <span
@@ -297,14 +297,14 @@ const AboutSection = () => {
               <ProcessCard
                 step="01"
                 label="Direct contact"
-                description="You work with me personally, from your first message to launch."
+                description="Clients work directly with me, from the first message to launch day."
                 delay={0.15}
               />
 
               <ProcessCard
                 step="02"
                 label="Clear steps"
-                description="Idea, design, build, test, launch. You always know what happens next."
+                description="Idea, design, build, test, launch. Clients always know what comes next."
                 delay={0.25}
               />
 
@@ -313,7 +313,7 @@ const AboutSection = () => {
                 <ProcessCard
                   step="03"
                   label="Design and development together"
-                  description="Layout, animation and code come from one person, so everything fits together."
+                  description="Layout, animation and code come from one person, so every detail works as one."
                   highlight
                   delay={0.35}
                 />

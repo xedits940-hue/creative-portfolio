@@ -250,7 +250,7 @@ const Navbar: React.FC = () => {
             <Image
               id="navbar-logo-img"
               src="/vtech-studios-logo.png"
-              alt="VTECH STUDIOS Logo"
+              alt="VTECH STUDIO Logo"
               className="h-9 w-9 sm:h-11 sm:w-11 object-contain pointer-events-none"
               width={88}
               height={88}
@@ -445,7 +445,7 @@ const Navbar: React.FC = () => {
                 </div>
 
                 <span className="text-[10px] text-muted-foreground font-mono uppercase tracking-wider">
-                  VTECH STUDIOS © 2026
+                  VTECH STUDIO © 2026
                 </span>
               </motion.div>
             </motion.div>

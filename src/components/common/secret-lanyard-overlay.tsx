@@ -3,14 +3,16 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import * as THREE from "three";
 import { X, Lock, Unlock } from "lucide-react";
-import { useSecretLanyard } from "@/providers/secret-lanyard-provider";
 import MotivationalVaultView from "./motivational-vault-view";
+import ScrambledText from "./ScrambledText";
+import { useSecretLanyard } from "@/providers/secret-lanyard-provider";
 
-const VT_PIN_CODE = "6786";
+
+const VT_PIN_CODE = "09";
 
 declare global {
   interface Window {
-    vtUpdateCardScreenPos?: (x: number, y: number) => void;
+    vtUpdateCardScreenPos?: (x: number, y: number, angle?: number) => void;
   }
 }
 
@@ -91,11 +93,13 @@ interface PressState {
 export default function SecretLanyardOverlay() {
   const { isOpen, isUnlocked, closeLanyard, unlockVault } = useSecretLanyard();
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const anchorRef = useRef<HTMLDivElement | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   const [pin, setPin] = useState("");
   const [pinStatus, setPinStatus] = useState<"idle" | "error" | "success">("idle");
-  const inputRef = useRef<HTMLInputElement | null>(null);
-  const anchorRef = useRef<HTMLDivElement | null>(null);
+  const [isMobileTouch, setIsMobileTouch] = useState(false);
+  const [showMobileHint, setShowMobileHint] = useState(false);
 
   // References to control Three.js simulation instance
   const startSimulationRef = useRef<(() => void) | null>(null);
@@ -107,6 +111,13 @@ export default function SecretLanyardOverlay() {
     setPinStatus("idle");
     closeLanyard();
   }, [closeLanyard]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const isTouch = (window.matchMedia("(hover: none) and (pointer: coarse)").matches || "ontouchstart" in window);
+      setIsMobileTouch(isTouch);
+    }
+  }, []);
 
   // Handle ESC key to dismiss
   useEffect(() => {
@@ -120,11 +131,41 @@ export default function SecretLanyardOverlay() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, handleClose]);
 
-  // Global keyboard typing for PIN: Users can simply type numbers on keyboard without searching for input boxes!
+  const verifyPin = useCallback((val: string) => {
+    if (val.length === 2) {
+      if (val === VT_PIN_CODE) {
+        setPinStatus("success");
+        try {
+          if (navigator.vibrate) navigator.vibrate([40, 60, 40]);
+        } catch {}
+        setTimeout(() => {
+          unlockVault();
+        }, 400);
+      } else {
+        setPinStatus("error");
+        try {
+          if (navigator.vibrate) navigator.vibrate([60, 60, 60]);
+        } catch {}
+        setTimeout(() => {
+          setPin("");
+          setPinStatus("idle");
+        }, 500);
+      }
+    }
+  }, [unlockVault]);
+
+  const handlePinChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value.replace(/[^0-9]/g, "").slice(0, 2);
+    setPin(val);
+    setPinStatus("idle");
+    verifyPin(val);
+  };
+
+  // Keyboard typing directly anywhere on screen without finding the input:
   useEffect(() => {
     if (!isOpen || isUnlocked) return;
 
-    const handleGlobalKey = (e: KeyboardEvent) => {
+    const handleKey = (e: KeyboardEvent) => {
       if (e.key === "Backspace") {
         setPin((prev) => prev.slice(0, -1));
         setPinStatus("idle");
@@ -132,38 +173,19 @@ export default function SecretLanyardOverlay() {
       }
       if (/^[0-9]$/.test(e.key)) {
         setPin((prev) => {
-          if (prev.length >= 4) return prev;
+          if (prev.length >= 2) return prev;
           const next = prev + e.key;
-          if (next.length === 4) {
-            if (next === VT_PIN_CODE) {
-              setPinStatus("success");
-              try {
-                if (navigator.vibrate) navigator.vibrate(60);
-              } catch {}
-              setTimeout(() => {
-                unlockVault();
-              }, 500);
-            } else {
-              setPinStatus("error");
-              try {
-                if (navigator.vibrate) navigator.vibrate([60, 60, 60]);
-              } catch {}
-              setTimeout(() => {
-                setPin("");
-                setPinStatus("idle");
-              }, 500);
-            }
-          }
+          verifyPin(next);
           return next;
         });
       }
     };
 
-    window.addEventListener("keydown", handleGlobalKey);
-    return () => window.removeEventListener("keydown", handleGlobalKey);
-  }, [isOpen, isUnlocked, unlockVault]);
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [isOpen, isUnlocked, verifyPin]);
 
-  // When isOpen changes, instantly trigger smooth physical drop without compilation delay
+  // When isOpen changes, instantly trigger smooth physical drop and show mobile hint for 3.5s only
   useEffect(() => {
     if (isOpen) {
       setPin("");
@@ -174,25 +196,29 @@ export default function SecretLanyardOverlay() {
       if (startSimulationRef.current) {
         startSimulationRef.current();
       }
-      // Focus hidden input for mobile software keyboard
-      setTimeout(() => {
-        inputRef.current?.focus({ preventScroll: true });
-      }, 400);
+      if (isMobileTouch) {
+        setShowMobileHint(true);
+        const timer = setTimeout(() => {
+          setShowMobileHint(false);
+        }, 3600);
+        return () => clearTimeout(timer);
+      }
     } else {
+      setShowMobileHint(false);
       if (stopSimulationRef.current) {
         stopSimulationRef.current();
       }
     }
-  }, [isOpen]);
+  }, [isOpen, isMobileTouch]);
 
   // Initialize Three.js Lanyard Scene ONCE so it's always warm and zero-latency
   useEffect(() => {
     const stage = containerRef.current;
     if (!stage) return;
 
-    window.vtUpdateCardScreenPos = (x: number, y: number) => {
+    window.vtUpdateCardScreenPos = (x: number, y: number, angle = 0) => {
       if (anchorRef.current) {
-        anchorRef.current.style.transform = `translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, 0)`;
+        anchorRef.current.style.transform = `translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, 0) rotate(${angle.toFixed(4)}rad)`;
       }
     };
 
@@ -494,50 +520,6 @@ export default function SecretLanyardOverlay() {
       ctx.fillStyle = sheen;
       ctx.fillRect(0, 0, w, h);
 
-      // Outer metallic crimson hairline border
-      const inset = Math.min(w, h) * 0.038;
-      ctx.strokeStyle = "rgba(255, 55, 70, 0.65)";
-      ctx.lineWidth = Math.max(2, Math.min(w, h) * 0.0035);
-      ctx.strokeRect(inset, inset, w - inset * 2, h - inset * 2);
-
-      // Inner subtle dark border
-      const innerInset = inset + 5;
-      ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
-      ctx.lineWidth = 1;
-      ctx.strokeRect(innerInset, innerInset, w - innerInset * 2, h - innerInset * 2);
-
-      // Corner security corner brackets
-      const bLen = Math.min(w, h) * 0.06;
-      ctx.strokeStyle = "#ff2d3d";
-      ctx.lineWidth = 2.5;
-      // Top-left
-      ctx.beginPath();
-      ctx.moveTo(inset, inset + bLen); ctx.lineTo(inset, inset); ctx.lineTo(inset + bLen, inset);
-      ctx.stroke();
-      // Top-right
-      ctx.beginPath();
-      ctx.moveTo(w - inset - bLen, inset); ctx.lineTo(w - inset, inset); ctx.lineTo(w - inset, inset + bLen);
-      ctx.stroke();
-      // Bottom-left
-      ctx.beginPath();
-      ctx.moveTo(inset, h - inset - bLen); ctx.lineTo(inset, h - inset); ctx.lineTo(inset + bLen, h - inset);
-      ctx.stroke();
-      // Bottom-right
-      ctx.beginPath();
-      ctx.moveTo(w - inset - bLen, h - inset); ctx.lineTo(w - inset, h - inset); ctx.lineTo(w - inset, h - inset - bLen);
-      ctx.stroke();
-
-      // Top Header Typography
-      ctx.save();
-      ctx.fillStyle = "rgba(255, 255, 255, 0.85)";
-      ctx.font = "bold " + Math.round(w * 0.042) + "px sans-serif";
-      ctx.letterSpacing = "3px";
-      ctx.fillText("VTECH STUDIOS", inset + 12, inset + 28);
-
-      ctx.fillStyle = "#ff3b4b";
-      ctx.font = "bold " + Math.round(w * 0.032) + "px monospace";
-      ctx.fillText("VIP ACCESS // 2026", w - inset - Math.round(w * 0.38), inset + 28);
-      ctx.restore();
 
       // Center Studio Logo
       if (logoImageElement) {
@@ -556,20 +538,13 @@ export default function SecretLanyardOverlay() {
         ctx.restore();
       }
 
-      // Subtitle below logo
+      // Exclusive Quote below logo (Where inspiration becomes obsession)
       ctx.save();
       ctx.textAlign = "center";
-      ctx.fillStyle = "rgba(255, 255, 255, 0.75)";
-      ctx.font = "500 " + Math.round(w * 0.03) + "px sans-serif";
-      ctx.fillText("CREATIVE ENGINEERING & MOTION", w / 2, h / 2 + Math.min(w, h) * 0.23);
-
-      // Security verification bar at bottom
-      const barY = h - inset - 38;
-      ctx.fillStyle = "rgba(255, 45, 61, 0.2)";
-      ctx.fillRect(inset + 10, barY, w - (inset + 10) * 2, 22);
-      ctx.fillStyle = "#ff2d3d";
-      ctx.font = "bold " + Math.round(w * 0.026) + "px monospace";
-      ctx.fillText("ENCRYPTED ACCESS // CODE: VT-7009", w / 2, barY + 15);
+      ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+      ctx.font = "700 " + Math.round(w * 0.027) + "px sans-serif";
+      ctx.letterSpacing = "2px";
+      ctx.fillText("WHERE INSPIRATION BECOMES OBSESSION", w / 2, h / 2 + Math.min(w, h) * 0.23);
       ctx.restore();
     }
 
@@ -804,10 +779,13 @@ export default function SecretLanyardOverlay() {
       const angularDrag = Math.exp(-physics.angularDrag * h);
 
       for (let s = 0; s < steps; s++) {
+        const gravX = physics.gravity * currentTiltX;
+        const gravY = physics.gravity * currentTiltY;
+
         for (let i = 1; i < JOINTS; i++) {
           const v = velocities[i];
-          v.y -= physics.gravity * h;
-          v.x += windX * h;
+          v.x += (gravX + windX) * h;
+          v.y += gravY * h;
           v.z += windZ * h;
           previous[i].copy(nodes[i]);
           nodes[i].addScaledVector(v, h);
@@ -838,8 +816,8 @@ export default function SecretLanyardOverlay() {
           const spin = body.angular.dot(up);
           body.angular.addScaledVector(up, (physics.twist * (sim.turn - sim.twist) - physics.twistDamping * spin) * h);
         }
-        body.velocity.y -= physics.gravity * h;
-        body.velocity.x += windX * 0.35 * h;
+        body.velocity.x += (gravX + windX * 0.35) * h;
+        body.velocity.y += gravY * h;
         body.velocity.z += windZ * 0.35 * h;
         body.position.addScaledVector(body.velocity, h);
         rotateBody(body.quaternion, scratch.f.copy(body.angular).multiplyScalar(h));
@@ -1022,6 +1000,10 @@ export default function SecretLanyardOverlay() {
     let placed = false;
     let hovering = false;
     let press: PressState | null = null;
+    let targetTiltX = 0;
+    let targetTiltY = -1;
+    let currentTiltX = 0;
+    let currentTiltY = -1;
 
     // Load VTECH logo for card face
     const logoImg = new Image();
@@ -1217,11 +1199,17 @@ export default function SecretLanyardOverlay() {
       renderer.render(scene, camera);
 
       if (window.vtUpdateCardScreenPos) {
-        scratch.a.copy(sim.body.position).project(camera);
-        window.vtUpdateCardScreenPos(
-          (scratch.a.x * 0.5 + 0.5) * view.width,
-          (1 - (scratch.a.y * 0.5 + 0.5)) * view.height
-        );
+        // Calculate the bottom center of the card in 3D
+        scratch.a.set(0, -layout.height * 0.505, 0).applyQuaternion(sim.body.quaternion).add(sim.body.position);
+        scratch.a.project(camera);
+        const screenX = (scratch.a.x * 0.5 + 0.5) * view.width;
+        const screenY = (1 - (scratch.a.y * 0.5 + 0.5)) * view.height;
+
+        // Card 2D angle for smooth matching tilt
+        scratch.b.set(1, 0, 0).applyQuaternion(sim.body.quaternion);
+        const angle = Math.atan2(scratch.b.y, scratch.b.x);
+
+        window.vtUpdateCardScreenPos(screenX, screenY, -angle);
       }
     }
 
@@ -1268,11 +1256,16 @@ export default function SecretLanyardOverlay() {
       const dt = Math.min(1 / 24, Math.max(1 / 480, (now - last) / 1000));
       last = now;
       time += dt;
+
+      // Smoothly interpolate device tilt gravity (responsively follows mobile wobble)
+      currentTiltX += (targetTiltX - currentTiltX) * (1 - Math.exp(-dt * 8));
+      currentTiltY += (targetTiltY - currentTiltY) * (1 - Math.exp(-dt * 8));
+
       const current = physics();
       stepSimulation(sim, dt, current, time);
       sanitize(sim, layout);
       render();
-      const resting = sim.calm > 1.2 && !sim.grab && current.breeze === 0 && !sim.introActive;
+      const resting = sim.calm > 1.2 && !sim.grab && current.breeze === 0 && !sim.introActive && Math.abs(currentTiltX) < 0.02 && Math.abs(currentTiltY + 1) < 0.02;
       if (!resting) raf = requestAnimationFrame(tick);
     }
 
@@ -1359,9 +1352,7 @@ export default function SecretLanyardOverlay() {
       if (!sim.grab) return;
       sim.grab = null;
       canvas.style.cursor = hovering ? "grab" : "default";
-      if (press && event.type === "pointerup" && performance.now() - press.time < 450) {
-        inputRef.current?.focus({ preventScroll: true });
-      }
+
       press = null;
       if (canvas.releasePointerCapture) {
         try {
@@ -1375,6 +1366,40 @@ export default function SecretLanyardOverlay() {
     canvas.addEventListener("pointermove", onPointerMove, { passive: false });
     canvas.addEventListener("pointerup", onPointerUp);
     canvas.addEventListener("pointercancel", onPointerUp);
+
+    function onDeviceOrientation(e: DeviceOrientationEvent) {
+      if (e.gamma === null && e.beta === null) return;
+      const gamma = e.gamma ?? 0;
+      const beta = e.beta ?? 0;
+
+      // Gamma [-90, 90]: lateral tilt (left / right)
+      const gRad = (gamma * Math.PI) / 180;
+      targetTiltX = Math.sin(gRad) * 1.6;
+
+      // Beta [-180, 180]: longitudinal tilt (upside down detection)
+      // When phone is turned upside down, reverse gravity so the card falls toward the opposite side!
+      if (beta < -30 || beta > 130) {
+        targetTiltY = 0.85;
+      } else {
+        targetTiltY = -Math.cos(gRad * 0.4);
+      }
+      start();
+    }
+
+    function onDeviceMotion(e: DeviceMotionEvent) {
+      if (!e.acceleration) return;
+      const ax = e.acceleration.x ?? 0;
+      const ay = e.acceleration.y ?? 0;
+      // Waving phone gives dynamic impulse for playful wobble
+      targetTiltX -= ax * 0.05;
+      targetTiltY -= ay * 0.05;
+      start();
+    }
+
+    if (typeof window !== "undefined" && "DeviceOrientationEvent" in window) {
+      window.addEventListener("deviceorientation", onDeviceOrientation, { passive: true });
+      window.addEventListener("devicemotion", onDeviceMotion, { passive: true });
+    }
 
     function resize() {
       if (!stage) return;
@@ -1402,49 +1427,27 @@ export default function SecretLanyardOverlay() {
       canvas.removeEventListener("pointermove", onPointerMove);
       canvas.removeEventListener("pointerup", onPointerUp);
       canvas.removeEventListener("pointercancel", onPointerUp);
+      if (typeof window !== "undefined") {
+        window.removeEventListener("deviceorientation", onDeviceOrientation);
+        window.removeEventListener("devicemotion", onDeviceMotion);
+      }
       renderer.dispose();
       if (canvas.parentNode) canvas.parentNode.removeChild(canvas);
     };
   }, []);
 
-  // Handle PIN input typing (works via virtual keyboard or physical keyboard)
-  const handlePinChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value.replace(/[^0-9]/g, "").slice(0, 4);
-    setPin(val);
-    setPinStatus("idle");
 
-    if (val.length === 4) {
-      if (val === VT_PIN_CODE) {
-        setPinStatus("success");
-        try {
-          if (navigator.vibrate) navigator.vibrate(60);
-        } catch {}
-        setTimeout(() => {
-          unlockVault();
-        }, 500);
-      } else {
-        setPinStatus("error");
-        try {
-          if (navigator.vibrate) navigator.vibrate([60, 60, 60]);
-        } catch {}
-        setTimeout(() => {
-          setPin("");
-          setPinStatus("idle");
-        }, 500);
-      }
-    }
-  };
 
   return (
     <div
-      className={`fixed inset-0 z-50 overflow-hidden select-none transition-all duration-500 ${
+      className={`fixed inset-0 z-50 overflow-hidden select-none transition-opacity duration-300 ease-out ${
         isOpen ? "opacity-100 pointer-events-auto visible" : "opacity-0 pointer-events-none invisible"
       } flex items-center justify-center`}
     >
       {/* Background radial gradient glow (vtBackdrop) */}
       <div
         id="vtBackdrop"
-        className="fixed inset-0 z-0 pointer-events-none transition-opacity duration-700"
+        className="fixed inset-0 z-0 pointer-events-none transition-opacity duration-500"
         style={{
           background: `
             radial-gradient(1100px 650px at 18% 12%, rgba(255, 45, 61, 0.08), transparent 60%),
@@ -1454,17 +1457,36 @@ export default function SecretLanyardOverlay() {
         }}
       />
 
-      {/* Medium-low glass forum blur sheet: softly separates the card while keeping site motion alive underneath */}
+      {/* Static blur scrim: fixed blur radius eliminates CPU/GPU stall on card reveal */}
       <div
         id="vtScrim"
-        className="fixed inset-0 z-1 pointer-events-auto transition-all duration-500 ease-out"
+        className={`fixed inset-0 z-1 pointer-events-auto transition-opacity duration-300 ease-out ${
+          isOpen ? "opacity-100" : "opacity-0"
+        }`}
         style={{
-          backdropFilter: isOpen ? "blur(2.5px) saturate(110%)" : "blur(0px)",
-          WebkitBackdropFilter: isOpen ? "blur(2.5px) saturate(110%)" : "blur(0px)",
-          backgroundColor: isOpen ? "rgba(6, 3, 4, 0.15)" : "rgba(6, 3, 4, 0)",
+          backdropFilter: "blur(2.5px) saturate(110%)",
+          WebkitBackdropFilter: "blur(2.5px) saturate(110%)",
+          backgroundColor: "rgba(6, 3, 4, 0.15)",
         }}
         onClick={handleClose}
       />
+
+      {/* Mobile-Only Wobble/Tilt Hint: Displays only on touch devices for 3.5s, completely hidden on laptops/mouse */}
+      {isMobileTouch && showMobileHint && isOpen && (
+        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-40 pointer-events-none px-3.5 py-1.5 rounded-full bg-black/75 border border-white/15 backdrop-blur-md shadow-2xl flex items-center gap-2 animate-in fade-in duration-300">
+          <span className="size-1.5 rounded-full bg-red-500 animate-ping shrink-0" />
+          <ScrambledText
+            scrambleChars=".:/[]"
+            scrambleColor="#ff3b4b"
+            speed={0.4}
+            duration={1}
+            effect="scramble"
+            className="!m-0 !max-w-none text-[10px] font-mono tracking-widest text-neutral-300 uppercase whitespace-nowrap"
+          >
+            TILT OR WAVE DEVICE TO SWAY CARD
+          </ScrambledText>
+        </div>
+      )}
 
       {/* Dismiss / Close Button in top right */}
       <button
@@ -1475,37 +1497,36 @@ export default function SecretLanyardOverlay() {
         <X className="h-5 w-5" />
       </button>
 
-      {/* If PIN verified, reveal the new Motivational Vault Screen! */}
+      {/* If PIN verified, reveal the Motivational Vault Screen! */}
       {isUnlocked ? (
         <div className="relative z-30 w-full h-full flex items-center justify-center p-4 overflow-y-auto">
           <MotivationalVaultView onClose={handleClose} />
         </div>
       ) : (
-        /* The 3D Lanyard Card & Smart Integrated Security Chip Strip */
+        /* The 3D Lanyard Card & Animated Micro PIN Pill (code: 09) */
         <div className="relative z-20 w-full h-full flex items-center justify-center pointer-events-none">
           <div
             id="lanyardContainer"
             ref={containerRef}
             className="w-full h-full pointer-events-auto relative overflow-hidden"
           >
-            {/* Integrated Smart Security Micro-Strip: Seamlessly attached directly at the lower edge of the card */}
-            <div id="vtPinOverlay" className="vt-pin-overlay">
-              <div id="vtPinAnchor" ref={anchorRef} className="vt-pin-anchor">
+            {/* Seamlessly attached right below the card bottom edge */}
+            <div id="vtCardAttachedOverlay" className="vt-attached-overlay">
+              <div id="vtCardAnchor" ref={anchorRef} className="vt-attached-anchor">
                 <div
-                  className={`vt-security-strip ${pinStatus === "success" ? "is-success" : ""} ${
+                  className={`vt-pin-pill ${pinStatus === "success" ? "is-success" : ""} ${
                     pinStatus === "error" ? "is-error" : ""
                   }`}
                   onClick={() => inputRef.current?.focus({ preventScroll: true })}
                 >
                   {pinStatus === "success" ? (
-                    <Unlock className="w-3 h-3 text-emerald-400 shrink-0" />
+                    <Unlock className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                   ) : (
-                    <Lock className="w-3 h-3 text-red-400 shrink-0" />
+                    <Lock className="w-3.5 h-3.5 text-red-400 shrink-0" />
                   )}
 
-                  {/* 4 Microscopic Security Jewel LEDs */}
                   <div className="vt-led-cluster">
-                    {[0, 1, 2, 3].map((i) => (
+                    {[0, 1].map((i) => (
                       <span
                         key={i}
                         className={`vt-led-dot ${i < pin.length ? "is-active" : ""}`}
@@ -1513,17 +1534,20 @@ export default function SecretLanyardOverlay() {
                     ))}
                   </div>
 
-                  {/* Invisible native input for touch keyboards */}
+                  <span className="text-[10px] font-mono tracking-wider text-neutral-400 select-none uppercase">
+                    {pinStatus === "success" ? "ACCESS GRANTED" : pin.length > 0 ? "CONFIRM" : "ENTER PIN"}
+                  </span>
+
+                  {/* Hidden input for mobile keyboard / direct focus */}
                   <input
                     ref={inputRef}
-                    id="vtPinInput"
-                    className="vt-pin-input"
                     type="tel"
                     inputMode="numeric"
                     pattern="[0-9]*"
-                    maxLength={4}
-                    autoComplete="one-time-code"
-                    aria-label="Security Passcode"
+                    maxLength={2}
+                    autoComplete="off"
+                    aria-label="Passcode (PIN: 09)"
+                    className="vt-hidden-pin-input"
                     value={pin}
                     onChange={handlePinChange}
                   />
@@ -1534,7 +1558,6 @@ export default function SecretLanyardOverlay() {
         </div>
       )}
 
-      {/* Embedded Component Styles */}
       <style jsx global>{`
         .lanyard-canvas {
           display: block;
@@ -1544,7 +1567,7 @@ export default function SecretLanyardOverlay() {
           pointer-events: auto !important;
           touch-action: none !important;
           cursor: grab;
-          transition: opacity 650ms cubic-bezier(0.22, 1, 0.36, 1);
+          transition: opacity 400ms ease-out;
         }
         .lanyard-canvas:active {
           cursor: grabbing;
@@ -1552,14 +1575,13 @@ export default function SecretLanyardOverlay() {
         .lanyard-canvas.is-ready {
           opacity: 1;
         }
-        /* Overlay container does NOT block canvas clicks or drag */
-        .vt-pin-overlay {
+        .vt-attached-overlay {
           position: absolute;
           inset: 0;
-          z-index: 5;
-          pointer-events: none !important;
+          pointer-events: none;
+          z-index: 25;
         }
-        .vt-pin-anchor {
+        .vt-attached-anchor {
           position: absolute;
           left: 0;
           top: 0;
@@ -1568,41 +1590,44 @@ export default function SecretLanyardOverlay() {
           will-change: transform;
           pointer-events: none !important;
         }
-        /* Sleek, ultra-compact luxury security micro-strip flush along bottom edge of card */
-        .vt-security-strip {
+        .vt-pin-pill {
           position: absolute;
           left: 0;
           top: 0;
+          transform: translate(-50%, 8px);
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 8px;
-          height: 24px;
-          padding: 0 12px;
+          gap: 9px;
+          height: 28px;
+          padding: 0 13px;
           border-radius: 9999px;
-          background: rgba(16, 6, 8, 0.75);
-          border: 1px solid rgba(255, 65, 75, 0.3);
-          backdrop-filter: blur(12px) saturate(160%);
-          -webkit-backdrop-filter: blur(12px) saturate(160%);
-          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 10px rgba(255, 30, 45, 0.2);
+          background: rgba(14, 8, 10, 0.85);
+          border: 1px solid rgba(255, 65, 75, 0.35);
+          backdrop-filter: blur(14px) saturate(160%);
+          -webkit-backdrop-filter: blur(14px) saturate(160%);
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 12px rgba(255, 30, 45, 0.2);
           pointer-events: auto !important;
-          transform: translate(-50%, 82px);
           cursor: pointer;
-          transition: border-color 300ms ease, box-shadow 300ms ease;
+          transition: all 250ms ease;
         }
-        .vt-security-strip.is-success {
-          border-color: rgba(52, 211, 153, 0.8);
-          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 16px rgba(52, 211, 153, 0.4);
+        .vt-pin-pill:hover {
+          border-color: rgba(255, 90, 100, 0.65);
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7), 0 0 16px rgba(255, 30, 45, 0.35);
         }
-        .vt-security-strip.is-error {
-          animation: vtPinShake 460ms cubic-bezier(0.36, 0.07, 0.19, 0.97);
-          border-color: rgba(255, 30, 45, 0.9);
+        .vt-pin-pill.is-success {
+          border-color: rgba(52, 211, 153, 0.9);
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 20px rgba(52, 211, 153, 0.5);
+        }
+        .vt-pin-pill.is-error {
+          animation: vtPinShake 420ms cubic-bezier(0.36, 0.07, 0.19, 0.97);
+          border-color: rgba(255, 30, 45, 1);
         }
         @keyframes vtPinShake {
-          10%, 90% { transform: translate(calc(-50% - 2px), 82px); }
-          20%, 80% { transform: translate(calc(-50% + 3px), 82px); }
-          30%, 50%, 70% { transform: translate(calc(-50% - 4px), 82px); }
-          40%, 60% { transform: translate(calc(-50% + 4px), 82px); }
+          10%, 90% { transform: translate(calc(-50% - 3px), 8px); }
+          20%, 80% { transform: translate(calc(-50% + 4px), 8px); }
+          30%, 50%, 70% { transform: translate(calc(-50% - 5px), 8px); }
+          40%, 60% { transform: translate(calc(-50% + 5px), 8px); }
         }
         .vt-led-cluster {
           display: flex;
@@ -1610,34 +1635,33 @@ export default function SecretLanyardOverlay() {
           gap: 6px;
         }
         .vt-led-dot {
-          width: 6px;
-          height: 6px;
+          width: 7px;
+          height: 7px;
           border-radius: 50%;
-          background: rgba(255, 255, 255, 0.12);
-          border: 1px solid rgba(255, 120, 130, 0.35);
-          transition: background 200ms ease, box-shadow 200ms ease, transform 200ms ease;
+          background: rgba(255, 255, 255, 0.15);
+          border: 1px solid rgba(255, 120, 130, 0.4);
+          transition: all 200ms ease;
         }
         .vt-led-dot.is-active {
           background: #ff2d3d;
           border-color: #ff808b;
-          box-shadow: 0 0 8px #ff2234, 0 0 12px rgba(255, 34, 52, 0.5);
-          transform: scale(1.15);
+          box-shadow: 0 0 8px #ff2234, 0 0 14px rgba(255, 34, 52, 0.6);
+          transform: scale(1.2);
         }
-        .vt-security-strip.is-success .vt-led-dot {
+        .vt-pin-pill.is-success .vt-led-dot {
           background: #34d399;
           border-color: #a7f3d0;
-          box-shadow: 0 0 8px #34d399, 0 0 12px rgba(52, 211, 153, 0.5);
+          box-shadow: 0 0 8px #34d399, 0 0 14px rgba(52, 211, 153, 0.6);
         }
-        .vt-pin-input {
+        .vt-hidden-pin-input {
           position: absolute;
-          inset: -6px;
-          opacity: 0.01;
+          inset: 0;
+          opacity: 0.001;
           border: 0;
           outline: none;
           color: transparent;
           background: transparent;
           caret-color: transparent;
-          font-size: 16px;
           cursor: pointer;
         }
       `}</style>

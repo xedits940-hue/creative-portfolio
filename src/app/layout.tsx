@@ -37,13 +37,13 @@ const cormorantGaramond = Cormorant_Garamond({
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
   title: {
-    default: "VTECH STUDIOS",
-    template: "%s | VTECH STUDIOS",
+    default: "VTECH STUDIO",
+    template: "%s | VTECH STUDIO",
   },
   description:
-    "OFFICIAL STUDIO PORTFOLIO OF VTECH STUDIOS — DIGITAL PRODUCTION, MOTION, AND HIGH-END CREATIVE ENGINEERING.",
+    "OFFICIAL STUDIO PORTFOLIO OF VTECH STUDIO — DIGITAL PRODUCTION, MOTION, AND HIGH-END CREATIVE ENGINEERING.",
   keywords: [
-    "VTECH STUDIOS",
+    "VTECH STUDIO",
     "Creative Direction",
     "Digital Production",
     "Motion Design",
@@ -54,9 +54,9 @@ export const metadata: Metadata = {
     "React",
     "TypeScript",
   ],
-  authors: [{ name: "VTECH STUDIOS" }],
-  creator: "VTECH STUDIOS",
-  publisher: "VTECH STUDIOS",
+  authors: [{ name: "VTECH STUDIO" }],
+  creator: "VTECH STUDIO",
+  publisher: "VTECH STUDIO",
   formatDetection: {
     email: false,
     address: false,
@@ -66,32 +66,32 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: BASE_URL,
-    title: "VTECH STUDIOS",
+    title: "VTECH STUDIO",
     description:
-      "OFFICIAL STUDIO PORTFOLIO OF VTECH STUDIOS — DIGITAL PRODUCTION, MOTION, AND HIGH-END CREATIVE ENGINEERING.",
-    siteName: "VTECH STUDIOS",
+      "OFFICIAL STUDIO PORTFOLIO OF VTECH STUDIO — DIGITAL PRODUCTION, MOTION, AND HIGH-END CREATIVE ENGINEERING.",
+    siteName: "VTECH STUDIO",
     images: [
       {
         url: "/vtech-studios-logo.png",
         width: 1200,
         height: 1200,
-        alt: "VTECH STUDIOS Logo",
+        alt: "VTECH STUDIO Logo",
         type: "image/png",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "VTECH STUDIOS",
+    title: "VTECH STUDIO",
     description:
-      "OFFICIAL STUDIO PORTFOLIO OF VTECH STUDIOS — DIGITAL PRODUCTION, MOTION, AND HIGH-END CREATIVE ENGINEERING.",
-    creator: "@vtechstudios",
+      "OFFICIAL STUDIO PORTFOLIO OF VTECH STUDIO — DIGITAL PRODUCTION, MOTION, AND HIGH-END CREATIVE ENGINEERING.",
+    creator: "@vtechstudio",
     images: [
       {
         url: "/vtech-studios-logo.png",
         width: 1200,
         height: 1200,
-        alt: "VTECH STUDIOS Logo",
+        alt: "VTECH STUDIO Logo",
       },
     ],
   },

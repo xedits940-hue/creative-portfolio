@@ -7,11 +7,11 @@ export default function StructuredData() {
     url: BASE_URL,
     image: OG_IMAGE,
     description:
-      "Founder and Creative Director at VTECH STUDIOS, specializing in cinematic motion design, digital production, and creative engineering.",
+      "Founder and Creative Director at VTECH STUDIO, specializing in cinematic motion design, digital production, and creative engineering.",
     jobTitle: "Founder & Creative Director",
     worksFor: {
       "@type": "Organization",
-      name: "VTECH STUDIOS",
+      name: "VTECH STUDIO",
     },
     sameAs: [
       "https://github.com/yourusername",
@@ -29,13 +29,13 @@ export default function StructuredData() {
   const websiteStructuredData = {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    name: "VTECH STUDIOS",
+    name: "VTECH STUDIO",
     url: BASE_URL,
     description:
-      "Official studio portfolio of VTECH STUDIOS — digital production, motion, and creative web engineering.",
+      "Official studio portfolio of VTECH STUDIO — digital production, motion, and creative web engineering.",
     author: {
       "@type": "Organization",
-      name: "VTECH STUDIOS",
+      name: "VTECH STUDIO",
     },
     potentialAction: {
       "@type": "SearchAction",
@@ -49,7 +49,7 @@ export default function StructuredData() {
   const organizationStructuredData = {
     "@context": "https://schema.org",
     "@type": "ProfessionalService",
-    name: "VTECH STUDIOS",
+    name: "VTECH STUDIO",
     image: `${BASE_URL}/vtech-studios-logo.png`,
     "@id": BASE_URL,
     url: BASE_URL,

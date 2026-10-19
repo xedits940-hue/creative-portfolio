@@ -363,7 +363,7 @@ export default function CollabModal({ isOpen, onClose }: Props) {
                     textTransform: "uppercase",
                   }}
                 >
-                  ✦ VTECH STUDIOS
+                  ✦ VTECH STUDIO
                 </span>
 
                 <motion.button

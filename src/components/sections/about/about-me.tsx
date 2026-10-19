@@ -86,7 +86,7 @@ const AboutMe = () => {
 
           <div className="w-full max-w-7xl h-[15vh] sm:h-[18vh] md:h-[22vh] lg:h-[25vh] min-h-[90px] sm:min-h-[120px] md:min-h-[160px] lg:min-h-[200px] flex items-center justify-center relative">
             <TechText
-              text="STUDIOS"
+              text="STUDIO"
               fontFamily={anton.style.fontFamily}
               fontWeight={400}
               fontSize={fontSize}

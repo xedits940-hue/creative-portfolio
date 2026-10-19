@@ -53,14 +53,7 @@ class TelemetryService {
 
   flush(): void {
     if (typeof window === "undefined" || this.buffer.length === 0) return;
-    try {
-      const payload = JSON.stringify(this.buffer);
-      this.buffer = [];
-      // Silent sendBeacon call
-      navigator.sendBeacon("/api/telemetry", payload);
-    } catch {
-      // Never throw on telemetry failure
-    }
+    this.buffer = [];
   }
 }
 

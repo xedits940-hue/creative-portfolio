@@ -84,7 +84,7 @@ export const Timeline = ({ data }: { data: TimelineEntry[] }) => {
           transition={{ duration: 0.7, delay: 0.38, ease: [0.16, 1, 0.3, 1] }}
           className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground md:text-xl"
         >
-          <PhraseAnimation phrase="Transforming ideas into engaging digital content designed to stand out." />
+          <PhraseAnimation phrase="Transforming ideas into engaging digital journeys designed to stand out." />
         </motion.div>
       </div>
 

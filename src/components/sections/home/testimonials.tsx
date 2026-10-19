@@ -54,9 +54,9 @@ const Testimonials = () => {
           transition={{ duration: 0.85, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
         >
           <h3 className="text-4xl font-bold tracking-tight md:text-6xl lg:text-7xl">
-            <PhraseAnimation phrase="Real    Businesses.    Measurable" className="" />
+            <PhraseAnimation phrase="Real    Businesses.    Real" className="" />
             <span className="block bg-linear-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
-              <PhraseAnimation phrase="Impact." className="text-primary" />
+              <PhraseAnimation phrase="Presence." className="text-primary" />
             </span>
           </h3>
         </motion.div>

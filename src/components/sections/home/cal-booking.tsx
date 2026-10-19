@@ -67,7 +67,7 @@ const CalBooking = () => {
           transition={{ duration: 0.7, delay: 0.38, ease: [0.16, 1, 0.3, 1] }}
           className="mx-auto mt-6 max-w-2xl text-base text-muted-foreground md:text-xl"
         >
-          Available worldwide for high-impact creative direction, cinematic motion, and digital web engineering.
+          Available worldwide for custom websites and digital design.
         </motion.div>
       </div>
     </div>
