@@ -4,7 +4,6 @@ import React, { useEffect, useRef, useState, useCallback } from "react";
 import * as THREE from "three";
 import { X, Lock, Unlock } from "lucide-react";
 import MotivationalVaultView from "./motivational-vault-view";
-import ScrambledText from "./ScrambledText";
 import { useSecretLanyard } from "@/providers/secret-lanyard-provider";
 
 
@@ -98,8 +97,7 @@ export default function SecretLanyardOverlay() {
 
   const [pin, setPin] = useState("");
   const [pinStatus, setPinStatus] = useState<"idle" | "error" | "success">("idle");
-  const [isMobileTouch, setIsMobileTouch] = useState(false);
-  const [showMobileHint, setShowMobileHint] = useState(false);
+
 
   // References to control Three.js simulation instance
   const startSimulationRef = useRef<(() => void) | null>(null);
@@ -112,12 +110,7 @@ export default function SecretLanyardOverlay() {
     closeLanyard();
   }, [closeLanyard]);
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const isTouch = (window.matchMedia("(hover: none) and (pointer: coarse)").matches || "ontouchstart" in window);
-      setIsMobileTouch(isTouch);
-    }
-  }, []);
+
 
   // Handle ESC key to dismiss
   useEffect(() => {
@@ -185,7 +178,7 @@ export default function SecretLanyardOverlay() {
     return () => window.removeEventListener("keydown", handleKey);
   }, [isOpen, isUnlocked, verifyPin]);
 
-  // When isOpen changes, instantly trigger smooth physical drop and show mobile hint for 3.5s only
+  // When isOpen changes, instantly trigger smooth physical drop with zero UI delay
   useEffect(() => {
     if (isOpen) {
       setPin("");
@@ -196,20 +189,12 @@ export default function SecretLanyardOverlay() {
       if (startSimulationRef.current) {
         startSimulationRef.current();
       }
-      if (isMobileTouch) {
-        setShowMobileHint(true);
-        const timer = setTimeout(() => {
-          setShowMobileHint(false);
-        }, 3600);
-        return () => clearTimeout(timer);
-      }
     } else {
-      setShowMobileHint(false);
       if (stopSimulationRef.current) {
         stopSimulationRef.current();
       }
     }
-  }, [isOpen, isMobileTouch]);
+  }, [isOpen]);
 
   // Initialize Three.js Lanyard Scene ONCE so it's always warm and zero-latency
   useEffect(() => {
@@ -779,13 +764,10 @@ export default function SecretLanyardOverlay() {
       const angularDrag = Math.exp(-physics.angularDrag * h);
 
       for (let s = 0; s < steps; s++) {
-        const gravX = physics.gravity * currentTiltX;
-        const gravY = physics.gravity * currentTiltY;
-
         for (let i = 1; i < JOINTS; i++) {
           const v = velocities[i];
-          v.x += (gravX + windX) * h;
-          v.y += gravY * h;
+          v.y -= physics.gravity * h;
+          v.x += windX * h;
           v.z += windZ * h;
           previous[i].copy(nodes[i]);
           nodes[i].addScaledVector(v, h);
@@ -816,8 +798,8 @@ export default function SecretLanyardOverlay() {
           const spin = body.angular.dot(up);
           body.angular.addScaledVector(up, (physics.twist * (sim.turn - sim.twist) - physics.twistDamping * spin) * h);
         }
-        body.velocity.x += (gravX + windX * 0.35) * h;
-        body.velocity.y += gravY * h;
+        body.velocity.y -= physics.gravity * h;
+        body.velocity.x += windX * 0.35 * h;
         body.velocity.z += windZ * 0.35 * h;
         body.position.addScaledVector(body.velocity, h);
         rotateBody(body.quaternion, scratch.f.copy(body.angular).multiplyScalar(h));
@@ -1000,10 +982,6 @@ export default function SecretLanyardOverlay() {
     let placed = false;
     let hovering = false;
     let press: PressState | null = null;
-    let targetTiltX = 0;
-    let targetTiltY = -1;
-    let currentTiltX = 0;
-    let currentTiltY = -1;
 
     // Load VTECH logo for card face
     const logoImg = new Image();
@@ -1257,15 +1235,11 @@ export default function SecretLanyardOverlay() {
       last = now;
       time += dt;
 
-      // Smoothly interpolate device tilt gravity (responsively follows mobile wobble)
-      currentTiltX += (targetTiltX - currentTiltX) * (1 - Math.exp(-dt * 8));
-      currentTiltY += (targetTiltY - currentTiltY) * (1 - Math.exp(-dt * 8));
-
       const current = physics();
       stepSimulation(sim, dt, current, time);
       sanitize(sim, layout);
       render();
-      const resting = sim.calm > 1.2 && !sim.grab && current.breeze === 0 && !sim.introActive && Math.abs(currentTiltX) < 0.02 && Math.abs(currentTiltY + 1) < 0.02;
+      const resting = sim.calm > 1.2 && !sim.grab && current.breeze === 0 && !sim.introActive;
       if (!resting) raf = requestAnimationFrame(tick);
     }
 
@@ -1367,39 +1341,7 @@ export default function SecretLanyardOverlay() {
     canvas.addEventListener("pointerup", onPointerUp);
     canvas.addEventListener("pointercancel", onPointerUp);
 
-    function onDeviceOrientation(e: DeviceOrientationEvent) {
-      if (e.gamma === null && e.beta === null) return;
-      const gamma = e.gamma ?? 0;
-      const beta = e.beta ?? 0;
 
-      // Gamma [-90, 90]: lateral tilt (left / right)
-      const gRad = (gamma * Math.PI) / 180;
-      targetTiltX = Math.sin(gRad) * 1.6;
-
-      // Beta [-180, 180]: longitudinal tilt (upside down detection)
-      // When phone is turned upside down, reverse gravity so the card falls toward the opposite side!
-      if (beta < -30 || beta > 130) {
-        targetTiltY = 0.85;
-      } else {
-        targetTiltY = -Math.cos(gRad * 0.4);
-      }
-      start();
-    }
-
-    function onDeviceMotion(e: DeviceMotionEvent) {
-      if (!e.acceleration) return;
-      const ax = e.acceleration.x ?? 0;
-      const ay = e.acceleration.y ?? 0;
-      // Waving phone gives dynamic impulse for playful wobble
-      targetTiltX -= ax * 0.05;
-      targetTiltY -= ay * 0.05;
-      start();
-    }
-
-    if (typeof window !== "undefined" && "DeviceOrientationEvent" in window) {
-      window.addEventListener("deviceorientation", onDeviceOrientation, { passive: true });
-      window.addEventListener("devicemotion", onDeviceMotion, { passive: true });
-    }
 
     function resize() {
       if (!stage) return;
@@ -1427,10 +1369,6 @@ export default function SecretLanyardOverlay() {
       canvas.removeEventListener("pointermove", onPointerMove);
       canvas.removeEventListener("pointerup", onPointerUp);
       canvas.removeEventListener("pointercancel", onPointerUp);
-      if (typeof window !== "undefined") {
-        window.removeEventListener("deviceorientation", onDeviceOrientation);
-        window.removeEventListener("devicemotion", onDeviceMotion);
-      }
       renderer.dispose();
       if (canvas.parentNode) canvas.parentNode.removeChild(canvas);
     };
@@ -1471,22 +1409,7 @@ export default function SecretLanyardOverlay() {
         onClick={handleClose}
       />
 
-      {/* Mobile-Only Wobble/Tilt Hint: Displays only on touch devices for 3.5s, completely hidden on laptops/mouse */}
-      {isMobileTouch && showMobileHint && isOpen && (
-        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-40 pointer-events-none px-3.5 py-1.5 rounded-full bg-black/75 border border-white/15 backdrop-blur-md shadow-2xl flex items-center gap-2 animate-in fade-in duration-300">
-          <span className="size-1.5 rounded-full bg-red-500 animate-ping shrink-0" />
-          <ScrambledText
-            scrambleChars=".:/[]"
-            scrambleColor="#ff3b4b"
-            speed={0.4}
-            duration={1}
-            effect="scramble"
-            className="!m-0 !max-w-none text-[10px] font-mono tracking-widest text-neutral-300 uppercase whitespace-nowrap"
-          >
-            TILT OR WAVE DEVICE TO SWAY CARD
-          </ScrambledText>
-        </div>
-      )}
+
 
       {/* Dismiss / Close Button in top right */}
       <button
