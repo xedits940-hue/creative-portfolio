@@ -4,13 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { motion, Variants } from "framer-motion";
 import { playSound } from "@/lib/sound";
-import {
-  createCounter,
-  trackAssets,
-  shouldPlayIntro,
-  markIntroSeen,
-  VT_MOTION,
-} from "@/vtech/loader.js";
+import { shouldPlayIntro, markIntroSeen } from "@/vtech/loader.js";
 
 const slideUp: Variants = {
   initial: {
@@ -19,9 +13,8 @@ const slideUp: Variants = {
   exit: {
     y: "-100%",
     transition: {
-      duration: VT_MOTION.revealMs / 1000,
+      duration: 1.05,
       ease: [0.76, 0, 0.24, 1],
-      delay: 0.05,
     },
   },
 };
@@ -58,6 +51,7 @@ const Preloader: React.FC<PreloaderProps> = ({
   const [isComplete, setIsComplete] = useState<boolean>(false);
   const numRef = useRef<HTMLSpanElement | null>(null);
   const barPathRef = useRef<SVGPathElement | null>(null);
+  const hasTriggeredDone = useRef(false);
 
   useEffect(() => {
     // If user has already seen the intro this session, release immediately
@@ -69,84 +63,93 @@ const Preloader: React.FC<PreloaderProps> = ({
       return undefined;
     }
 
-    const counter = createCounter({
-      smoothingMs: 140,
-      maxPointsPerSec: 140,
-      creepTo: 0,
-      holdAt100Ms: VT_MOTION.holdAt100Ms,
-      render: (v) => {
-        setProgressVal(v);
-        if (numRef.current) {
-          numRef.current.textContent = String(Math.round(v)).padStart(2, "0");
-        }
-        if (barPathRef.current) {
-          barPathRef.current.style.strokeDashoffset = String(1 - v / 100);
-        }
-      },
-      onDone: () => {
-        setIsComplete(true);
-        try {
-          playSound("/universfield-swoosh-07-351043.mp3", 0.18);
-        } catch {
-          // Audio safe fallback
-        }
-        markIntroSeen();
-        if (typeof document !== "undefined") {
-          document.documentElement.classList.remove("vt-intro");
-        }
-        setTimeout(() => {
-          onComplete?.();
-        }, VT_MOTION.holdAt100Ms + 100);
-      },
-    });
+    let animationFrameId: number;
+    const startTime = performance.now();
+    const DURATION = 1950; // 1.95s total smooth loading duration
 
-    // Real critical asset tracking (fonts, window load, above-the-fold assets)
-    trackAssets({
-      images: ["/vtech-studios-logo.png"],
-      fonts: true,
-      windowLoad: true,
-      timeoutMs: 3600,
-      onProgress: (p) => counter.setTarget(p),
-    });
+    const tick = (now: number) => {
+      const elapsed = now - startTime;
+      const linear = Math.min(1, Math.max(0, elapsed / DURATION));
 
-    return () => counter.stop();
+      // EaseOutQuart curve: starts rapidly and glides gracefully into 100%
+      const eased = 1 - Math.pow(1 - linear, 3.5);
+      const currentVal = Math.min(100, Math.round(eased * 100));
+
+      setProgressVal(currentVal);
+
+      if (numRef.current) {
+        numRef.current.textContent = String(currentVal).padStart(2, "0");
+      }
+      if (barPathRef.current) {
+        barPathRef.current.style.strokeDashoffset = String(1 - currentVal / 100);
+      }
+
+      if (linear < 1) {
+        animationFrameId = requestAnimationFrame(tick);
+      } else {
+        // Hit 100%
+        if (!hasTriggeredDone.current) {
+          hasTriggeredDone.current = true;
+          setIsComplete(true);
+
+          // Play signature swoosh sound at exit with rich, clear volume
+          try {
+            playSound("/universfield-swoosh-07-351043.mp3", 0.45);
+          } catch {
+            // Audio safe fallback
+          }
+
+          markIntroSeen();
+
+          // Hold briefly so 100% is clearly visible, then trigger upward exit
+          setTimeout(() => {
+            onComplete?.();
+          }, 180);
+        }
+      }
+    };
+
+    animationFrameId = requestAnimationFrame(tick);
+
+    return () => {
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
+    };
   }, [onComplete]);
 
   const clamped = Math.min(100, Math.max(0, progressVal));
 
-  // Determine index evenly across words
+  // Determine greeting word index evenly across progress
   const index = Math.min(
     words.length - 1,
     Math.floor((clamped / 100) * words.length)
   );
 
-  // SVG curtain paths in 1000x1000 normalized coordinates:
-  // Starts 100% flat/straight: M 0 0 L 1000 0 L 1000 1000 Q 500 1000 0 1000 Z
-  // Upon exit, it curves dynamically upward into an elegant arch (Q 500 660) as the curtain lifts!
+  // SVG curtain paths in 1000x1000 coordinates:
+  // Starts flat at bottom, then arches dynamically UPWARD (Q 500 0) as it lifts!
   const curtainCurve: Variants = {
     initial: {
       d: "M 0 0 L 1000 0 L 1000 1000 Q 500 1000 0 1000 Z",
     },
     exit: {
-      d: "M 0 0 L 1000 0 L 1000 1000 Q 500 660 0 1000 Z",
+      d: "M 0 0 L 1000 0 L 1000 1000 Q 500 0 0 1000 Z",
       transition: {
-        duration: VT_MOTION.revealMs / 1000,
+        duration: 1.0,
         ease: [0.76, 0, 0.24, 1],
       },
     },
   };
 
   // Line paths in 1000x1000 coordinates:
-  // Initial: perfectly STRAIGHT at bottom edge (y=998 across entire screen)
-  // Exit: sweeps and arches beautifully UPWARDS (Q 500 660) in sync with the curtain!
+  // Initial: straight at bottom edge (y=998)
+  // Exit: sweeps and arches beautifully UPWARDS (Q 500 0) in sync with the lifting curtain!
   const lineCurve: Variants = {
     initial: {
       d: "M 0 998 Q 500 998 1000 998",
     },
     exit: {
-      d: "M 0 998 Q 500 660 1000 998",
+      d: "M 0 998 Q 500 0 1000 998",
       transition: {
-        duration: VT_MOTION.revealMs / 1000,
+        duration: 1.0,
         ease: [0.76, 0, 0.24, 1],
       },
     },
@@ -170,7 +173,7 @@ const Preloader: React.FC<PreloaderProps> = ({
         className="absolute inset-0 w-full h-full pointer-events-none"
         style={{ zIndex: 0 }}
       >
-        {/* Curtain */}
+        {/* Curtain background */}
         <motion.path
           variants={curtainCurve}
           initial="initial"
@@ -193,7 +196,7 @@ const Preloader: React.FC<PreloaderProps> = ({
           vectorEffect="non-scaling-stroke"
         />
 
-        {/* Active Crimson Glowing Line: fills 0 -> 100% via scaleX/offset, arches upward on exit */}
+        {/* Active Crimson Glowing Line: fills 0 -> 100%, then sweeps and arches upward on exit */}
         <motion.path
           ref={barPathRef}
           variants={lineCurve}
@@ -202,20 +205,20 @@ const Preloader: React.FC<PreloaderProps> = ({
           exit="exit"
           fill="none"
           stroke={accentColor}
-          strokeWidth={5}
+          strokeWidth={6}
           strokeLinecap="round"
           vectorEffect="non-scaling-stroke"
           pathLength={1}
           strokeDasharray="1 1"
           strokeDashoffset={1 - clamped / 100}
           style={{
-            filter: "drop-shadow(0 0 12px rgba(255, 31, 61, 0.9))",
+            filter: "drop-shadow(0 0 14px rgba(255, 31, 61, 0.95))",
             transformOrigin: "left center",
           }}
         />
       </svg>
 
-      {/* 2. Ambient blurred crimson glow in center — soft, capped via vt-loader__glow, never a solid disc */}
+      {/* 2. Ambient blurred crimson glow in center */}
       <motion.div
         aria-hidden
         className="pointer-events-none absolute left-1/2 top-1/2 z-[1] h-[280px] w-[280px] sm:h-[340px] sm:w-[340px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-[100px] sm:blur-[130px] vt-loader__glow vt-fx"
@@ -225,7 +228,7 @@ const Preloader: React.FC<PreloaderProps> = ({
         }}
         animate={{
           scale: [1, 1.25, 1],
-          opacity: [0.12, 0.25, 0.12],
+          opacity: [0.15, 0.3, 0.15],
         }}
         transition={{
           duration: 3.5,
@@ -246,8 +249,8 @@ const Preloader: React.FC<PreloaderProps> = ({
                   scale: 0.65,
                   opacity: 0.8,
                   transition: {
-                    duration: VT_MOTION.logoMs / 1000,
-                    ease: VT_MOTION.easeArray as readonly [number, number, number, number],
+                    duration: 0.7,
+                    ease: [0.76, 0, 0.24, 1],
                   },
                 }
               : {
@@ -255,18 +258,18 @@ const Preloader: React.FC<PreloaderProps> = ({
                   scale: 1,
                   opacity: 1,
                   transition: {
-                    duration: 0.6,
+                    duration: 0.5,
                     ease: [0.22, 1, 0.36, 1],
                   },
                 }
           }
           exit={{
-            y: -200,
+            y: -220,
             scale: 0.5,
             opacity: 0,
             transition: {
-              duration: 0.75,
-              ease: VT_MOTION.easeArray as readonly [number, number, number, number],
+              duration: 0.8,
+              ease: [0.76, 0, 0.24, 1],
             },
           }}
           className="relative mb-6 sm:mb-8 flex flex-col items-center"
@@ -288,7 +291,6 @@ const Preloader: React.FC<PreloaderProps> = ({
               ease: "easeInOut",
             }}
           />
-
           <Image
             src="/vtech-studios-logo.png"
             alt="VTECH STUDIO Logo"
@@ -307,7 +309,6 @@ const Preloader: React.FC<PreloaderProps> = ({
               backgroundColor: accentColor,
             }}
           />
-
           <div className="relative overflow-hidden h-[46px] sm:h-[54px] flex items-center justify-center min-w-[140px] sm:min-w-[200px]">
             <motion.span
               key={index}
@@ -393,7 +394,6 @@ const Preloader: React.FC<PreloaderProps> = ({
         >
           {String(Math.round(clamped)).padStart(2, "0")}
         </span>
-
         <span
           className="mb-[1.5vw] ml-1 sm:ml-1.5 text-[4vw] sm:text-[2.2vw] md:text-[1.5vw] font-light font-mono"
           style={{

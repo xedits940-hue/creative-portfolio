@@ -358,15 +358,19 @@ export function AsciiReveal(props: AsciiImageProps) {
       });
       ro.observe(canvas);
     }
-    canvas.addEventListener("pointermove", onMove);
-    canvas.addEventListener("pointerleave", onLeave);
+    if (reveal) {
+      canvas.addEventListener("pointermove", onMove);
+      canvas.addEventListener("pointerleave", onLeave);
+    }
 
     return () => {
       alive = false;
       cancelAnimationFrame(raf);
       ro?.disconnect();
-      canvas.removeEventListener("pointermove", onMove);
-      canvas.removeEventListener("pointerleave", onLeave);
+      if (reveal) {
+        canvas.removeEventListener("pointermove", onMove);
+        canvas.removeEventListener("pointerleave", onLeave);
+      }
     };
   }, [
     src,

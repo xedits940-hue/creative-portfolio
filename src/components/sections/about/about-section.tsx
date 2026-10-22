@@ -1,11 +1,9 @@
 "use client";
 
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef } from "react";
 import Image from "next/image";
 import { motion, useScroll, useTransform, useInView } from "framer-motion";
 import { AsciiReveal } from "@/components/AsciiReveal";
-import { useTapReveal } from "@/vtech/interactions.js";
-import { canUseFineHover } from "@/vtech/tier.js";
 import { BRAND } from "@/vtech/brand.js";
 
 // ─── Direct Process Card Component (Prompt 10: Numbers 01, 02, 03, no count-up animation) ───────
@@ -74,12 +72,8 @@ const ProcessCard = ({
 // ─── Main component ────────────────────────────────────────────────────────────
 const AboutSection = () => {
   const sectionRef = useRef<HTMLElement>(null);
-  const [mounted, setMounted] = useState(false);
-  const { open, bind, trigger } = useTapReveal();
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const logoCardRef = useRef<HTMLDivElement>(null);
+  const isLogoInView = useInView(logoCardRef, { once: true, margin: "-40px" });
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -121,75 +115,45 @@ const AboutSection = () => {
               Studio Overview
             </motion.div>
 
-            {/* Prompt 07: Single clean surface .vt-ov .vt-reveal, preserving interactive digital logo on hover/focus/tap */}
+            {/* Studio Logo: Clean, compact square card with automatic 600ms circle reveal on initial viewport entry */}
             <motion.div
+              ref={logoCardRef}
               style={{ y: imageY, scale: imageScale }}
-              className="vt-ov vt-reveal w-full max-w-[380px] mx-auto lg:mx-0 shadow-2xl backdrop-blur-xl"
-              {...bind}
+              className="relative w-full max-w-[240px] sm:max-w-[260px] aspect-square mx-auto lg:mx-0 rounded-2xl border border-white/10 bg-black/50 backdrop-blur-xl p-3 shadow-2xl overflow-hidden flex items-center justify-center"
             >
-              {/* Top Bar: Brand + Interactive */}
-              <div className="vt-ov__bar">
-                <span className="vt-label flex items-center gap-1.5 font-mono text-white/90">
-                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                  {BRAND.name}
-                </span>
-                <span className="vt-label vt-label--red font-mono">
-                  Interactive
-                </span>
+              {/* High-fidelity official logo base - revealed underneath */}
+              <div className="absolute inset-3 flex items-center justify-center">
+                <Image
+                  src="/vtech-studios-logo.png"
+                  alt="Official VTECH Studio Logo"
+                  fill
+                  className="object-contain p-2 drop-shadow-[0_0_24px_rgba(255,31,61,0.28)]"
+                  priority
+                  referrerPolicy="no-referrer"
+                />
               </div>
 
-              {/* Media Container: Preserves high-fidelity logo and ASCII character reveal */}
-              <div className="vt-ov__media relative w-full aspect-[4/3.8] rounded-xl overflow-hidden border border-white/10 bg-black/60 shadow-inner group/ascii">
-                {/* High-fidelity official logo base - revealed when open */}
-                <div
-                  className={`absolute inset-4 pointer-events-none z-0 flex items-center justify-center transition-opacity duration-500 ${
-                    open ? "opacity-100" : "opacity-30 group-hover/ascii:opacity-100"
-                  }`}
-                >
-                  <Image
-                    src="/vtech-studios-logo.png"
-                    alt="Official VTECH Studio Logo"
-                    fill
-                    className="object-contain p-2"
-                    priority
-                    referrerPolicy="no-referrer"
-                  />
-                </div>
-
+              {/* Upper digital matrix layer: smoothly dissolves and reveals circle in 600ms on first appear */}
+              <motion.div
+                initial={{ opacity: 1, clipPath: "circle(0% at 50% 50%)" }}
+                animate={
+                  isLogoInView
+                    ? { opacity: 0, clipPath: "circle(150% at 50% 50%)" }
+                    : { opacity: 1, clipPath: "circle(0% at 50% 50%)" }
+                }
+                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                className="absolute inset-0 z-10 pointer-events-none overflow-hidden"
+              >
                 <AsciiReveal
                   image="/vtech-studios-logo.png"
-                  columns={65}
+                  columns={55}
                   contrast={28}
                   inkColor="#ff1f3d"
                   colorMode="image"
-                  reveal={true}
-                  revealOptions={{ size: 70, softness: 16 }}
-                  className="relative z-10 w-full h-full"
+                  reveal={false}
+                  className="w-full h-full"
                 />
-
-                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 pointer-events-none opacity-60 text-[9px] font-mono tracking-widest uppercase text-white/80 bg-black/80 px-2.5 py-0.5 rounded-full border border-white/15 backdrop-blur-sm z-20">
-                  {open ? "Digital Logo Active" : "Reveal Active"}
-                </div>
-              </div>
-
-              {/* Accessible interactive trigger for mobile tap & keyboard focus */}
-              <button
-                className="vt-btn vt-tap w-full text-xs font-mono tracking-wider justify-center"
-                suppressHydrationWarning
-                {...trigger}
-              >
-                {mounted && canUseFineHover()
-                  ? "Hover or press to see the digital version"
-                  : "Tap to see the digital version"}
-              </button>
-
-              {/* Meta: Studio logo + Available status */}
-              <div className="vt-ov__meta">
-                <span className="vt-label">Studio logo</span>
-                <span className="vt-label vt-ov__status text-emerald-400 font-semibold">
-                  Available for new projects
-                </span>
-              </div>
+              </motion.div>
             </motion.div>
 
             {/* Name, designation & refined narrative */}

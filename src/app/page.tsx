@@ -44,15 +44,19 @@ export default function Home() {
   }, [isLoading]);
 
   const handlePreloaderComplete = () => {
-    if (typeof document !== "undefined") {
-      document.documentElement.classList.remove("vt-intro");
-    }
     setIsLoading(false);
   };
 
   return (
     <>
-      <AnimatePresence mode="wait">
+      <AnimatePresence
+        mode="wait"
+        onExitComplete={() => {
+          if (typeof document !== "undefined") {
+            document.documentElement.classList.remove("vt-intro");
+          }
+        }}
+      >
         {isLoading && <Preloader onComplete={handlePreloaderComplete} />}
       </AnimatePresence>
 

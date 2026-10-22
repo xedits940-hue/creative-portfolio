@@ -181,17 +181,12 @@
   background-color: var(--primary);
   color: var(--primary-foreground);
 }
-/* Prevent iframe flickering with custom cursor */
 iframe {
   transform: translateZ(0);
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
 
-/* Optional: Hide default cursor over iframes if needed */
-.cursor-hidden iframe {
-  cursor: none;
-}
 
 @font-face {
   font-family: 'Stranger back in the Night';

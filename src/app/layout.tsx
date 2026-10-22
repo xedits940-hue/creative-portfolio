@@ -10,7 +10,6 @@ import Navbar from "@/components/layout/navbar";
 import StructuredData from "@/components/common/structured-data";
 import Analytics from "@/components/common/analytics";
 import ConsoleLog from "@/components/common/console-log";
-import { SmoothCursor } from "@/components/ui/smooth-cursor";
 import LiquidSilkBackground from "@/components/common/liquid-silk-background";
 import { BackgroundProvider } from "@/providers/background-provider";
 import { ErrorBoundary } from "@/components/common/error-boundary";
@@ -145,7 +144,7 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://framerusercontent.com" />
         <style
           dangerouslySetInnerHTML={{
-            __html: `html{background:#0A0A0B}html.vt-intro,html.vt-intro body{overflow:hidden}html.vt-intro .vt-hero-hold{visibility:hidden}.vt-loader{display:none}html.vt-intro .vt-loader{display:block}`,
+            __html: `html{background:#0A0A0B}html.vt-intro,html.vt-intro body{overflow:hidden}html.vt-intro .vt-hero-hold{visibility:hidden}`,
           }}
         />
         <script
@@ -228,7 +227,6 @@ export default function RootLayout({
               <SoundProvider>
                 <SecretLanyardProvider>
                   <LiquidSilkBackground />
-                  <SmoothCursor />
                   <SoundToggle />
                   <SoundExperienceModal />
                   <LenisWrapper>
