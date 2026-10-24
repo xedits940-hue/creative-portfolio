@@ -9,8 +9,9 @@ import React, {
   useLayoutEffect,
   useMemo,
   useRef,
+  useState,
 } from "react";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Info } from "lucide-react";
 import "./card-swap.css";
 
 const useIsomorphicLayoutEffect =
@@ -18,11 +19,11 @@ const useIsomorphicLayoutEffect =
 
 const THEMES = {
   dark: {
-    "--swap-tile": "linear-gradient(180deg, #1b1922 0%, #0d0c11 100%)",
-    "--swap-tile-edge": "rgba(255, 31, 61, 0.2)",
-    "--swap-tile-highlight": "rgba(255, 255, 255, 0.12)",
+    "--swap-tile": "linear-gradient(180deg, rgba(28, 26, 36, 0.85) 0%, rgba(13, 12, 17, 0.95) 100%)",
+    "--swap-tile-edge": "rgba(255, 31, 61, 0.22)",
+    "--swap-tile-highlight": "rgba(255, 255, 255, 0.14)",
     "--swap-shadow":
-      "0 30px 60px -24px rgba(0, 0, 0, 0.9), 0 10px 24px -12px rgba(255, 31, 61, 0.15)",
+      "0 30px 60px -24px rgba(0, 0, 0, 0.95), 0 10px 24px -12px rgba(255, 31, 61, 0.2)",
     "--swap-media-edge": "rgba(255, 255, 255, 0.08)",
     "--swap-ink": "#f4f4f5",
     "--swap-badge": "rgba(255, 255, 255, 0.08)",
@@ -46,10 +47,14 @@ export interface CardSwapItem {
   title: string;
   subtitle?: string;
   tag?: string;
+  price?: string;
+  priceNote?: string;
   video?: string;
   image?: string;
   alt?: string;
   url?: string;
+  description?: string;
+  features?: string[];
 }
 
 const PERSPECTIVE = 900;
@@ -134,10 +139,18 @@ export const Card = forwardRef<
 ));
 Card.displayName = "Card";
 
-export const ItemCard = ({ item }: { item: CardSwapItem }) => {
+export const ItemCard = ({
+  item,
+  isActive = false,
+  onOpenDetails,
+}: {
+  item: CardSwapItem;
+  isActive?: boolean;
+  onOpenDetails?: () => void;
+}) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
-  // Enforce muted and playsInline strictly so autoplay is 100% reliable
+  // Strictly enforce muted and playsInline
   useEffect(() => {
     if (videoRef.current) {
       videoRef.current.muted = true;
@@ -145,6 +158,23 @@ export const ItemCard = ({ item }: { item: CardSwapItem }) => {
       videoRef.current.playsInline = true;
     }
   }, []);
+
+  // Performance Optimization: Only play video when this card is in the front/active slot!
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    if (isActive) {
+      const playPromise = video.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          // Handled if browser blocks autoplay until user interacts
+        });
+      }
+    } else {
+      video.pause();
+    }
+  }, [isActive]);
 
   return (
     <Card>
@@ -157,16 +187,25 @@ export const ItemCard = ({ item }: { item: CardSwapItem }) => {
               <span className="card-swap-subtitle">{item.subtitle}</span>
             )}
           </div>
-          {item.tag && <span className="card-swap-badge">{item.tag}</span>}
+
+          {/* Pricing Highlight Block */}
+          {item.price && (
+            <div className="card-swap-price-block">
+              <span className="card-swap-price">{item.price}</span>
+              <span className="card-swap-price-tag">
+                {item.priceNote || "ONE-TIME ASKING PRICE"}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Card Visual Media Frame */}
-        <div className="card-swap-media">
+        <div className="card-swap-media" onClick={onOpenDetails}>
           {item.video ? (
             <video
               ref={videoRef}
               src={item.video}
-              autoPlay
+              autoPlay={isActive}
               loop
               muted
               playsInline
@@ -186,14 +225,21 @@ export const ItemCard = ({ item }: { item: CardSwapItem }) => {
           ) : null}
         </div>
 
-        {/* Card Footer Bar with Interactive Live Preview Link */}
+        {/* Card Footer Bar with Interactive Action Buttons */}
         <div className="card-swap-foot">
-          <div className="flex items-center gap-2">
-            <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-[10px] font-mono text-neutral-400 tracking-wider uppercase">
-              ACTIVE
-            </span>
-          </div>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpenDetails?.();
+            }}
+            onPointerDown={(e) => e.stopPropagation()}
+            className="card-swap-btn"
+            title="Inspect specs and purchase details"
+          >
+            <Info className="size-3 text-primary shrink-0" />
+            <span>Details</span>
+          </button>
 
           {item.url && (
             <a
@@ -202,7 +248,7 @@ export const ItemCard = ({ item }: { item: CardSwapItem }) => {
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
               onPointerDown={(e) => e.stopPropagation()}
-              className="card-swap-preview-btn"
+              className="card-swap-btn card-swap-btn-primary"
               title={`Launch ${item.title} live app`}
             >
               <span>Live Preview</span>
@@ -245,6 +291,7 @@ export interface CardSwapProps {
 export interface CardSwapHandle {
   next: () => void;
   prev: () => void;
+  getActiveIndex: () => number;
 }
 
 interface Settings {
@@ -317,15 +364,15 @@ const CardSwap = forwardRef<CardSwapHandle, CardSwapProps>(
   (
     {
       items = [],
-      width = 440,
-      height = 540,
+      width = 400,
+      height = 510,
       cardDistance = 55,
       verticalDistance = 65,
       depth = 85,
       skewAmount = 5,
       visibleCards = 4,
       delay = 4500,
-      autoplay = true,
+      autoplay = false, // Manual movement by default as explicitly requested!
       pauseOnHover = true,
       draggable = true,
       speed = 1,
@@ -333,7 +380,7 @@ const CardSwap = forwardRef<CardSwapHandle, CardSwapProps>(
       parallax = 0.45,
       hoverSpread = 0.12,
       dim = 0.55,
-      cardRadius = 18,
+      cardRadius = 20,
       intro = true,
       theme = "dark",
       onCardClick,
@@ -347,20 +394,31 @@ const CardSwap = forwardRef<CardSwapHandle, CardSwapProps>(
     const stageRef = useRef<HTMLDivElement | null>(null);
     const slotRefs = useRef<(HTMLDivElement | null)[]>([]);
     const shadeRefs = useRef<(HTMLSpanElement | null)[]>([]);
-    const apiRef = useRef<{ next: () => void; prev: () => void; refresh: () => void } | null>(null);
+    const [frontIndex, setFrontIndex] = useState<number>(0);
+    const apiRef = useRef<{
+      next: () => void;
+      prev: () => void;
+      refresh: () => void;
+      getActiveIndex: () => number;
+    } | null>(null);
     const settingsRef = useRef<Settings | null>(null);
 
     const cards = useMemo(() => {
       const custom = Children.toArray(children).filter(isValidElement);
       if (custom.length) return custom;
       return items.map((item, index) => (
-        <ItemCard key={`${item.title ?? "card"}-${index}`} item={item} />
+        <ItemCard
+          key={`${item.title ?? "card"}-${index}`}
+          item={item}
+          isActive={index === frontIndex}
+          onOpenDetails={() => onCardClick?.(index)}
+        />
       ));
-    }, [children, items]);
+    }, [children, items, frontIndex, onCardClick]);
 
     const count = cards.length;
-    const cardWidth = Math.max(40, Number(width) || 440);
-    const cardHeight = Math.max(40, Number(height) || 540);
+    const cardWidth = Math.max(40, Number(width) || 400);
+    const cardHeight = Math.max(40, Number(height) || 510);
     const visible = clamp(Math.round(visibleCards), 1, Math.max(1, count));
 
     const bounds = useMemo(
@@ -414,8 +472,9 @@ const CardSwap = forwardRef<CardSwapHandle, CardSwapProps>(
       () => ({
         next: () => apiRef.current?.next(),
         prev: () => apiRef.current?.prev(),
+        getActiveIndex: () => apiRef.current?.getActiveIndex() ?? frontIndex,
       }),
-      []
+      [frontIndex]
     );
 
     useIsomorphicLayoutEffect(() => {
@@ -794,7 +853,9 @@ const CardSwap = forwardRef<CardSwapHandle, CardSwapProps>(
         deck.forEach((card) => {
           if (card.phase === "rest") card.nudge = 0;
         });
-        s.onChange?.(state.order[0]);
+        const newFront = state.order[0];
+        setFrontIndex(newFront);
+        s.onChange?.(newFront);
         wake();
         schedule();
       };
@@ -989,6 +1050,7 @@ const CardSwap = forwardRef<CardSwapHandle, CardSwapProps>(
       apiRef.current = {
         next: () => shift(1),
         prev: () => shift(-1),
+        getActiveIndex: () => state.order[0] ?? 0,
         refresh: () => {
           const s = settingsRef.current;
           if (!s) return;
