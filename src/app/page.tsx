@@ -10,6 +10,7 @@ import { TimelineDemo } from "@/components/sections/home/timeline-demo";
 import CollabSec from "@/components/sections/home/collab-section";
 import AboutSection from "@/components/sections/about/about-section";
 import WoodStoryRevealSection from "@/components/wood-story-reveal-section";
+import AppsSection from "@/components/sections/home/apps-section";
 import { initTier } from "@/vtech/tier.js";
 
 export default function Home() {
@@ -84,10 +85,13 @@ export default function Home() {
         {/* 5. Collaboration & Partners */}
         <CollabSec />
 
-        {/* 6. Featured Client Case Reference (Siya Beauty Parlour) */}
+        {/* 6. Interactive Apps Showcase (CardSwap 3D Effect) - Right above Siya Beauty */}
+        <AppsSection />
+
+        {/* 7. Featured Client Case Reference (Siya Beauty Parlour) */}
         <Testimonials />
 
-        {/* 7. Collaboration Channel */}
+        {/* 8. Collaboration Channel */}
         <section id="booking" className="w-full scroll-mt-24 bg-transparent">
           <CalBooking />
         </section>
