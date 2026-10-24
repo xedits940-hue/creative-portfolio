@@ -133,6 +133,7 @@ export default function AppsSection() {
   const headerRef = useRef<HTMLDivElement>(null);
   const swapRef = useRef<CardSwapHandle | null>(null);
   const [selectedApp, setSelectedApp] = useState<CardSwapItem | null>(null);
+  const modalVideoRef = useRef<HTMLVideoElement | null>(null);
 
   const headerInView = useInView(headerRef, {
     once: true,
@@ -150,15 +151,14 @@ export default function AppsSection() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  const handleEnquirePurchase = (app: CardSwapItem) => {
-    const subject = encodeURIComponent(
-      `Purchase Enquiry: One-Time Rights for ${app.title}`
-    );
-    const body = encodeURIComponent(
-      `Hi Vishal,\n\nI am interested in acquiring the one-time rights and source architecture for "${app.title}" (${app.subtitle}) listed at ${app.price} (One-Time Asking Price).\n\nPlease share the handover process, IP transfer details, and next steps.\n\nBest regards,`
-    );
-    window.location.href = `mailto:vtechprime01@gmail.com?subject=${subject}&body=${body}`;
-  };
+  // Enforce muted on modal video if opened
+  useEffect(() => {
+    if (selectedApp && modalVideoRef.current) {
+      modalVideoRef.current.muted = true;
+      modalVideoRef.current.defaultMuted = true;
+      modalVideoRef.current.playsInline = true;
+    }
+  }, [selectedApp]);
 
   return (
     <section
@@ -346,6 +346,7 @@ export default function AppsSection() {
               {selectedApp.video && (
                 <div className="relative mb-5 w-full rounded-2xl overflow-hidden border border-white/10 bg-black aspect-video flex items-center justify-center shadow-inner">
                   <video
+                    ref={modalVideoRef}
                     src={selectedApp.video}
                     autoPlay
                     loop
@@ -388,21 +389,24 @@ export default function AppsSection() {
 
               {/* Action Buttons: Enquire & Live Preview */}
               <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => handleEnquirePurchase(selectedApp)}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-primary hover:bg-[#ff3350] text-white font-mono text-xs uppercase tracking-wider font-semibold transition-all duration-200 cursor-pointer shadow-[0_0_20px_rgba(255,31,61,0.4)] active:scale-98"
+                <a
+                  href={`mailto:vtechprime01@gmail.com?subject=${encodeURIComponent(
+                    `Purchase Enquiry: One-Time Rights for ${selectedApp.title}`
+                  )}&body=${encodeURIComponent(
+                    `Hi Vishal,\n\nI am interested in acquiring the one-time rights and source architecture for "${selectedApp.title}" (${selectedApp.subtitle}) listed at ${selectedApp.price} (One-Time Asking Price).\n\nPlease share the handover process, IP transfer details, and next steps.\n\nBest regards,`
+                  )}`}
+                  className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-primary hover:bg-[#ff3350] text-white font-mono text-xs uppercase tracking-wider font-semibold transition-all duration-200 cursor-pointer shadow-[0_0_20px_rgba(255,31,61,0.4)] active:scale-98 text-center"
                 >
                   <Mail className="size-4" />
                   <span>ENQUIRE ABOUT PURCHASE</span>
-                </button>
+                </a>
 
                 {selectedApp.url && (
                   <a
                     href={selectedApp.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-white/20 bg-white/5 hover:bg-white/10 text-white font-mono text-xs uppercase tracking-wider transition-all duration-200 cursor-pointer active:scale-98"
+                    className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-white/20 bg-white/5 hover:bg-white/10 text-white font-mono text-xs uppercase tracking-wider transition-all duration-200 cursor-pointer active:scale-98 text-center"
                   >
                     <span>LIVE PREVIEW</span>
                     <ExternalLink className="size-4 text-primary" />

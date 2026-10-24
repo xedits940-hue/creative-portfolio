@@ -165,14 +165,22 @@ export const ItemCard = ({
     if (!video) return;
 
     if (isActive) {
-      const playPromise = video.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(() => {
-          // Handled if browser blocks autoplay until user interacts
-        });
+      if (video.paused) {
+        const playPromise = video.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(() => {
+            // Safe fallback if interrupted
+          });
+        }
       }
     } else {
-      video.pause();
+      if (!video.paused) {
+        try {
+          video.pause();
+        } catch {
+          // Safe fallback
+        }
+      }
     }
   }, [isActive]);
 

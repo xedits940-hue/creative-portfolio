@@ -1,9 +1,7 @@
 "use client";
 
-import React, { useRef } from "react";
-import Image from "next/image";
+import React, { useRef, useEffect } from "react";
 import { motion, useScroll, useTransform, useInView } from "framer-motion";
-import { AsciiReveal } from "@/components/AsciiReveal";
 import { BRAND } from "@/vtech/brand.js";
 
 // ─── Direct Process Card Component (Prompt 10: Numbers 01, 02, 03, no count-up animation) ───────
@@ -73,7 +71,31 @@ const ProcessCard = ({
 const AboutSection = () => {
   const sectionRef = useRef<HTMLElement>(null);
   const logoCardRef = useRef<HTMLDivElement>(null);
-  const isLogoInView = useInView(logoCardRef, { once: true, margin: "-40px" });
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const isLogoInView = useInView(logoCardRef, { margin: "-20px" });
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    video.muted = true;
+    video.defaultMuted = true;
+    video.playsInline = true;
+
+    if (isLogoInView) {
+      if (video.paused) {
+        video.play().catch(() => {});
+      }
+    } else {
+      if (!video.paused) {
+        try {
+          video.pause();
+        } catch {
+          // safe fallback
+        }
+      }
+    }
+  }, [isLogoInView]);
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -115,45 +137,25 @@ const AboutSection = () => {
               Studio Overview
             </motion.div>
 
-            {/* Studio Logo: Clean, compact square card with automatic 600ms circle reveal on initial viewport entry */}
+            {/* Studio Logo: Clean, compact square card with ultra high quality video looping seamlessly */}
             <motion.div
               ref={logoCardRef}
               style={{ y: imageY, scale: imageScale }}
-              className="relative w-full max-w-[240px] sm:max-w-[260px] aspect-square mx-auto lg:mx-0 rounded-2xl border border-white/10 bg-black/50 backdrop-blur-xl p-3 shadow-2xl overflow-hidden flex items-center justify-center"
+              className="relative w-full max-w-[240px] sm:max-w-[260px] aspect-square mx-auto lg:mx-0 rounded-2xl border border-white/10 bg-black backdrop-blur-xl shadow-2xl overflow-hidden flex items-center justify-center group"
             >
-              {/* High-fidelity official logo base - revealed underneath */}
-              <div className="absolute inset-3 flex items-center justify-center">
-                <Image
-                  src="/vtech-studios-logo.png"
-                  alt="Official VTECH Studio Logo"
-                  fill
-                  className="object-contain p-2 drop-shadow-[0_0_24px_rgba(255,31,61,0.28)]"
-                  priority
-                  referrerPolicy="no-referrer"
-                />
-              </div>
-
-              {/* Upper digital matrix layer: smoothly dissolves and reveals circle in 600ms on first appear */}
-              <motion.div
-                initial={{ opacity: 1, clipPath: "circle(0% at 50% 50%)" }}
-                animate={
-                  isLogoInView
-                    ? { opacity: 0, clipPath: "circle(150% at 50% 50%)" }
-                    : { opacity: 1, clipPath: "circle(0% at 50% 50%)" }
-                }
-                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                className="absolute inset-0 z-10 pointer-events-none overflow-hidden"
-              >
-                <AsciiReveal
-                  image="/vtech-studios-logo.png"
-                  columns={55}
-                  contrast={28}
-                  inkColor="#ff1f3d"
-                  colorMode="image"
-                  reveal={false}
-                  className="w-full h-full"
-                />
-              </motion.div>
+              <video
+                ref={videoRef}
+                src="/logo-video.mp4"
+                autoPlay
+                loop
+                muted
+                playsInline
+                preload="auto"
+                controls={false}
+                className="w-full h-full object-cover rounded-2xl pointer-events-none select-none"
+                aria-label="VTECH Studio Logo Animation"
+              />
+              <div className="absolute inset-0 rounded-2xl ring-1 ring-inset ring-white/10 pointer-events-none" />
             </motion.div>
 
             {/* Name, designation & refined narrative */}
