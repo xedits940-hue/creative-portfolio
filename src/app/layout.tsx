@@ -144,19 +144,24 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://framerusercontent.com" />
         <style
           dangerouslySetInnerHTML={{
-            __html: `html{background:#0A0A0B}html.vt-intro,html.vt-intro body{overflow:hidden}html.vt-intro .vt-hero-hold{visibility:hidden}`,
+            __html: `html{background:#0A0A0B}html.vt-intro,html.vt-intro body{overflow:hidden}`,
           }}
         />
         <script
           dangerouslySetInnerHTML={{
             __html: `(function (d) {
-  var MODE = 'once-per-session';
+  var isIframe = false;
+  try { isIframe = window.self !== window.top; } catch (e) { isIframe = true; }
+  if (isIframe) {
+    d.documentElement.classList.remove('vt-intro');
+    return;
+  }
   var play = true;
-  try { if (MODE === 'once-per-session' && sessionStorage.getItem('vt:introSeen') === '1') play = false; } catch (e) {}
+  try { if (sessionStorage.getItem('vt:introSeen') === '1') play = false; } catch (e) {}
   if (play) d.documentElement.classList.add('vt-intro');
   try { if ('scrollRestoration' in history) history.scrollRestoration = 'manual'; } catch (e) {}
   window.scrollTo(0, 0);
-  setTimeout(function () { d.documentElement.classList.remove('vt-intro'); }, 12000);
+  setTimeout(function () { d.documentElement.classList.remove('vt-intro'); }, 1500);
 })(document);`,
           }}
         />

@@ -17,20 +17,28 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(() => {
     if (typeof window !== "undefined") {
       try {
+        if (window.self !== window.top) return false;
         return sessionStorage.getItem("vt:introSeen") !== "1";
       } catch {
         return false;
       }
     }
-    return true;
+    return false;
   });
 
   // Initialize adaptive quality tier on startup
   useEffect(() => {
     initTier();
-    if (typeof window !== "undefined" && sessionStorage.getItem("vt:introSeen") === "1") {
-      document.documentElement.classList.remove("vt-intro");
-      setIsLoading(false);
+    if (typeof window !== "undefined") {
+      try {
+        if (window.self !== window.top || sessionStorage.getItem("vt:introSeen") === "1") {
+          document.documentElement.classList.remove("vt-intro");
+          setIsLoading(false);
+        }
+      } catch {
+        document.documentElement.classList.remove("vt-intro");
+        setIsLoading(false);
+      }
     }
   }, []);
 
@@ -38,13 +46,18 @@ export default function Home() {
   useEffect(() => {
     if (!isLoading) return;
     const fallback = setTimeout(() => {
-      document.documentElement.classList.remove("vt-intro");
+      if (typeof document !== "undefined") {
+        document.documentElement.classList.remove("vt-intro");
+      }
       setIsLoading(false);
-    }, 3600);
+    }, 1800);
     return () => clearTimeout(fallback);
   }, [isLoading]);
 
   const handlePreloaderComplete = () => {
+    if (typeof document !== "undefined") {
+      document.documentElement.classList.remove("vt-intro");
+    }
     setIsLoading(false);
   };
 

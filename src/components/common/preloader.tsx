@@ -54,8 +54,16 @@ const Preloader: React.FC<PreloaderProps> = ({
   const hasTriggeredDone = useRef(false);
 
   useEffect(() => {
-    // If user has already seen the intro this session, release immediately
-    if (!shouldPlayIntro("once-per-session")) {
+    // If inside iframe preview or user has already seen the intro this session, release immediately
+    try {
+      if (window.self !== window.top || !shouldPlayIntro("once-per-session")) {
+        if (typeof document !== "undefined") {
+          document.documentElement.classList.remove("vt-intro");
+        }
+        onComplete?.();
+        return undefined;
+      }
+    } catch {
       if (typeof document !== "undefined") {
         document.documentElement.classList.remove("vt-intro");
       }
@@ -65,7 +73,20 @@ const Preloader: React.FC<PreloaderProps> = ({
 
     let animationFrameId: number;
     const startTime = performance.now();
-    const DURATION = 1950; // 1.95s total smooth loading duration
+    const DURATION = 1100; // Crisp 1.1s smooth loading duration
+
+    // Guaranteed fallback: release if rAF is throttled in inactive tab or iframe
+    const safetyTimer = setTimeout(() => {
+      if (!hasTriggeredDone.current) {
+        hasTriggeredDone.current = true;
+        setIsComplete(true);
+        markIntroSeen();
+        if (typeof document !== "undefined") {
+          document.documentElement.classList.remove("vt-intro");
+        }
+        onComplete?.();
+      }
+    }, 1300);
 
     const tick = (now: number) => {
       const elapsed = now - startTime;
@@ -103,8 +124,11 @@ const Preloader: React.FC<PreloaderProps> = ({
 
           // Hold briefly so 100% is clearly visible, then trigger upward exit
           setTimeout(() => {
+            if (typeof document !== "undefined") {
+              document.documentElement.classList.remove("vt-intro");
+            }
             onComplete?.();
-          }, 180);
+          }, 120);
         }
       }
     };
@@ -112,6 +136,7 @@ const Preloader: React.FC<PreloaderProps> = ({
     animationFrameId = requestAnimationFrame(tick);
 
     return () => {
+      clearTimeout(safetyTimer);
       if (animationFrameId) cancelAnimationFrame(animationFrameId);
     };
   }, [onComplete]);
